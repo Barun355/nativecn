@@ -46,8 +46,24 @@ A named visual value (colour, spacing, radius, type step, shadow, motion) that l
 _Avoid_: Variable, constant
 
 **Preset**:
-A named set of Colour Role values distributed as a Registry Item. Exactly one is installed in an app at a time, and switching replaces it.
-_Avoid_: Theme (when meaning the preset), skin, palette
+The one-time design choice for a project: a Style, a Base Colour, an Accent Colour, a Radius, a Body Font and a Heading Font. It is fixed for the life of the project and baked into every file nativecn writes.
+_Avoid_: Theme (when meaning the preset), skin, template
+
+**Style**:
+The Preset setting that decides every Component's shape and density (e.g. Vega, Nova). It is baked into each Component's source at install time. Unrelated to React Native's `style` prop.
+_Avoid_: Look, variant, skin
+
+**Base Colour**:
+The Preset setting that picks the family of greys used by the neutral Colour Roles (e.g. neutral, stone, zinc).
+_Avoid_: Gray, background colour
+
+**Accent Colour**:
+The Preset setting that picks the colour of `primary` and `ring` (e.g. blue, violet). shadcn calls this "Theme".
+_Avoid_: Theme, brand colour, primary colour (as the setting's name)
+
+**Body Font** / **Heading Font**:
+The two font roles in a Preset: the Body Font sets body and control text, and the Heading Font sets `display` and `h1`–`h4` (by default the same as the Body Font).
+_Avoid_: Typeface, font family (as a role name)
 
 **Scheme**:
 Whether the light or dark Colour Role values are in use: following the system, or forced by the user and persisted.
