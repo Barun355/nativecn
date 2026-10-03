@@ -38,3 +38,12 @@ _Avoid_: Page, view
 **Layout**:
 An Expo Router `_layout.tsx` file that arranges the Screens beneath it.
 _Avoid_: Container, wrapper
+
+**Feature**:
+A self-contained area of the user's app (e.g. auth, billing) that, in feature mode, owns its own components, hooks, screens and utils under `src/features/<feature>/`.
+_Avoid_: Module, domain, section
+
+**Structure**:
+How a nativecn app arranges its files: `flat` (Expo's folders only) or `feature` (Expo's folders plus Features). It is chosen at create/init and recorded in `components.json`.
+_Avoid_: Layout (that is a `_layout.tsx` file), architecture
+
