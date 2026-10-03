@@ -45,8 +45,20 @@ _Avoid_: Styles, design file, palette (a palette is only the colour part)
 A named visual value (colour, spacing, radius, type step, shadow, motion) that lives in the Theme; Components read Tokens and never hardcode literals.
 _Avoid_: Variable, constant
 
+**Preset**:
+A named set of Colour Role values distributed as a Registry Item. Exactly one is installed in an app at a time, and switching replaces it.
+_Avoid_: Theme (when meaning the preset), skin, palette
+
+**Scheme**:
+Whether the light or dark Colour Role values are in use: following the system, or forced by the user and persisted.
+_Avoid_: Mode, appearance, theme (when meaning light/dark)
+
+**Colour Role**:
+A named colour Token with a fixed purpose (e.g. `primary`, `muted`, `destructive`), defined once for light and once for dark; most come paired with a `…Foreground` role for content drawn on top of them.
+_Avoid_: Colour name, palette entry, swatch
+
 **Scale**:
-The factor by which Tokens are adapted to the current device, measured against a 390pt-wide baseline phone.
+The factor by which Tokens are adapted to the current device: the screen's shorter side measured against a 390pt baseline phone, clamped to 0.85–1.25 and kept live as the window changes.
 _Avoid_: Responsive, zoom
 
 ### Blocks
