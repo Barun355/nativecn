@@ -20,6 +20,14 @@ A named dimension step of a Component (`sm`, `md`, `lg`) that maps only to Token
 **State**:
 A runtime condition of a Component that changes its appearance: pressed, disabled, loading, and so on.
 
+**Status**:
+The outcome feedback a Component shows (`error` or `success`). The screen sets and clears it; the Component never resets it itself.
+_Avoid_: State (when meaning error/success), result
+
+**Style Slot**:
+A named place in a base Component's styles (e.g. `button.root`, `button.pressed`) that each Style fills with concrete values when the Registry is built.
+_Avoid_: Component token, override
+
 **Text**:
 The single typographic Component; typographic roles are its Variants.
 _Avoid_: Typography, ThemedText, Heading (as separate components)
