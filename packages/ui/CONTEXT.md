@@ -35,6 +35,18 @@ _Avoid_: Typography, ThemedText, Heading (as separate components)
 **Icon**:
 The single Component through which every glyph is drawn, rendering the same Lucide glyphs on iOS and Android.
 
+**SegmentedTabs**:
+The Component that switches between panels of content within a single Screen.
+_Avoid_: Tabs, TabCmp, TabView
+
+**TabNavigation**:
+The bottom bar that moves between Screens, rendered as the custom tab bar of an Expo Router tabs Layout.
+_Avoid_: Tabs, TabBar, bottom tabs
+
+**Drawer**:
+The slide-in navigation panel of a drawer Layout, built from nativecn's drawer Components on top of Expo Router's own drawer.
+_Avoid_: Side menu, sidebar, expo-drawer (an unrelated package)
+
 **Container**:
 The Component that wraps a Screen's content (safe area, scrolling, keyboard avoidance, edge padding).
 _Avoid_: Screen, Layout, Page, Wrapper
@@ -88,7 +100,7 @@ _Avoid_: Responsive, zoom
 ### Blocks
 
 **Block**:
-A pre-designed Screen (e.g. sign-in) that a user or agent installs, renames and uses directly.
+A pre-designed composition that a user or agent installs, renames and adapts: either a Screen (e.g. sign-in) or a piece of navigation inside a Layout (e.g. a drawer's contents).
 _Avoid_: Template, screen template, page
 
 **Block Variant**:
