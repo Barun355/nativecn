@@ -16,5 +16,7 @@ nativecn-cli does **not** depend on `@shadcn/registry` to fetch, resolve, rewrit
 Our installer adds the Expo-specific steps: `expo install` for dependency versions matched to the SDK, Config Plugins, and Expo Router targets for Blocks.
 
 ## Consequences
-- We maintain resolution and import rewriting ourselves. CI must check that the stock shadcn CLI still installs our items, so the two paths don't drift apart.
+- We maintain resolution and import rewriting ourselves.
+- From 0.1, every item is written so the stock shadcn CLI can install it: dependencies are always namespaced (`@nativecn-cli/<name>`, because bare names resolve to shadcn's web registry), and Block Screens use `registry:file` with an Expo Router `target` (`registry:page` is silently dropped in Expo apps).
+- Actively supporting the shadcn path is deferred to 0.3: the directory listing, a CI check that stock shadcn still installs our items, and the docs for that path. Until then it works but is untested and undocumented.
 - Web-only fields (`tailwind`, `cssVars`, `css`) stay empty in every item.
