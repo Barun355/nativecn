@@ -1,0 +1,321 @@
+<!doctype html>
+<!--
+  PROTOTYPE, throwaway. Not production code.
+  Question: what makes sign-in-01..04 and sign-up-01..04 genuinely different Block Variants?
+  Eight structurally different layouts in a 390x844 phone frame, Vega Style + neutral Preset approximated.
+  Switch with ?variant=sign-in-01 … sign-up-04, the bottom bar, or ← / → keys.
+  Rules shown: field errors under fields; server errors and success ONLY via toast (never an Alert banner).
+  Type "wrong" as the password to see the server-error toast.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Auth Block Variants (prototype)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --background:#ffffff; --foreground:#0a0a0a; --card:#ffffff; --muted:#f5f5f5; --muted-fg:#737373;
+    --primary:#171717; --primary-fg:#fafafa; --secondary:#f5f5f5; --border:#e5e5e5; --input:#e5e5e5;
+    --ring:#a3a3a3; --destructive:#dc2626; --success:#16a34a; --radius:10px; --h:44px;
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; font-family:Inter, system-ui, sans-serif; background:#e9e9ec; color:var(--foreground);
+         display:flex; gap:40px; justify-content:center; align-items:flex-start; padding:32px 16px 120px; min-height:100vh; }
+  .notes { width:320px; font-size:14px; line-height:1.5; }
+  .notes h1 { font-size:20px; margin:0 0 4px; letter-spacing:-.2px; }
+  .notes .tag { display:inline-block; background:#171717; color:#fff; border-radius:999px; padding:2px 10px; font-size:12px; margin-bottom:12px; }
+  .notes ul { padding-left:18px; } .notes code { background:#fff; padding:1px 5px; border-radius:4px; }
+  .state { margin-top:16px; background:#fff; border-radius:10px; padding:10px 12px; font:12px/1.5 ui-monospace, monospace; white-space:pre-wrap; }
+  .phone { width:390px; height:844px; background:var(--background); border-radius:44px; box-shadow:0 0 0 10px #111, 0 20px 60px rgba(0,0,0,.25);
+           position:relative; overflow:hidden; display:flex; flex-direction:column; }
+  .statusbar { height:47px; flex:none; display:flex; justify-content:space-between; align-items:center; padding:0 28px; font-size:15px; font-weight:600; }
+  .screen { flex:1; overflow:auto; display:flex; flex-direction:column; }
+  .homebar { position:absolute; bottom:8px; left:50%; transform:translateX(-50%); width:134px; height:5px; border-radius:3px; background:#111; }
+
+  /* nativecn-ish components */
+  .h1 { font-size:30px; line-height:36px; font-weight:700; letter-spacing:-.6px; margin:0; }
+  .h2 { font-size:24px; line-height:32px; font-weight:600; letter-spacing:-.4px; margin:0; }
+  .body { font-size:16px; line-height:24px; } .small { font-size:14px; line-height:20px; } .caption { font-size:12px; line-height:16px; }
+  .muted { color:var(--muted-fg); } .center { text-align:center; }
+  .label { font-size:14px; line-height:20px; font-weight:500; margin-bottom:6px; display:block; }
+  .field { margin-bottom:16px; }
+  .input { width:100%; height:var(--h); border:1px solid var(--input); border-radius:var(--radius); padding:0 14px; font:16px Inter, sans-serif; background:var(--background); outline:none; }
+  .input:focus { border-color:var(--ring); box-shadow:0 0 0 3px rgba(163,163,163,.25); }
+  .input.err { border-color:var(--destructive); }
+  .errtext { color:var(--destructive); font-size:12px; line-height:16px; margin-top:6px; }
+  .btn { height:var(--h); border-radius:var(--radius); border:0; font:600 15px Inter, sans-serif; width:100%; display:flex; align-items:center; justify-content:center; gap:8px; cursor:pointer; }
+  .btn:active { filter:brightness(.9); }
+  .btn.primary { background:var(--primary); color:var(--primary-fg); }
+  .btn.outline { background:var(--background); color:var(--foreground); border:1px solid var(--border); }
+  .btn.ghost { background:transparent; color:var(--foreground); }
+  .btn.lg { height:52px; }
+  .link { color:var(--foreground); font-weight:600; text-decoration:underline; cursor:pointer; }
+  .divider { display:flex; align-items:center; gap:12px; color:var(--muted-fg); font-size:12px; margin:20px 0; }
+  .divider::before, .divider::after { content:""; flex:1; height:1px; background:var(--border); }
+  .logo { width:44px; height:44px; border-radius:12px; background:var(--primary); color:var(--primary-fg); display:flex; align-items:center; justify-content:center; font-weight:700; }
+  .checkbox { display:flex; gap:10px; align-items:flex-start; font-size:14px; line-height:20px; }
+  .checkbox input { width:20px; height:20px; accent-color:var(--primary); margin:0; }
+  .progress { height:4px; background:var(--muted); border-radius:2px; overflow:hidden; } .progress > div { height:100%; background:var(--primary); transition:width .25s; }
+  .otp { display:flex; gap:8px; justify-content:center; } .otp input { width:46px; height:54px; text-align:center; font:600 22px Inter; border:1px solid var(--input); border-radius:var(--radius); }
+  .group { background:var(--muted); border-radius:var(--radius); overflow:hidden; }
+  .group .row { display:flex; align-items:center; height:52px; padding:0 16px; gap:12px; background:var(--background); }
+  .group .row + .row { border-top:1px solid var(--border); }
+  .group .row span { width:88px; font-size:15px; font-weight:500; flex:none; }
+  .group .row input { border:0; outline:none; font:16px Inter; flex:1; background:transparent; }
+  .rule { display:flex; gap:8px; align-items:center; font-size:13px; color:var(--muted-fg); } .rule.ok { color:var(--success); }
+  .sticky { position:sticky; bottom:0; padding:12px 24px 34px; background:linear-gradient(to top, var(--background) 75%, transparent); margin-top:auto; }
+  .toast { position:absolute; top:56px; left:16px; right:16px; background:var(--card); border:1px solid var(--border); border-radius:12px; box-shadow:0 8px 24px rgba(0,0,0,.14);
+           padding:12px 14px; display:flex; gap:10px; align-items:flex-start; transform:translateY(-140%); transition:transform .25s; z-index:10; }
+  .toast.show { transform:none; } .toast b { display:block; font-size:14px; } .toast small { color:var(--muted-fg); font-size:13px; }
+  .dot { width:20px; height:20px; border-radius:50%; flex:none; display:flex; align-items:center; justify-content:center; color:#fff; font-size:12px; font-weight:700; }
+
+  /* prototype switcher, not part of the design */
+  .switcher { position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:#ff3d7f; color:#fff; border-radius:999px; display:flex; align-items:center;
+              gap:4px; padding:6px; box-shadow:0 6px 20px rgba(0,0,0,.3); font:600 14px ui-monospace, monospace; z-index:100; }
+  .switcher button { background:rgba(255,255,255,.2); color:#fff; border:0; border-radius:999px; width:36px; height:36px; font-size:18px; cursor:pointer; }
+  .switcher span { padding:0 14px; min-width:300px; text-align:center; }
+</style>
+</head>
+<body>
+  <div class="notes" id="notes"></div>
+  <div class="phone">
+    <div class="statusbar"><span>9:41</span><span>▮▮▮ ◔ ▬</span></div>
+    <div class="toast" id="toast"></div>
+    <div class="screen" id="screen"></div>
+    <div class="homebar"></div>
+  </div>
+  <div class="switcher"><button id="prev">←</button><span id="label"></span><button id="next">→</button></div>
+
+<script>
+const G = `<svg width="18" height="18" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34.1 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.4-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34.1 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-7.9l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.3-.1-2.4-.4-3.5z"/></svg>`;
+const A = `<svg width="16" height="18" viewBox="0 0 384 512" fill="currentColor"><path d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C63.3 141.2 4 184.8 4 273.5q0 39.3 14.4 81.2c12.8 36.7 59 126.7 107.2 125.2 25.2-.6 43-17.9 75.8-17.9 31.8 0 48.3 17.9 76.4 17.9 48.6-.7 90.4-82.5 102.6-119.3-65.2-30.7-61.7-90-61.7-91.9zm-56.6-164.2c27.3-32.4 24.8-61.9 24-72.5-24.1 1.4-52 16.4-67.9 34.9-17.5 19.8-27.8 44.3-25.6 71.9 26.1 2 49.9-11.4 69.5-34.3z"/></svg>`;
+const social = (big) => `
+  <button class="btn outline ${big?'lg':''}" data-act="social:apple">${A} Continue with Apple</button>
+  <div style="height:10px"></div>
+  <button class="btn outline ${big?'lg':''}" data-act="social:google">${G} Continue with Google</button>`;
+const field = (id, label, type='text', ph='') => `
+  <div class="field"><label class="label" for="${id}">${label}</label>
+  <input class="input" id="${id}" type="${type}" placeholder="${ph}" data-chain />
+  <div class="errtext" data-err="${id}"></div></div>`;
+const otp = () => `<div class="otp">${Array.from({length:6},()=>`<input maxlength="1" inputmode="numeric" data-chain />`).join('')}</div>`;
+
+let state = { variant:null, step:1, lastAction:'-', errors:{} };
+
+const VARIANTS = {
+  'sign-in-01': {
+    name:'Classic centered',
+    why:['Everything on one screen, centred under a logo', 'Email + password first, social below an "or" divider', 'The safest default; mirrors shadcn login-01'],
+    render: () => `
+      <div style="padding:48px 24px 24px;flex:1;display:flex;flex-direction:column">
+        <div style="display:flex;flex-direction:column;align-items:center;gap:12px;margin-bottom:32px">
+          <div class="logo">N</div><h1 class="h2 center">Welcome back</h1>
+          <p class="small muted center" style="margin:0">Sign in to your account</p></div>
+        ${field('email','Email','email','you@example.com')}
+        ${field('password','Password','password','••••••••')}
+        <div class="small" style="text-align:right;margin:-6px 0 18px"><span class="link">Forgot password?</span></div>
+        <button class="btn primary" data-act="submit">Sign in</button>
+        <div class="divider">OR</div>${social()}
+        <p class="small muted center" style="margin-top:auto">Don't have an account? <span class="link">Sign up</span></p>
+      </div>`
+  },
+  'sign-in-02': {
+    name:'Social-first hero',
+    why:['A brand hero fills the top half; actions sit in a bottom panel', 'Apple/Google are the primary path; email is a secondary button that reveals fields', 'For consumer apps where most users never type a password'],
+    render: () => `
+      <div style="flex:1;background:#171717;color:#fafafa;display:flex;flex-direction:column;justify-content:flex-end;padding:24px">
+        <div class="logo" style="background:#fafafa;color:#171717;margin-bottom:16px">N</div>
+        <h1 class="h1">Your app,<br/>everywhere.</h1><p class="body" style="opacity:.7;margin:8px 0 0">Sign in to pick up where you left off.</p></div>
+      <div style="padding:24px 24px 40px;border-radius:24px 24px 0 0;margin-top:-20px;background:var(--background)">
+        ${social(true)}
+        ${state.step===1 ? `<div style="height:10px"></div><button class="btn ghost" data-act="step:2">Continue with email</button>`
+          : `<div class="divider">EMAIL</div>${field('email','Email','email','you@example.com')}${field('password','Password','password','••••••••')}<button class="btn primary" data-act="submit">Sign in</button>`}
+        <p class="caption muted center" style="margin:16px 0 0">By continuing you agree to the Terms and Privacy Policy.</p>
+      </div>`
+  },
+  'sign-in-03': {
+    name:'Email-first, two steps',
+    why:['One question per screen: email, then password or a 6-digit code', 'Step 2 offers "email me a code instead" (InputOTP)', 'Lowest cognitive load; suits passwordless or magic-code backends'],
+    render: () => state.step===1 ? `
+      <div style="padding:32px 24px;flex:1;display:flex;flex-direction:column">
+        <h1 class="h1" style="margin-bottom:8px">What's your email?</h1>
+        <p class="body muted" style="margin:0 0 28px">We'll check if you already have an account.</p>
+        ${field('email','Email','email','you@example.com')}
+        <div class="sticky" style="padding:12px 0 34px"><button class="btn primary lg" data-act="step:2">Continue</button></div>
+      </div>` : state.step===2 ? `
+      <div style="padding:16px 24px;flex:1;display:flex;flex-direction:column">
+        <button class="btn ghost" style="width:auto;justify-content:flex-start;padding:0" data-act="step:1">← Back</button>
+        <h1 class="h1" style="margin:16px 0 8px">Enter your password</h1>
+        <p class="body muted" style="margin:0 0 28px">for you@example.com</p>
+        ${field('password','Password','password','••••••••')}
+        <span class="small link" data-act="step:3">Email me a code instead</span>
+        <div class="sticky" style="padding:12px 0 34px"><button class="btn primary lg" data-act="submit">Sign in</button></div>
+      </div>` : `
+      <div style="padding:16px 24px;flex:1;display:flex;flex-direction:column">
+        <button class="btn ghost" style="width:auto;justify-content:flex-start;padding:0" data-act="step:2">← Back</button>
+        <h1 class="h1" style="margin:16px 0 8px">Check your email</h1>
+        <p class="body muted" style="margin:0 0 28px">Enter the 6-digit code sent to you@example.com</p>
+        ${otp()}<p class="small muted center" style="margin-top:20px">Didn't get it? <span class="link">Resend</span></p>
+        <div class="sticky" style="padding:12px 0 34px"><button class="btn primary lg" data-act="submit">Verify</button></div>
+      </div>`
+  },
+  'sign-in-04': {
+    name:'Native grouped form',
+    why:['Left-aligned large title, iOS-Settings-style grouped rows instead of boxed fields', 'Labels sit inside the rows; the primary button is pinned above the keyboard', 'Feels most "native app", least "website"'],
+    render: () => `
+      <div style="background:var(--muted);flex:1;display:flex;flex-direction:column">
+        <div style="padding:24px 20px 20px"><h1 class="h1">Sign in</h1></div>
+        <div style="padding:0 16px"><div class="group">
+          <div class="row"><span>Email</span><input id="email" type="email" placeholder="you@example.com" data-chain /></div>
+          <div class="row"><span>Password</span><input id="password" type="password" placeholder="Required" data-chain /></div></div>
+          <div class="errtext" data-err="email" style="padding:0 4px"></div><div class="errtext" data-err="password" style="padding:0 4px"></div>
+          <p class="small" style="padding:10px 4px"><span class="link">Forgot password?</span></p>
+          <div class="group" style="margin-top:12px">
+            <div class="row" data-act="social:apple" style="cursor:pointer">${A}<b style="font-weight:500">Continue with Apple</b></div>
+            <div class="row" data-act="social:google" style="cursor:pointer">${G}<b style="font-weight:500">Continue with Google</b></div></div></div>
+        <div class="sticky" style="background:linear-gradient(to top,var(--muted) 75%,transparent)"><button class="btn primary lg" data-act="submit">Sign in</button></div>
+      </div>`
+  },
+  'sign-up-01': {
+    name:'Classic single form',
+    why:['Name, email and password on one scroll, a terms checkbox, one CTA', 'Social sign-up sits above the form here (inverse of sign-in-01)', 'The predictable default'],
+    render: () => `
+      <div style="padding:32px 24px 24px;flex:1;display:flex;flex-direction:column">
+        <h1 class="h2" style="margin-bottom:4px">Create an account</h1><p class="small muted" style="margin:0 0 24px">Start your free trial. No card needed.</p>
+        ${social()}<div class="divider">OR</div>
+        ${field('name','Full name','text','Jane Doe')}${field('email','Email','email','you@example.com')}${field('password','Password','password','At least 8 characters')}
+        <label class="checkbox" style="margin-bottom:20px"><input type="checkbox" id="terms" /> <span>I agree to the <span class="link">Terms</span> and <span class="link">Privacy Policy</span></span></label>
+        <div class="errtext" data-err="terms" style="margin:-14px 0 14px"></div>
+        <button class="btn primary" data-act="submit">Create account</button>
+        <p class="small muted center" style="margin-top:20px">Already have an account? <span class="link">Sign in</span></p>
+      </div>`
+  },
+  'sign-up-02': {
+    name:'Step-by-step wizard',
+    why:['One field per step with a Progress bar on top: email → name → password → verify code', 'Big type, pinned Continue button', 'Highest completion on small screens; slower for power users'],
+    render: () => {
+      const steps = [
+        ['What\'s your email?', 'We\'ll send a code to confirm it.', field('email','Email','email','you@example.com')],
+        ['What should we call you?', 'This is shown on your profile.', field('name','Full name','text','Jane Doe')],
+        ['Create a password', 'At least 8 characters.', field('password','Password','password','••••••••')],
+        ['Verify your email', 'Enter the 6-digit code we sent.', otp()]];
+      const [t, s, body] = steps[state.step-1];
+      return `<div style="padding:12px 24px 0;display:flex;align-items:center;gap:12px">
+          <button class="btn ghost" style="width:auto;padding:0" data-act="step:${Math.max(1,state.step-1)}">←</button>
+          <div class="progress" style="flex:1"><div style="width:${state.step*25}%"></div></div><span class="caption muted">${state.step}/4</span></div>
+        <div style="padding:28px 24px;flex:1;display:flex;flex-direction:column">
+          <h1 class="h1" style="margin-bottom:8px">${t}</h1><p class="body muted" style="margin:0 0 28px">${s}</p>${body}
+          <div class="sticky" style="padding:12px 0 34px"><button class="btn primary lg" data-act="${state.step<4?'step:'+(state.step+1):'submit'}">${state.step<4?'Continue':'Create account'}</button></div></div>`;
+    }
+  },
+  'sign-up-03': {
+    name:'Social-first + verify',
+    why:['Mirror of sign-in-02: brand-led, social primary', 'The email path goes straight to a code check (InputOTP) with no password at all', 'Passwordless sign-up for consumer apps'],
+    render: () => state.step<3 ? `
+      <div style="flex:1;display:flex;flex-direction:column;padding:56px 24px 40px">
+        <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px">
+          <div class="logo" style="width:72px;height:72px;border-radius:20px;font-size:28px">N</div>
+          <h1 class="h1 center">Join nativecn</h1><p class="body muted center" style="margin:0">Create your account in seconds.</p></div>
+        ${social(true)}<div style="height:10px"></div>
+        ${state.step===1 ? `<button class="btn ghost lg" data-act="step:2">Sign up with email</button>`
+          : `${field('email','Email','email','you@example.com')}<button class="btn primary lg" data-act="step:3">Send code</button>`}
+      </div>` : `
+      <div style="padding:16px 24px;flex:1;display:flex;flex-direction:column">
+        <button class="btn ghost" style="width:auto;justify-content:flex-start;padding:0" data-act="step:2">← Back</button>
+        <h1 class="h1" style="margin:16px 0 8px">Check your inbox</h1><p class="body muted" style="margin:0 0 28px">Code sent to you@example.com</p>
+        ${otp()}<div class="sticky" style="padding:12px 0 34px"><button class="btn primary lg" data-act="submit">Create account</button></div></div>`
+  },
+  'sign-up-04': {
+    name:'Native grouped + live rules',
+    why:['Grouped rows like sign-in-04, plus a live password checklist that ticks as you type', 'Terms shown as caption text instead of a checkbox', 'Native feel with inline guidance, so fewer failed submits'],
+    render: () => `
+      <div style="background:var(--muted);flex:1;display:flex;flex-direction:column">
+        <div style="padding:24px 20px 20px"><h1 class="h1">Create account</h1></div>
+        <div style="padding:0 16px">
+          <p class="caption muted" style="padding:0 4px;margin:0 0 6px">PROFILE</p>
+          <div class="group"><div class="row"><span>Name</span><input id="name" placeholder="Jane Doe" data-chain /></div>
+            <div class="row"><span>Email</span><input id="email" type="email" placeholder="you@example.com" data-chain /></div></div>
+          <p class="caption muted" style="padding:0 4px;margin:18px 0 6px">SECURITY</p>
+          <div class="group"><div class="row"><span>Password</span><input id="password" type="password" placeholder="Required" data-chain data-live /></div></div>
+          <div style="padding:10px 4px;display:grid;gap:6px" id="rules"></div>
+          <div class="errtext" data-err="name"></div><div class="errtext" data-err="email"></div>
+          <p class="caption muted" style="padding:6px 4px">By creating an account you agree to the <span class="link">Terms</span>.</p></div>
+        <div class="sticky" style="background:linear-gradient(to top,var(--muted) 75%,transparent)"><button class="btn primary lg" data-act="submit">Create account</button></div>
+      </div>`
+  },
+};
+const KEYS = Object.keys(VARIANTS);
+
+function rules(pw='') {
+  const r = [['8+ characters', pw.length>=8], ['A number', /\d/.test(pw)], ['An uppercase letter', /[A-Z]/.test(pw)]];
+  return r.map(([t,ok]) => `<div class="rule ${ok?'ok':''}">${ok?'✓':'○'} ${t}</div>`).join('');
+}
+function toast(kind, title, desc) {
+  const el = document.getElementById('toast');
+  el.innerHTML = `<div class="dot" style="background:${kind==='error'?'var(--destructive)':'var(--success)'}">${kind==='error'?'!':'✓'}</div><div><b>${title}</b>${desc?`<small>${desc}</small>`:''}</div>`;
+  el.classList.add('show'); clearTimeout(el._t); el._t = setTimeout(() => el.classList.remove('show'), 4000);
+}
+function validate() {
+  const v = id => document.getElementById(id)?.value ?? null; const e = {};
+  if (v('email') !== null && !/^\S+@\S+\.\S+$/.test(v('email'))) e.email = 'Enter a valid email';
+  if (v('password') !== null && v('password').length < 8) e.password = 'At least 8 characters';
+  if (v('name') !== null && !v('name').trim()) e.name = 'Enter your name';
+  const t = document.getElementById('terms'); if (t && !t.checked) e.terms = 'Please accept the terms';
+  return e;
+}
+function act(a) {
+  state.lastAction = a;
+  if (a.startsWith('step:')) { state.step = +a.slice(5); state.errors = {}; return render(); }
+  if (a.startsWith('social:')) { toast('success', 'onSocialSignIn("' + a.slice(7) + '")', 'Your code handles the provider'); return renderState(); }
+  if (a === 'submit') {
+    state.errors = validate();
+    document.querySelectorAll('[data-err]').forEach(el => { el.textContent = state.errors[el.dataset.err] || ''; });
+    document.querySelectorAll('.input').forEach(el => el.classList.toggle('err', !!state.errors[el.id]));
+    if (Object.keys(state.errors).length) return renderState();
+    const pw = document.getElementById('password')?.value;
+    if (pw === 'wrong') toast('error', 'Wrong password', 'onSubmit threw; shown as a toast, never a banner');
+    else toast('success', state.variant.startsWith('sign-up') ? 'Account created' : 'Signed in', 'onSubmit(values) resolved');
+    renderState();
+  }
+}
+function chain() { // FocusChain prototype: Next on each field, Done on the last
+  const f = [...document.querySelectorAll('[data-chain]')];
+  f.forEach((el, i) => {
+    el.enterKeyHint = i < f.length - 1 ? 'next' : 'done';
+    el.onkeydown = ev => { if (ev.key === 'Enter') { ev.preventDefault(); i < f.length - 1 ? f[i+1].focus() : act(document.querySelector('[data-act="submit"]') ? 'submit' : 'next'); } };
+    if (el.closest('.otp')) el.oninput = () => { if (el.value && f[i+1]) f[i+1].focus(); };
+  });
+}
+function renderState() {
+  document.getElementById('state').textContent = JSON.stringify({ variant: state.variant, step: state.step, errors: state.errors, lastAction: state.lastAction }, null, 2);
+}
+function render() {
+  const v = VARIANTS[state.variant];
+  document.getElementById('screen').innerHTML = v.render();
+  document.getElementById('label').textContent = `${state.variant}  (${v.name})`;
+  document.getElementById('notes').innerHTML = `<span class="tag">PROTOTYPE</span><h1>${state.variant}</h1><p class="muted" style="margin:0 0 12px">${v.name}</p>
+    <b>What makes it different</b><ul>${v.why.map(w => `<li>${w}</li>`).join('')}</ul>
+    <p class="small muted">Try: submit empty → field errors. Password <code>wrong</code> → error toast. Enter key = FocusChain "Next"/"Done".</p>
+    <div class="state" id="state"></div>`;
+  const live = document.querySelector('[data-live]');
+  if (live) { const r = document.getElementById('rules'); r.innerHTML = rules(); live.oninput = () => r.innerHTML = rules(live.value); }
+  document.querySelectorAll('[data-act]').forEach(el => el.onclick = () => act(el.dataset.act));
+  chain(); renderState();
+}
+function go(key) {
+  state = { variant:key, step:1, lastAction:'-', errors:{} };
+  const u = new URL(location); u.searchParams.set('variant', key); history.replaceState(null, '', u);
+  render();
+}
+const cycle = d => go(KEYS[(KEYS.indexOf(state.variant) + d + KEYS.length) % KEYS.length]);
+document.getElementById('prev').onclick = () => cycle(-1);
+document.getElementById('next').onclick = () => cycle(1);
+addEventListener('keydown', e => {
+  if (e.target.closest('input, textarea, [contenteditable]')) return;
+  if (e.key === 'ArrowLeft') cycle(-1); if (e.key === 'ArrowRight') cycle(1);
+});
+go(KEYS.includes(new URLSearchParams(location.search).get('variant')) ? new URLSearchParams(location.search).get('variant') : KEYS[0]);
+</script>
+</body>
+</html>
