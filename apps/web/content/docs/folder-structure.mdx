@@ -1,0 +1,86 @@
+nativecn writes into Expo's recommended project layout, not shadcn's `components/ui` and `lib`. How your app arranges its files is its **Structure**: `flat` (the default) or `feature`. You choose it at `create` or `init`, and it is recorded in [`components.json`](/docs/components-json#structure).
+
+## Flat
+
+Expo's folders only:
+
+```txt
+src/
+  app/                  routes only (Screens and Layouts)
+  components/           Components
+    primitives/         Primitives that render
+  hooks/                hooks
+  utils/                helpers
+  theme/                the Theme
+  screens/              Screen Blocks, each in its own folder
+assets/fonts/           your Preset's fonts
+```
+
+- Route files in `src/app/` stay small: a Screen Block lives in `src/screens/<block>/`, and its route file renders it.
+- Drawer Blocks go in `src/components/`.
+- A Screen Block's private parts stay inside its own folder, such as `src/screens/sign-up-02/components/`.
+
+## Feature
+
+For larger apps, `--folder-feat` adds a layer of **Features**: self-contained areas of your app, such as auth or billing, that each own their components, hooks, Screens and utils.
+
+```sh
+npx nativecn-cli@latest create my-app --folder-feat
+```
+
+```txt
+src/
+  app/
+  components/  hooks/  utils/  theme/
+  features/
+    auth/
+      components/  hooks/  screens/  utils/
+    billing/
+      components/  hooks/  screens/  utils/
+```
+
+In feature mode:
+
+- nativecn Components and Primitives **always stay global**, in `src/components/`.
+- Screen Blocks go to a named Feature: `add sign-in-02 --feature auth` writes to `src/features/auth/screens/sign-in-02/`.
+- Without `--feature`, the Block's category is used (`auth` for sign-in and sign-up), and the CLI prints where it went.
+
+## Destinations
+
+A **Destination** is the kind of place a Registry Item's file installs to. `add` resolves each one to a real folder from your aliases and Structure.
+
+| Destination    | flat             | feature (`--feature auth`)  |
+| -------------- | ---------------- | --------------------------- |
+| `{components}` | `src/components` | `src/components`            |
+| `{hooks}`      | `src/hooks`      | `src/hooks`                 |
+| `{utils}`      | `src/utils`      | `src/utils`                 |
+| `{theme}`      | `src/theme`      | `src/theme`                 |
+| `{screens}`    | `src/screens`    | `src/features/auth/screens` |
+| `{app}`        | `src/app`        | `src/app`                   |
+
+Which Destination each kind of Registry Item uses:
+
+| Registry Item       | Destination                                             |
+| ------------------- | ------------------------------------------------------- |
+| Component           | `{components}`                                          |
+| Rendering Primitive | `{components}/primitives`                               |
+| Hook Primitive      | `{hooks}`                                               |
+| Helper              | `{utils}`                                               |
+| Theme runtime       | `{theme}`                                               |
+| Screen Block        | `{screens}/<block>/`, plus an optional route in `{app}` |
+| Drawer Block        | `{components}/drawer-0X/`                               |
+
+In apps without `src/`, the same folders sit at the root (`components/`, `app/`, …).
+
+## The placement rule
+
+The rule agents follow when they place code in your app (it is one of the [Rules](/docs/ai-agents#rules)). It applies equally to components, hooks, utils and Screens.
+
+1. **Follow `structure`.**
+2. **Reuse global items first.** If it already exists in `src/components`, `src/hooks` or `src/utils`, use it.
+3. **An item used by one Feature lives in that Feature.**
+4. **Promote it to global the moment a second Feature needs it**, and update the imports.
+
+## Changing Structure
+
+The Structure is chosen once. nativecn never moves your existing files to change it.

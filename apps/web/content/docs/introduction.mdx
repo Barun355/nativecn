@@ -1,0 +1,41 @@
+nativecn is **shadcn for the Expo ecosystem**. It is not a component library you install from npm. You run `nativecn-cli`, and the source of each Component is copied into your Expo app, where you own it and edit it freely.
+
+It targets iOS and Android first, and it is built so that AI agents can build, check and fix whole mobile apps with it.
+
+## Principles
+
+- **You own the code.** Components, Blocks and the Theme are plain source files in your app. There is no runtime package to upgrade around.
+- **One Theme, the same look on both platforms.** Every Component reads Tokens from the Theme and never hardcodes a colour or size, so iOS and Android match.
+- **Plain React Native.** Styling is React Native's `StyleSheet` plus a TypeScript Theme. There is no Tailwind, NativeWind or `className`, and no build-time CSS step.
+- **nativecn builds its own Primitives.** Dialogs, sheets, pickers and menus are written by nativecn rather than wrapped native controls, so they follow your Theme and you can edit them.
+- **Few dependencies.** Components depend only on the Expo SDK's pinned modules, plus a short list of recorded exceptions (zustand, react-hook-form, zod and lucide-react-native).
+- **Agent first.** Every project gets Rules, Skills and the nativecn MCP server, so an agent knows what exists, how to add it and how to check the result on a device.
+
+## What you get
+
+- **Components**: the reusable building blocks, such as Button, Text, Icon and Container.
+- **Blocks**: pre-designed Screens (such as sign-in) and navigation pieces that you install, rename and adapt. Each purpose comes in several Block Variants (`sign-in-01`, `sign-in-02`, …).
+- **The Theme**: the single source of truth for every Token in your app: Colour Roles, spacing, radius, the type ramp, elevation and motion. See [Theming](/docs/theming).
+- **A Preset**: your project's Style, colours, radius and fonts, chosen once when you create the app. See [Presets & Styles](/docs/presets).
+- **The Agent Kit**: Rules, Skills, the nativecn MCP server and the Plugin. See [AI agents](/docs/ai-agents).
+
+## How it works
+
+1. [`nativecn-cli create`](/docs/installation) builds a new Expo app from the nativecn Starter, or `nativecn-cli init` sets nativecn up in an existing one.
+2. Your choices are recorded in [`components.json`](/docs/components-json).
+3. [`nativecn-cli add`](/docs/cli#add) fetches Registry Items from the nativecn Registry at nativecn.dev and writes them into your app's folders, following your [folder structure](/docs/folder-structure).
+
+## Following shadcn
+
+If you know shadcn, nativecn will feel familiar: the same command names and flags, the same `init`/`create` flow, the same Preset model and builder, the same copy-and-own approach and the same MCP tool shape. nativecn departs from shadcn only where React Native or Expo's own conventions require it:
+
+- `StyleSheet` and a TypeScript Theme instead of Tailwind;
+- Expo's folder layout (`src/components`, `src/hooks`, …) instead of `components/ui` and `lib`;
+- its own `components.json` shape.
+
+nativecn is **not** compatible with the shadcn CLI, the shadcn MCP or shadcn's registry directory. Use `nativecn-cli` and the nativecn MCP server.
+
+## Requirements
+
+- Expo SDK 57 or newer, with Expo Router. SDK 57 is the permanent support floor.
+- Bare React Native apps are not supported.

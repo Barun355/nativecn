@@ -1,0 +1,206 @@
+nativecn is built so that AI agents can build whole mobile apps with it and check the result on a real device. Every project gets the **Agent Kit**: the Rules, Skills and nativecn MCP server, with a Plugin for agent hosts.
+
+`create` and `init` write the Agent Kit for the agents you choose with `--agents`. Supported agents are Claude Code (`claude`), Codex (`codex`), Cursor (`cursor`) and Antigravity (`antigravity`). To add agents or refresh the kit later, run:
+
+```sh
+npx nativecn-cli@latest agents --agents claude,cursor --update
+```
+
+If fetching the Skills fails (for example, offline), `create` and `init` still finish and print how to retry.
+
+## Rules
+
+A **Rule** is a project-level instruction file that constrains how an agent writes code in your app. nativecn writes its Rules into `AGENTS.md` (or appends a nativecn section to yours) and adds `@AGENTS.md` to `CLAUDE.md` for Claude Code. `AGENTS.md` stays under 24 KB.
+
+1. **Styling:** Tokens only, via `createStyles`. No hard-coded colours or sizes; `scale(n)` for genuine one-offs. No Tailwind, NativeWind or `className`.
+2. **Building blocks:** all text uses `Text`, all glyphs use `Icon`, and Screens are wrapped in `Container`.
+3. **Feedback:** never `Alert.alert` or any platform alert. Use nativecn's own `toast()` and Alert Components.
+4. **Navigation:** the drawer comes only from `expo-router/drawer`; never install `@react-navigation/*` or the npm package `expo-drawer`. `SegmentedTabs` is for tabs inside a Screen and `TabNavigation` for the bottom bar; neither is Expo Router's `Tabs`.
+5. **Dependencies:** `npx expo install` for Expo SDK packages. Anything else: ask the user first.
+6. **Storage:** AsyncStorage holds only non-sensitive preferences. Tokens, credentials and personal data go in `expo-secure-store`.
+7. **Placement:** follow `structure` and the [placement rule](/docs/folder-structure#the-placement-rule).
+8. **The Preset is fixed.** Never change `preset` in `components.json` or try to switch Style.
+9. **Adding items:** use the MCP tool `get_add_command` or `nativecn-cli add`. Always pass `--route` for Screen Blocks, and `--feature` too in feature mode. Run `--diff` before updating, and use `-o` only when the user asks for their edits to be replaced.
+10. **Forms:** react-hook-form and zod, wired through `FormField`, with fields inside `FocusChain`.
+11. **Accessibility:** meet the accessibility checklist. Never remove `role` or `aria-*` props.
+12. **After changes:** run `get_audit_checklist` and fix anything it flags.
+
+`AGENTS.md` also lists the Skills, the MCP tools and the key commands.
+
+## Skills
+
+A **Skill** is a packaged set of instructions that teaches an agent one mobile task with nativecn. nativecn ships five. The CLI writes one copy of each to `.agents/skills/<name>/` (read by Codex, Cursor and Antigravity) and links `.claude/skills/<name>` to it for Claude Code (a copy on Windows).
+
+| Skill                          | Use it for                                      | What it teaches                                                                                                                    |
+| ------------------------------ | ----------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| `nativecn-setup`               | "start a new app", "add nativecn"               | `create`/`init` flags, custom Presets, applying the Init Layout snippet, choosing agents. Carries the Rules for Plugin-only users. |
+| `nativecn-build-screen`        | "build a login screen", "add a settings screen" | Picking a Block with `list_block_variants`, adding it with `--route`/`--feature`, composing Components, wiring routes and Layouts. |
+| `nativecn-theme`               | "change colours", "dark mode", "different font" | Editing Tokens in the Theme, Scheme switching, migrating Expo's default theme files.                                               |
+| `nativecn-component-authoring` | "new component", "add a variant"                | The Component contract, the accessibility checklist, Primitives, `createStyles` and the placement rule.                            |
+| `nativecn-visual-qa`           | "match the design", "screenshot and fix"        | The [Visual QA Loop](#visual-qa-loop).                                                                                             |
+
+## The nativecn MCP server
+
+The **nativecn MCP server** tells an agent which Components, Blocks, Block Variants and Themes exist and what they contain, like shadcn's MCP. It is **read-only**: it never writes files or runs the CLI.
+
+| Tool                                        | Returns                                                                                                  |
+| ------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| `list_items`                                | every Component, Primitive and Block, by type and category                                               |
+| `search_items`                              | items matching a query (for example, "dark mode toggle" finds SchemeSwitcher)                            |
+| `view_items`                                | files, props, Variants and docs, rendered in the project's Style                                         |
+| `get_item_examples`                         | ready-to-copy usage examples                                                                             |
+| `get_add_command`                           | the exact `nativecn-cli add` command, with the right `--route` and `--feature` for this project          |
+| `get_project_config`                        | the project's `components.json`                                                                          |
+| `get_audit_checklist`                       | a post-change checklist from the Rules: Tokens only, no `Alert.alert`, the placement rule, accessibility |
+| `list_block_variants`                       | the Block Variants for a purpose, with what makes each one different                                     |
+| `list_preset_options` + `build_preset_code` | every Style, colour, radius and font, and the short code for a custom Preset                             |
+
+### Local and remote
+
+- **Local** (`npx -y nativecn-cli@latest mcp`, over stdio) reads your `components.json`, so its answers fit your Style, Structure and routes. This is what `create`, `init` and `agents` configure.
+- **Remote** (`https://nativecn.dev/mcp`) is for browsing without a project. It has the same tools except `get_project_config`, and answers with the default settings.
+
+Both fetch live data from the nativecn.dev Registry, cache it for a few minutes, and return a clear error rather than a guess when the Registry is unreachable.
+
+### MCP config files
+
+The CLI writes one config file per chosen agent:
+
+| Agent       | File                                                               |
+| ----------- | ------------------------------------------------------------------ |
+| Claude Code | `.mcp.json`                                                        |
+| Cursor      | `.cursor/mcp.json`                                                 |
+| Codex       | `.codex/config.toml`                                               |
+| Antigravity | `.agents/mcp_config.json` (uses `serverUrl` for the remote server) |
+
+For example, `.mcp.json`:
+
+```json
+{
+  "mcpServers": {
+    "nativecn-cli": {
+      "command": "npx",
+      "args": ["-y", "nativecn-cli@latest", "mcp"]
+    }
+  }
+}
+```
+
+Codex loads `.codex/config.toml` only in a trusted project.
+
+## Plugin
+
+A **Plugin** is an agent-host package that bundles the Agent Kit for one-step installation. The nativecn Plugin contains the five Skills and the local MCP server, packaged as a Claude-format marketplace (for Claude Code and Codex) plus Cursor and Antigravity manifests.
+
+Plugins install per user, not per project, so `create` and `init` print the install command for each chosen agent rather than running it. A Plugin can't write `AGENTS.md`, so the `nativecn-setup` Skill carries the Rules and tells the agent to run `init` (or `agents`) the first time it is used in a project.
+
+## Visual QA Loop
+
+The **Visual QA Loop** is an agent-driven design and UX review of your running app, run by the `nativecn-visual-qa` Skill. The agent navigates Screens and User Flows on a device, captures screenshots, judges them against the Reference Design, traces each problem to its root in the code, fixes small and safe problems, and reports the rest.
+
+It is not pixel comparison and not a test runner, and there is no `nativecn-cli qa` command. nativecn provides only the Skill and Rules; the agent drives devices with the platform's own tools: `adb` for Android and `xcrun simctl` for the iOS Simulator.
+
+### The design folder
+
+All optional, at the root of your app:
+
+```txt
+design/screens/<screen>.png        Reference Design images, such as Figma exports (+ <screen>.dark.png)
+design/flows.md                    confirmed User Flows
+design/expectations.md             your description of Screens that have no image
+```
+
+- A **Reference Design** is what a Screen is meant to look like: an image in `design/screens/` when there is one, otherwise your description in `design/expectations.md`.
+- A **User Flow** is a confirmed sequence of Screens and actions, such as sign up → verify code → home. The agent derives flows from your code and docs, asks you to confirm or correct them, and saves them in `design/flows.md`.
+- For a Screen with no image, the agent asks what it should look like or do and records your answer.
+- If a Figma MCP server is connected, the agent also reads the design's real values from it.
+
+### How the agent judges
+
+At the design-system level, never pixel by pixel:
+
+- spacing on the Token scale;
+- typography: the right Text Variant for each role, and a clear hierarchy;
+- layout: alignment, safe areas, clipping and overlap;
+- Components: the right Component and Variant, with all states present;
+- Colour Roles in light and dark;
+- misalignment and broken Components;
+- **non-functional actions**: every action does something and leads where the User Flow says.
+
+Every confirmed User Flow is checked end to end against the Screens and the code.
+
+### Fix or report
+
+**The rule:** the agent fixes a problem itself only if the fix is visual-only, stays inside one Screen, uses what already exists (Tokens, Components, Variants) and is easy to undo. Otherwise it reports the problem and waits for you.
+
+| Auto-fixed                                                                          | Reported for you to decide                                                 |
+| ----------------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
+| A hard-coded colour → the matching Colour Role                                      | Navigation and flow: where actions lead, routes, missing Screens           |
+| Spacing or size off the scale → the nearest Token, or `scale(n)`                    | Non-functional actions (the intended behaviour can't be guessed)           |
+| The wrong Text Variant for its role                                                 | Logic: data, API, state, validation rules, form behaviour                  |
+| Misalignment: alignment, a missing `gap`, uneven padding                            | Auth, storage, permissions and security                                    |
+| Safe-area and keyboard problems → wrap the Screen in `Container`                    | Theme or Preset changes in `src/theme/`, which affect the whole app        |
+| Clipping or overflow: `numberOfLines`, shrink or wrap                               | Edits to shared Components in `src/components/`, which affect every Screen |
+| Broken Component usage: a misspelled prop, a wrong Variant, a missing required prop | Packages, `app.json` and config                                            |
+| Missing visual states when the data already exists (such as `loading`)              | Copy and content, images and assets                                        |
+| Inconsistent icon sizes or colours                                                  | Layout redesigns: moving sections, changing hierarchy, swapping Components |
+| Tap targets under 48 → `hitSlop`                                                    | Deleting code or features                                                  |
+| Accessibility gaps: a missing `role` or label                                       | A design that conflicts with the Rules, or an unclear design               |
+
+Limits on auto-fixes:
+
+- Each stays within one Screen file and its private parts.
+- A fix needing more than about 30 changed lines becomes a report.
+- After fixing, the agent captures the Screen again to confirm. A fix that doesn't hold after three attempts is reverted and reported.
+- The agent **never commits**. Auto-fixes stay uncommitted for you to review.
+
+### The report
+
+Shown in chat and saved as `report.md` in the run's temp folder. Each finding gives where (the Screen and file:line), what's wrong, the root cause in the code, options with trade-offs (one recommended), the severity (broken, wrong or polish) and the status (auto-fixed or awaiting you).
+
+### Allowed device commands
+
+The agent opens, navigates and screenshots **only the app under development** (its scheme, package and bundle id from `app.json`, or Expo Go's `exp://` URL), using only these commands. Nothing else on the device unless you ask.
+
+| Purpose        | Android (`adb`)                                                                                   | iOS Simulator (`xcrun simctl`)                                                            |
+| -------------- | ------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| list devices   | `adb devices -l`                                                                                  | `xcrun simctl list devices booted -j`                                                     |
+| open a Screen  | `adb shell am start -a android.intent.action.VIEW -d <scheme>://<route> -p <package>`             | `xcrun simctl launch booted <bundleId>`, `xcrun simctl openurl booted <scheme>://<route>` |
+| navigate       | `adb shell input tap`, `swipe`, `text`, `keyevent BACK`; `adb exec-out uiautomator dump /dev/tty` | deep links only                                                                           |
+| screenshot     | save, pull, delete (below)                                                                        | `xcrun simctl io booted screenshot <tmp>/…`                                               |
+| light and dark | `adb shell cmd uimode night yes` / `no`                                                           | `xcrun simctl ui booted appearance dark` / `light`                                        |
+| status bar     | demo mode, via `adb shell settings` and `am broadcast`                                            | `xcrun simctl status_bar booted override --time 9:41 --batteryLevel 100`                  |
+
+Android screenshots are saved, pulled to your computer, then deleted from the phone, every time:
+
+```sh
+adb shell screencap -p /sdcard/nativecn-qa.png
+adb pull /sdcard/nativecn-qa.png <tmp>/nativecn-qa/<device>/<timestamp>-<screen>.png
+adb shell rm /sdcard/nativecn-qa.png
+```
+
+- With exactly one Android device attached, commands leave out `-s`. With several, the agent adds `-s <serial>` and you are asked to approve.
+- iOS commands use `booted` instead of a Simulator id. iOS flows use deep links plus reading the code, since there is no tap tool.
+- Screenshots go to `<OS temp>/nativecn-qa/<device>/`, and only the last 20 per device are kept. Nothing is left on the phone.
+- Installing apps, clearing data, `adb push`, other `adb shell` commands, and automation tools such as Maestro are out of scope.
+
+### --qa-permissions
+
+By default your agent asks before each device command. To skip those prompts, opt in when you run `init` or `agents`:
+
+```sh
+npx nativecn-cli@latest agents --qa-permissions
+```
+
+It writes auto-approve rules for exactly the commands above:
+
+| Agent       | Where                                                                 |
+| ----------- | --------------------------------------------------------------------- |
+| Claude Code | `.claude/settings.json`                                               |
+| Codex       | `.codex/rules/*.rules` (loaded only in trusted projects)              |
+| Cursor      | `.cursor/permissions.json` and `.cursor/cli.json`                     |
+| Antigravity | a snippet is printed for your settings; it has no project-level rules |
+
+- **Allow rules only.** The rules only skip the confirmation prompt for matching commands. Every other command still asks, and nothing is blocked. The Rules and the Skill remain the real guard.
+- **No deny rules**, because they would give false assurance: extra commands can be smuggled through `adb shell`.
+- **Cursor:** the project files replace your own IDE terminal allowlist in this project, which is why the flag is opt-in.

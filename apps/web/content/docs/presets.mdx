@@ -1,0 +1,60 @@
+A **Preset** is your project's one-time design choice: a Style, a Base Colour, an Accent Colour, a Radius, a Body Font and a Heading Font. You pick it at `create` or `init`, it is stored in [`components.json`](/docs/components-json), and it is **fixed for the life of the project**.
+
+## Fixed per project, baked into your code
+
+- **Colours, radius and fonts** are written into your Theme files (`colors.ts` and `tokens.ts`).
+- **The Style** is written into each Component's source when you add it. `add` fetches the copy of each Component made for your Style, so you get plain, literal code with no Style lookups at runtime.
+- **There is no `apply` command and no runtime Style switching.** Variant props such as `variant` and `size` still work as usual.
+
+After setup you change the look by editing your own files: the Theme, and the Component files you copied. Never edit `preset` in `components.json`, and don't re-add Components with `-o` to get another Style.
+
+## Options
+
+| Setting       | Options                                                                                                                                                                                                               | Default   |
+| ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- |
+| Style         | `vega` (clean, balanced), `nova` (compact)                                                                                                                                                                            | `vega`    |
+| Base Colour   | `neutral`, `stone`, `zinc`, `mauve`, `olive`, `mist`, `taupe`                                                                                                                                                         | `neutral` |
+| Accent Colour | `neutral`, `stone`, `zinc`, `mauve`, `olive`, `mist`, `taupe`, `amber`, `blue`, `cyan`, `emerald`, `fuchsia`, `green`, `indigo`, `lime`, `orange`, `pink`, `purple`, `red`, `rose`, `sky`, `teal`, `violet`, `yellow` | `neutral` |
+| Radius        | `default` (the Style's own), `none`, `small` (7), `medium` (10), `large` (14)                                                                                                                                         | `default` |
+| Body Font     | `inter`, `geist`, `dm-sans`, `figtree` (sans); `lora`, `source-serif-4` (serif); `geist-mono`, `jetbrains-mono` (mono)                                                                                                | `inter`   |
+| Heading Font  | `inherit` (the same as the Body Font), or any of the eight fonts                                                                                                                                                      | `inherit` |
+
+### Style
+
+The **Style** decides every Component's shape and density. 0.1 ships two: **Vega** (clean and balanced, the default) and **Nova** (compact). More Styles will follow after 0.1. Style is unrelated to React Native's `style` prop.
+
+### Base Colour
+
+The family of greys used by the neutral Colour Roles, such as `background`, `muted` and `border`.
+
+### Accent Colour
+
+The colour of `primary` and `ring`. shadcn calls this setting "Theme". All 7 × 24 Base and Accent Colour combinations pass WCAG AA contrast for every Foreground pair, in light and dark.
+
+### Radius
+
+Overrides the base radius that every [radius step](/docs/theming#radius) derives from. `default` keeps the Style's own.
+
+### Body Font and Heading Font
+
+The Body Font sets body and control text. The Heading Font sets the `display` and `h1`–`h4` Text Variants, and by default is the same as the Body Font. Only the fonts you choose are downloaded into your app. See [Fonts](/docs/theming#fonts).
+
+## Short codes
+
+A Preset can be written as a short code, which the Preset builder on nativecn.dev gives you:
+
+```sh
+npx nativecn-cli@latest create my-app --preset a1Q17B
+```
+
+The same Preset as long flags:
+
+```sh
+npx nativecn-cli@latest create my-app --style nova --accent violet --heading-font lora
+```
+
+Any setting you leave out takes its default. The default Preset, Vega · neutral · neutral · default radius · Inter, is the code `a0`; `--defaults` or `--yes` picks it without prompting.
+
+## For agents
+
+Agents translate a request such as "Nova, violet, Lora headings" into flags or a code. They use the nativecn MCP server's `list_preset_options` for the exact option values and `build_preset_code` for the code, and they never fall back to the defaults silently: if you gave no preferences, they confirm the default with you first.

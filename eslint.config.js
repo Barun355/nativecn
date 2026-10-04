@@ -8,7 +8,8 @@ export default [
       "**/dist/**",
       "**/.expo/**",
       "**/.next/**",
-      "apps/web/public/r/**",
+      // nativecn.dev (Next.js) lints with its own apps/web/eslint.config.mjs
+      "apps/web/**",
       // The Starter is a standalone Expo app copied by `create`; its deps are not installed here
       "packages/cli/starter/**",
     ],
