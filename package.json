@@ -1,12 +1,27 @@
 {
   "name": "nativecn",
-  "version": "1.0.0",
-  "description": "",
-  "scripts": {},
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "type": "module",
   "private": true,
-  "packageManager": "pnpm@11.20.0"
+  "license": "MIT",
+  "type": "module",
+  "packageManager": "pnpm@11.20.0",
+  "scripts": {
+    "build": "turbo run build",
+    "lint": "turbo run lint",
+    "typecheck": "turbo run typecheck",
+    "test": "turbo run test",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "changeset": "changeset",
+    "version-packages": "changeset version",
+    "release": "turbo run build --filter=nativecn-cli && changeset publish"
+  },
+  "devDependencies": {
+    "@changesets/cli": "^3.0.3",
+    "eslint": "^9.39.0",
+    "eslint-config-expo": "~57.0.2",
+    "prettier": "^3.9.9",
+    "turbo": "^2.11.7",
+    "typescript": "catalog:",
+    "typescript-eslint": "^8.71.0"
+  }
 }

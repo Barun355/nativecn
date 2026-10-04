@@ -1,20 +1,23 @@
 {
   "name": "nativecn-cli",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "version": "0.0.0",
+  "license": "MIT",
+  "type": "module",
+  "description": "Add nativecn components to Expo apps",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Barun355/nativecn",
+    "directory": "packages/cli"
+  },
+  "files": [
+    "dist",
+    "starter"
+  ],
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "lint": "eslint .",
+    "typecheck": "tsc -p tsconfig.json"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "devEngines": {
-    "packageManager": {
-      "name": "pnpm",
-      "version": "^11.20.0",
-      "onFail": "download"
-    }
-  },
-  "type": "module"
+  "devDependencies": {
+    "typescript": "catalog:"
+  }
 }
