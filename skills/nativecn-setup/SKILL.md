@@ -117,7 +117,7 @@ Then type-check, and tell the user if a native rebuild is needed.
 
 These apply to every change in a nativecn project. They are a copy of the `AGENTS.md` Rules, for Plugin users whose project doesn't have them yet.
 
-1. **Styling:** Tokens only, via `createStyles`. No hard-coded colours or sizes; `scale(n)` for genuine one-offs. No Tailwind, NativeWind or `className`.
+1. **Styling:** Tokens only, via `createStyles`. No hard-coded colours or sizes; `t.scaleValue(n)` for genuine one-offs. No Tailwind, NativeWind or `className`.
 2. **Building blocks:** all text uses `Text`, all glyphs use `Icon` (a Lucide component passed in), and screens are wrapped in `Container`.
 3. **Feedback:** never `Alert.alert` or any platform alert. Use nativecn's own `toast()` and Alert Components.
 4. **Navigation:**

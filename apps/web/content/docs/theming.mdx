@@ -9,7 +9,7 @@ The **Theme** is the single source of truth for every Token in your app. Compone
 | `colors.ts`     | the Colour Roles, light and dark                                                      |
 | `tokens.ts`     | spacing, radius, the type ramp, elevation, motion, control heights, opacity and fonts |
 | `config.ts`     | `fontScaling` (off), `defaultScheme` (`'system'`) and the Scale baseline and clamp    |
-| `scale.ts`      | the Scale computation and `scale(n)`                                                  |
+| `scale.ts`      | the Scale computation and `scaleValue(n)`                                             |
 | `provider.tsx`  | `ThemeProvider`, `useTheme`, `createStyles` and the Scheme store                      |
 | `navigation.ts` | Expo Router's navigation theme, derived from the Tokens                               |
 | `index.ts`      | the public exports                                                                    |
@@ -95,7 +95,7 @@ Scale = clamp(shorter screen side ÷ 390, 0.85, 1.25)
 | text size, line height, letter spacing | motion                      |
 | icon sizes                             | opacity                     |
 
-The Theme hands Components already-scaled Tokens. For a genuine one-off value in your own code, use `scale(n)` instead of a raw number. The unscaled base Tokens stay exported.
+The Theme hands Components already-scaled Tokens. For a genuine one-off value in your own code, use `t.scaleValue(n)` (from `useTheme()`) instead of a raw number; `t.scale` is the zoom factor itself. The unscaled base Tokens stay exported.
 
 Phones are the 0.1 target. Tablets work at the 1.25 cap, and `Container` caps content width.
 
@@ -108,7 +108,7 @@ System font scaling is **off by default**: Text ignores the OS font-size setting
 The **Scheme** is whether the light or dark Colour Role values are in use.
 
 - `ThemeProvider` takes `scheme: 'system' | 'light' | 'dark'`, defaulting to `defaultScheme` in `config.ts`.
-- `useTheme()` returns the scaled Tokens plus `scheme`, `scale` and `setScheme()`.
+- `useTheme()` returns the scaled Tokens plus `scheme`, `scale` (the zoom factor), `scaleValue(n)` and `setScheme()`.
 - `setScheme()` also sets the native appearance, so system UI such as the keyboard follows.
 - The choice is persisted with zustand and AsyncStorage under the `nativecn-theme` key. Only the Scheme is persisted.
 - The splash screen stays up until the persisted Scheme and the fonts have loaded, so the wrong Scheme never flashes.

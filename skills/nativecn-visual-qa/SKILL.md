@@ -79,7 +79,7 @@ For each problem, trace the **root cause** in the code (file:line), not only the
 
 ### Auto-fix
 1. Hard-coded colour → the matching Colour Role.
-2. Spacing or size off the scale → the nearest Token, or `scale(n)` for a genuine one-off.
+2. Spacing or size off the scale → the nearest Token, or `t.scaleValue(n)` for a genuine one-off.
 3. Wrong Text Variant for its role (e.g. a title as `body` → `h2`, per the design).
 4. Misalignment: alignment, a missing `gap`, uneven padding.
 5. Safe-area and keyboard problems: wrap the Screen in `Container`.

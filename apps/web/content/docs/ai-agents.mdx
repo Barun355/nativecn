@@ -12,7 +12,7 @@ If fetching the Skills fails (for example, offline), `create` and `init` still f
 
 A **Rule** is a project-level instruction file that constrains how an agent writes code in your app. nativecn writes its Rules into `AGENTS.md` (or appends a nativecn section to yours) and adds `@AGENTS.md` to `CLAUDE.md` for Claude Code. `AGENTS.md` stays under 24 KB.
 
-1. **Styling:** Tokens only, via `createStyles`. No hard-coded colours or sizes; `scale(n)` for genuine one-offs. No Tailwind, NativeWind or `className`.
+1. **Styling:** Tokens only, via `createStyles`. No hard-coded colours or sizes; `t.scaleValue(n)` for genuine one-offs. No Tailwind, NativeWind or `className`.
 2. **Building blocks:** all text uses `Text`, all glyphs use `Icon`, and Screens are wrapped in `Container`.
 3. **Feedback:** never `Alert.alert` or any platform alert. Use nativecn's own `toast()` and Alert Components.
 4. **Navigation:** the drawer comes only from `expo-router/drawer`; never install `@react-navigation/*` or the npm package `expo-drawer`. `SegmentedTabs` is for tabs inside a Screen and `TabNavigation` for the bottom bar; neither is Expo Router's `Tabs`.
@@ -136,7 +136,7 @@ Every confirmed User Flow is checked end to end against the Screens and the code
 | Auto-fixed                                                                          | Reported for you to decide                                                 |
 | ----------------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
 | A hard-coded colour → the matching Colour Role                                      | Navigation and flow: where actions lead, routes, missing Screens           |
-| Spacing or size off the scale → the nearest Token, or `scale(n)`                    | Non-functional actions (the intended behaviour can't be guessed)           |
+| Spacing or size off the scale → the nearest Token, or `t.scaleValue(n)`             | Non-functional actions (the intended behaviour can't be guessed)           |
 | The wrong Text Variant for its role                                                 | Logic: data, API, state, validation rules, form behaviour                  |
 | Misalignment: alignment, a missing `gap`, uneven padding                            | Auth, storage, permissions and security                                    |
 | Safe-area and keyboard problems → wrap the Screen in `Container`                    | Theme or Preset changes in `src/theme/`, which affect the whole app        |

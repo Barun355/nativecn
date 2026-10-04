@@ -49,7 +49,7 @@ license: MIT
 
 ## 4. Styling
 
-- `createStyles((t) => ({ … }))` from the Theme, with Tokens and Colour Roles only. No hard-coded colours or sizes; `scale(n)` only for genuine one-offs. No Tailwind, NativeWind or `className`.
+- `createStyles((t) => ({ … }))` from the Theme, with Tokens and Colour Roles only. No hard-coded colours or sizes; `t.scaleValue(n)` only for genuine one-offs. No Tailwind, NativeWind or `className`.
 - Variant styles are extra keys in the same `createStyles` call.
 - Test in light and dark.
 

@@ -39,7 +39,7 @@ Read the files before editing; the Token and Colour Role names you need are ther
 
 - Edit the scales in `tokens.ts`. Values are base values: the Theme applies the Scale, so don't pre-scale them.
 - A change here affects the whole app. Say so before making it.
-- For a genuine one-off size in a Screen, use `scale(n)`; don't add a Token for one use.
+- For a genuine one-off size in a Screen, use `t.scaleValue(n)` (from `useTheme()`; `t.scale` is the zoom factor itself); don't add a Token for one use.
 
 ## Fonts
 
@@ -51,7 +51,7 @@ Read the files before editing; the Token and Colour Role names you need are ther
 ## Scheme (light / dark)
 
 - `ThemeProvider` takes `scheme: 'system' | 'light' | 'dark'`, defaulting to `defaultScheme` in `config.ts`.
-- `useTheme()` returns the scaled Tokens plus `scheme`, `scale` and `setScheme()`. `setScheme` also sets the native appearance, and the choice is persisted (zustand + AsyncStorage under `nativecn-theme`).
+- `useTheme()` returns the scaled Tokens plus `scheme`, `scale` (the zoom factor), `scaleValue(n)` and `setScheme()`. `setScheme` also sets the native appearance, and the choice is persisted (zustand + AsyncStorage under `nativecn-theme`).
 - **For a user-facing switch**, add the SchemeSwitcher Component (`npx nativecn-cli@latest add scheme-switcher`): `variant="segmented"` (System · Light · Dark) or `variant="icon"`.
 - Never style from React Native's `useColorScheme()` directly; read the Theme. Only the Scheme is persisted; never store anything sensitive alongside it.
 - The status bar and Expo Router's navigation theme follow the Scheme through `useNavigationTheme()`.
