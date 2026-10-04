@@ -47,7 +47,7 @@ export function auditChecklist(config: Config | null): string {
     "Check every file you created or changed. Fix anything that fails before you finish.",
     section("Styling: Tokens only", [
       "Styles come from Tokens through `createStyles`: no hard-coded colours (hex, rgb, named) or sizes.",
-      "`scale(n)` only for a genuine one-off.",
+      "`t.scaleValue(n)` (from `useTheme()`) only for a genuine one-off; `t.scale` is the zoom factor, not a function.",
       "No Tailwind, NativeWind or `className`.",
     ]),
     section("Building blocks", [
