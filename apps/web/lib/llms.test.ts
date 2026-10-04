@@ -107,7 +107,11 @@ test("itemBundle has the description, add command, props, examples and source", 
       title: "Button",
       description: "A pressable button.",
       registryDependencies: ["pressable"],
-      meta: { props: { variant: "default | ghost" }, docs: "Icon-only Buttons need aria-label." },
+      meta: {
+        props: { variant: "default | ghost" },
+        docs: "Icon-only Buttons need aria-label.",
+        a11y: ["role button.", "The tap area is extended to 48."],
+      },
       files: [
         {
           path: "components/button.tsx",
@@ -137,6 +141,9 @@ test("itemBundle has the description, add command, props, examples and source", 
   assert.ok(bundle.includes("Also installs: pressable."));
   assert.ok(bundle.includes("| `variant` | default \\| ghost |"));
   assert.ok(bundle.includes("Icon-only Buttons need aria-label."));
+  assert.ok(
+    bundle.includes("## Accessibility\n\n- role button.\n- The tap area is extended to 48."),
+  );
   assert.ok(bundle.includes("### button-demo\n\n```tsx\n<Button />\n```"));
   assert.ok(
     bundle.includes("### {components}/button.tsx\n\n```tsx\nexport const Button = 1;\n```"),

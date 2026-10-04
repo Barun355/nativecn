@@ -13,6 +13,7 @@
     },
     "variants": ["default", "secondary", "outline", "ghost", "destructive"],
     "docs": "Icon-only Buttons need aria-label.",
+    "a11y": ["role button; the label is the accessible name."],
     "examples": ["button-demo"]
   },
   "files": [
