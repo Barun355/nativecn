@@ -79,9 +79,26 @@ export const registryIndex: Record<string, RegistryIndexEntry> = {
       "Tokens, Scale, Colour Roles, ThemeProvider, createStyles and the navigation theme.",
     load: () => import("@/registry/theme"),
   },
+  toast: {
+    type: "registry:ui",
+    description:
+      "Sonner-style Toasts: a <Toaster /> in the root Layout and toast(), toast.success/error/info/warning/dismiss. At most 3 stacked, 4s auto-dismiss, swipe away, announced, above native modals.",
+    load: () => import("@/registry/components/toast"),
+  },
+  "toast-demo": {
+    type: "registry:example",
+    description: "Each Toast Variant, a description and an action.",
+    load: () => import("@/registry/examples/toast-demo"),
+  },
   "use-controllable-state": {
     type: "registry:hook",
     description: "One implementation of controlled and uncontrolled values for form controls.",
     load: () => import("@/registry/hooks/use-controllable-state"),
+  },
+  "use-motion": {
+    type: "registry:hook",
+    description:
+      "Enter/exit animations and timing/spring configs from the motion Tokens; instant when Reduce Motion is on.",
+    load: () => import("@/registry/hooks/use-motion"),
   },
 };

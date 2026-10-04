@@ -10,3 +10,6 @@ jest.mock("@react-native-async-storage/async-storage", () =>
 jest.mock("react-native-keyboard-controller", () =>
   require("react-native-keyboard-controller/jest"),
 );
+
+// react-native-gesture-handler's own Jest setup: its native module and buttons become mocks.
+require("react-native-gesture-handler/jestSetup");
