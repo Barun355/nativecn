@@ -31,11 +31,22 @@ export const registryIndex: Record<string, RegistryIndexEntry> = {
     description: "Automatic Next/Done between fields in on-screen order; Done submits the form.",
     load: () => import("@/registry/components/primitives/focus-chain"),
   },
+  "form-field": {
+    type: "registry:ui",
+    description:
+      'Lays out a control with its Label, description and error, and links them for screen readers ("Email, text field, Enter a valid email").',
+    load: () => import("@/registry/components/form-field"),
+  },
   "form-field-context": {
     type: "registry:ui",
     description:
       "Links a field to its label, description and error for screen readers; passes status, disabled and required down.",
     load: () => import("@/registry/components/primitives/form-field-context"),
+  },
+  "form-field-demo": {
+    type: "registry:example",
+    description: "Email and password fields in a FocusChain, with a description and an error.",
+    load: () => import("@/registry/examples/form-field-demo"),
   },
   icon: {
     type: "registry:ui",
@@ -43,11 +54,33 @@ export const registryIndex: Record<string, RegistryIndexEntry> = {
       "Every glyph: a Lucide icon at a Token size in a Colour Role, decorative unless labelled.",
     load: () => import("@/registry/components/icon"),
   },
+  input: {
+    type: "registry:ui",
+    description:
+      "Single-line text field with Sizes, a leading icon, error/success status, a focus ring and an automatic Show/Hide password toggle.",
+    load: () => import("@/registry/components/input"),
+  },
+  "input-demo": {
+    type: "registry:example",
+    description: "Inputs with an icon, Sizes, a status and a password toggle.",
+    load: () => import("@/registry/examples/input-demo"),
+  },
   keyboard: {
     type: "registry:ui",
     description:
       "KeyboardProvider setup, a scroll view that keeps the focused field above the keyboard, and a footer that keeps a form's main button above it.",
     load: () => import("@/registry/components/primitives/keyboard"),
+  },
+  label: {
+    type: "registry:ui",
+    description:
+      'A field\'s visible label in the label type Variant, with a required marker read as "required".',
+    load: () => import("@/registry/components/label"),
+  },
+  "label-demo": {
+    type: "registry:example",
+    description: "A Label and a required Label.",
+    load: () => import("@/registry/examples/label-demo"),
   },
   portal: {
     type: "registry:ui",
@@ -61,6 +94,17 @@ export const registryIndex: Record<string, RegistryIndexEntry> = {
       "Pressed look from a Style Slot, tap area extended to 48, no handlers while disabled or loading, optional haptics, role and aria-* states.",
     load: () => import("@/registry/components/primitives/pressable"),
   },
+  "search-field": {
+    type: "registry:ui",
+    description:
+      "Search box with a search icon, an automatic clear (×) button, a loading spinner and onSubmit from the keyboard's Search key.",
+    load: () => import("@/registry/components/search-field"),
+  },
+  "search-field-demo": {
+    type: "registry:example",
+    description: "A controlled SearchField with loading and onSubmit.",
+    load: () => import("@/registry/examples/search-field-demo"),
+  },
   "selection-group": {
     type: "registry:ui",
     description:
@@ -72,6 +116,17 @@ export const registryIndex: Record<string, RegistryIndexEntry> = {
     description:
       "All text: the type ramp as Variants, text Colour Roles, alignment and the font-scaling switch.",
     load: () => import("@/registry/components/text"),
+  },
+  textarea: {
+    type: "registry:ui",
+    description:
+      "Multi-line text field that grows from minRows to maxRows, with a character counter when maxLength is set.",
+    load: () => import("@/registry/components/textarea"),
+  },
+  "textarea-demo": {
+    type: "registry:example",
+    description: "A Textarea with a character counter inside a FormField.",
+    load: () => import("@/registry/examples/textarea-demo"),
   },
   theme: {
     type: "registry:lib",
