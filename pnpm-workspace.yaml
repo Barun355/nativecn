@@ -3,6 +3,7 @@ packages:
   - "packages/*"
 
 allowBuilds:
+  esbuild: true
   unrs-resolver: true
 
 # Shared versions pinned to Expo SDK 57 (bundledNativeModules) so packages/ui and

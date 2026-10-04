@@ -1,0 +1,5 @@
+{
+  // comments are allowed in tsconfig
+  "extends": "expo/tsconfig.base",
+  "compilerOptions": { "paths": { "@/*": ["./src/*"] } }
+}
