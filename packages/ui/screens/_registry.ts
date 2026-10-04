@@ -41,6 +41,16 @@ const LUCIDE = ["lucide-react-native@^1.51.0", "react-native-svg"];
 const FORM_ITEMS = ["theme", "container", "text", "button", "form-field", "input", "focus-chain"];
 
 const SIGN_IN_KEYWORDS = ["sign in", "login", "log in", "auth", "authentication", "form"];
+const SIGN_UP_KEYWORDS = [
+  "sign up",
+  "signup",
+  "register",
+  "registration",
+  "create account",
+  "auth",
+  "authentication",
+  "form",
+];
 
 const FEEDBACK =
   "Validation errors appear under each field. Errors thrown by your callbacks, and the success message, appear only as toast()s: render <Toaster /> in the root Layout (init and create already do).";
@@ -125,6 +135,100 @@ export default [
         "multi step",
         "passwordless",
         "magic code",
+        "otp",
+      ],
+    },
+  }),
+  screenBlock({
+    name: "sign-up-01",
+    title: "Classic single form",
+    description:
+      'A classic sign-up Screen on one scroll: Apple and Google on top, "or", then name, email and password, a terms Checkbox with Terms and Privacy Policy links, Create account, and a Sign in link.',
+    categories: ["auth"],
+    dependencies: [...FORMS, ...LUCIDE],
+    registryDependencies: [...FORM_ITEMS, "checkbox", "icon", "separator", "toast"],
+    files: ["index.tsx", "components/social-buttons.tsx"],
+    meta: {
+      route: "(auth)/sign-up",
+      component: "SignUp01",
+      difference: "Social on top, then name, email, password and a terms Checkbox; one form.",
+      props: {
+        onSubmit:
+          '(values: { name, email, password }) => void | Promise<void>: create the account; throw to show the error as a toast, resolve for an "Account created" toast',
+        onSocialSignIn:
+          '(provider: "apple" | "google") => void | Promise<void>: run that provider\'s sign-up; a thrown error becomes a toast',
+        onTermsPress: "() => void: the Terms link under the checkbox",
+        onPrivacyPress: "() => void: the Privacy Policy link under the checkbox",
+        onSignIn: "() => void: the Sign in link",
+      },
+      docs: `Render it from a route: \`export default function Screen() { return <SignUp01 onSubmit={signUp} />; }\`. The name, email and password (at least 8 characters) are validated with zod through react-hook-form (name and email trimmed), and the terms Checkbox must be ticked; its error appears under it. The three fields are in a FocusChain (Next, Next, then Done submits). ${FEEDBACK} The Apple and Google logos are bundled SVGs in components/social-buttons.tsx; the buttons only call onSocialSignIn. ${BACKEND}`,
+      keywords: [...SIGN_UP_KEYWORDS, "social login", "apple", "google", "terms", "classic"],
+    },
+  }),
+  screenBlock({
+    name: "sign-up-02",
+    title: "Step-by-step wizard",
+    description:
+      "A sign-up wizard, one question per step under a Progress bar: email, name, password, then a 6-digit code (InputOTP). Lucide chevron-left Back buttons; the Continue button rides above the keyboard.",
+    categories: ["auth"],
+    dependencies: [...FORMS, ...LUCIDE],
+    registryDependencies: [...FORM_ITEMS, "progress", "input-otp", "keyboard", "toast"],
+    files: ["index.tsx"],
+    meta: {
+      route: "(auth)/sign-up",
+      component: "SignUp02",
+      difference:
+        "Progress bar plus one question per screen: email → name → password → verify code.",
+      props: {
+        onSendCode:
+          "(details: { email, name, password }) => void | Promise<void>: register the details and email a 6-digit code (after the password step, and on Resend, so make it safe to repeat); a thrown error becomes a toast and the step stays",
+        onSubmit:
+          '(values: { email, name, password, code }) => void | Promise<void>: check the code and finish the account; throw to show the error as a toast, resolve for an "Account created" toast',
+      },
+      docs: `Render it from a route: \`export default function Screen() { return <SignUp02 onSendCode={register} onSubmit={verify} />; }\`. The step (email, name, password, code) lives inside the Block, and the Progress bar shows how far along it is ("Step 2 of 4" to screen readers). Back (an icon-only Button with a Lucide chevron-left, aria-label "Back") and Android's back button step back, keeping every answer. Each step validates its own field with zod through react-hook-form; the password needs at least 8 characters. The main button sits in a KeyboardStickyFooter above the keyboard. ${FEEDBACK} ${BACKEND}`,
+      keywords: [
+        ...SIGN_UP_KEYWORDS,
+        "wizard",
+        "step by step",
+        "multi step",
+        "onboarding",
+        "progress",
+        "verify email",
+        "otp",
+      ],
+    },
+  }),
+  screenBlock({
+    name: "sign-up-03",
+    title: "Social-first + verify",
+    description:
+      'A brand-led, passwordless sign-up Screen: the logo and headline centred above Apple and Google; "Sign up with email" reveals the email field, and Send code moves on to a 6-digit code (InputOTP).',
+    categories: ["auth"],
+    dependencies: [...FORMS, ...LUCIDE],
+    registryDependencies: [...FORM_ITEMS, "icon", "input-otp", "keyboard", "toast"],
+    files: ["index.tsx", "components/social-buttons.tsx"],
+    meta: {
+      route: "(auth)/sign-up",
+      component: "SignUp03",
+      difference:
+        "Brand-led and passwordless; Apple/Google lead, and the email path sends an InputOTP code.",
+      props: {
+        onSocialSignIn:
+          '(provider: "apple" | "google") => void | Promise<void>: run that provider\'s sign-up; a thrown error becomes a toast',
+        onSendCode:
+          "(email: string) => void | Promise<void>: email a 6-digit code (Send code, Resend); a thrown error becomes a toast and the email field stays",
+        onSubmit:
+          '(values: { email, code }) => void | Promise<void>: check the code and create the account; throw to show the error as a toast, resolve for an "Account created" toast',
+      },
+      docs: `Render it from a route: \`export default function Screen() { return <SignUp03 onSocialSignIn={signUpWith} onSendCode={sendCode} onSubmit={verify} />; }\`. There is no password: the email path checks the address with zod through react-hook-form, calls onSendCode, then asks for the 6-digit code. The step lives inside the Block; Back (an icon-only Button with a Lucide chevron-left, aria-label "Back") and Android's back button return to the email field, keeping it. The Create account button sits in a KeyboardStickyFooter above the keyboard. ${FEEDBACK} The Apple and Google logos are bundled SVGs in components/social-buttons.tsx; the buttons only call onSocialSignIn. ${BACKEND}`,
+      keywords: [
+        ...SIGN_UP_KEYWORDS,
+        "social login",
+        "apple",
+        "google",
+        "passwordless",
+        "magic code",
+        "verify email",
         "otp",
       ],
     },

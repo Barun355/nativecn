@@ -328,6 +328,24 @@ export const registryIndex: Record<string, RegistryIndexEntry> = {
       'An email-first sign-in Screen in two steps: the email, then the password, with "Email me a code instead" switching to a 6-digit code (InputOTP). Lucide chevron-left Back buttons.',
     load: () => import("@/registry/screens/sign-in-03"),
   },
+  "sign-up-01": {
+    type: "registry:block",
+    description:
+      'A classic sign-up Screen on one scroll: Apple and Google on top, "or", then name, email and password, a terms Checkbox with Terms and Privacy Policy links, Create account, and a Sign in link.',
+    load: () => import("@/registry/screens/sign-up-01"),
+  },
+  "sign-up-02": {
+    type: "registry:block",
+    description:
+      "A sign-up wizard, one question per step under a Progress bar: email, name, password, then a 6-digit code (InputOTP). Lucide chevron-left Back buttons; the Continue button rides above the keyboard.",
+    load: () => import("@/registry/screens/sign-up-02"),
+  },
+  "sign-up-03": {
+    type: "registry:block",
+    description:
+      'A brand-led, passwordless sign-up Screen: the logo and headline centred above Apple and Google; "Sign up with email" reveals the email field, and Send code moves on to a 6-digit code (InputOTP).',
+    load: () => import("@/registry/screens/sign-up-03"),
+  },
   skeleton: {
     type: "registry:ui",
     description:
