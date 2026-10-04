@@ -36,7 +36,7 @@
   <div class="col"><h2>Vega</h2><p>clean, balanced</p><div class="phone" id="vega"><div class="bar"></div><div class="scr"></div></div></div>
   <div class="col"><h2>Nova</h2><p>compact</p><div class="phone" id="nova"><div class="bar"></div><div class="scr"></div></div></div>
   <div class="side"><span class="tag">PROTOTYPE</span><h3 id="title" style="margin:8px 0 2px"></h3>
-    <div style="color:#666">Both Styles use the same Tokens (neutral Preset, Inter); only the Style Slot fills differ. Press any button or chip to see the pressed slot.</div>
+    <div style="color:#666">Both Styles use the same Tokens (neutral Preset, Inter); only the Style Slot fills differ. Hold any button to see the pressed slot. Tabs, drawer items, chips, checkbox, radio and switches are tappable.</div>
     <button id="dark">Toggle dark</button><pre id="slots"></pre></div>
   <div class="switcher"><button id="prev">←</button><span id="label"></span><button id="next">→</button></div>
 <script>
@@ -147,15 +147,18 @@ const R = {
   toast: (S,t) => { const x=S['toast.root'](t); return `<div style="border-radius:${x.radius}px;padding:${x.pad}px;box-shadow:${x.shadow};background:${t.c.card};border:1px solid ${t.c.border};display:flex;gap:10px;align-items:flex-start"><span style="color:${t.c.success}">${I(ic.check,18)}</span><div><div style="font:${t.type.label}">Account created</div><div style="font:${t.type.small};color:${t.c.mutedForeground}">Welcome to nativecn.</div></div></div>`; },
   empty: (S,t) => { const x=S['empty-state.root'](t); return `<div style="padding:${x.pad}px;display:flex;flex-direction:column;align-items:center;gap:${x.gap}px;text-align:center;border:1px dashed ${t.c.border};border-radius:12px"><span style="color:${t.c.mutedForeground}">${I(ic.inbox,x.icon)}</span><div style="font:${t.type.h4}">No messages yet</div><div style="font:${t.type.small};color:${t.c.mutedForeground}">New messages will show up here.</div>${R.button(S,t,'outline','Refresh')}</div>`; },
   segmented: (S,t,variant) => { const x=S['segmented-tabs.list'](t);
-    if (variant==='underline') return `<div style="display:flex;gap:20px;border-bottom:1px solid ${t.c.border};font:${t.type.label}">${['Overview','Activity','Settings'].map((l,i)=>`<span style="padding:10px 0;${i===0?`border-bottom:2px solid ${t.c.foreground};`:`color:${t.c.mutedForeground}`}">${l}</span>`).join('')}</div>`;
-    return `<div style="height:${x.height}px;border-radius:${x.radius}px;background:${t.c.muted};padding:${x.pad}px;display:flex">${['Day','Week','Month'].map((l,i)=>`<span style="flex:1;border-radius:${x.inner}px;display:flex;align-items:center;justify-content:center;font:${t.type.label};${i===1?`background:${t.c.background};box-shadow:${t.shadow.sm};`:`color:${t.c.mutedForeground};`}">${l}</span>`).join('')}</div>`; },
+    if (variant==='underline') return `<div style="display:flex;gap:20px;border-bottom:1px solid ${t.c.border};font:${t.type.label}">${['Overview','Activity','Settings'].map((l,i)=>`<span class="pressable" data-sel="under:${i}" role="tab" aria-selected="${i===sel('under')}" style="padding:10px 0;${i===sel('under')?`border-bottom:2px solid ${t.c.foreground};`:`color:${t.c.mutedForeground}`}">${l}</span>`).join('')}</div>`;
+    return `<div style="height:${x.height}px;border-radius:${x.radius}px;background:${t.c.muted};padding:${x.pad}px;display:flex">${['Day','Week','Month'].map((l,i)=>`<span class="pressable" data-sel="seg:${i}" role="tab" aria-selected="${i===sel('seg')}" style="flex:1;border-radius:${x.inner}px;display:flex;align-items:center;justify-content:center;font:${t.type.label};transition:background .15s;${i===sel('seg')?`background:${t.c.background};box-shadow:${t.shadow.sm};`:`color:${t.c.mutedForeground};`}">${l}</span>`).join('')}</div>`; },
   tabnav: (S,t,variant) => { const x=S['tab-navigation.bar'](t); const items=[['home','Home'],['search','Search'],['bell','Inbox'],['user','Profile']];
-    const inner = items.map(([i,l],k)=>`<span style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;color:${k===0?t.c.foreground:t.c.mutedForeground};font:${x.labelFont}">${I(ic[i],x.icon)}${l}</span>`).join('');
-    return variant==='floating'
-      ? `<div style="height:${x.height}px;margin:0 8px;border-radius:${x.floatingRadius}px;background:${t.c.card};box-shadow:${t.shadow.lg};border:1px solid ${t.c.border};display:flex;align-items:center">${inner}</div>`
-      : `<div style="height:${x.height}px;border-top:1px solid ${t.c.border};background:${t.c.background};display:flex;align-items:center">${inner}</div>`; },
-  drawer: (S,t) => { const x=S['drawer.item'](t); const item=(i,l,on,badge)=>`<div style="height:${x.height}px;border-radius:${x.radius}px;padding:0 ${x.padX}px;display:flex;align-items:center;gap:${x.gap}px;font:${t.type.label};${on?`background:${t.c.accent};`:''}">${I(ic[i],18)}<span style="flex:1">${l}</span>${badge?R.badge(S,t,badge,'secondary'):''}</div>`;
-    return `<div style="border:1px solid ${t.c.border};border-radius:14px;padding:8px;background:${t.c.card}">${item('home','Home',true)}${item('bell','Inbox',false,'12')}${item('gear','Settings')}</div>`; },
+    const key = variant==='floating' ? 'tabf' : 'tabc'; const cur = sel(key);
+    const inner = items.map(([i,l],k)=>`<span class="pressable" data-sel="${key}:${k}" role="tab" aria-selected="${k===cur}" style="flex:1;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;color:${k===cur?t.c.foreground:t.c.mutedForeground};font:${x.labelFont}">${I(ic[i],x.icon)}${l}</span>`).join('');
+    const bar = variant==='floating'
+      ? `<div style="position:absolute;left:12px;right:12px;bottom:12px;height:${x.height}px;border-radius:${x.floatingRadius}px;background:${t.c.card};box-shadow:${t.shadow.lg};border:1px solid ${t.c.border};display:flex;align-items:center">${inner}</div>`
+      : `<div style="position:absolute;left:0;right:0;bottom:0;height:${x.height}px;border-top:1px solid ${t.c.border};background:${t.c.background};display:flex;align-items:center">${inner}</div>`;
+    return `<div style="position:relative;height:200px;margin:0 16px;border:1px solid ${t.c.border};border-radius:16px;overflow:hidden;background:${t.c.muted}">
+      <div style="padding:16px;font:${t.type.h4}">${items[cur][1]}</div><div style="padding:0 16px;font:${t.type.small};color:${t.c.mutedForeground}">${items[cur][1]} screen content</div>${bar}</div>`; },
+  drawer: (S,t) => { const x=S['drawer.item'](t); const item=(i,l,k,badge)=>{const on=k===sel('drawer');return `<div class="pressable" data-sel="drawer:${k}" role="button" aria-selected="${on}" style="height:${x.height}px;border-radius:${x.radius}px;padding:0 ${x.padX}px;display:flex;align-items:center;gap:${x.gap}px;font:${t.type.label};${on?`background:${t.c.accent};`:''}">${I(ic[i],18)}<span style="flex:1">${l}</span>${badge?R.badge(S,t,badge,'secondary'):''}</div>`};
+    return `<div style="border:1px solid ${t.c.border};border-radius:14px;padding:8px;background:${t.c.card}">${item('home','Home',0)}${item('bell','Inbox',1,'12')}${item('gear','Settings',2)}</div>`; },
 };
 
 const GROUPS = {
@@ -163,9 +166,9 @@ const GROUPS = {
     render:(S,t)=>`<div class="sec"><div class="sech">Button</div><div class="row">${R.button(S,t,'primary','Continue','arrow')}${R.button(S,t,'secondary','Cancel')}${R.button(S,t,'outline','Edit')}${R.button(S,t,'destructive','',`trash`)}</div>
       <div class="sech">Input / FormField</div>${R.input(S,t,'you@example.com')}${R.input(S,t,'not-an-email',true)}
       <div class="sech">Search field</div>${R.search(S,t)}
-      <div class="sech">Checkbox · Radio · Switch</div><div class="row" style="gap:16px">${R.checkbox(S,t,true)}${R.radio(S,t,true,'Monthly')}${R.radio(S,t,false,'Yearly')}${R.switch(S,t,true)}${R.switch(S,t,false)}</div>
+      <div class="sech">Checkbox · Radio · Switch</div><div class="row" style="gap:16px"><span class="pressable" data-toggle="check">${R.checkbox(S,t,!!sel('check'))}</span><span class="pressable" data-sel="radio:0">${R.radio(S,t,sel('radio')===0,'Monthly')}</span><span class="pressable" data-sel="radio:1">${R.radio(S,t,sel('radio')===1,'Yearly')}</span><span class="pressable" data-toggle="sw1">${R.switch(S,t,!!sel('sw1'))}</span><span class="pressable" data-toggle="sw2">${R.switch(S,t,!!sel('sw2'))}</span></div>
       <div class="sech">Slider</div>${R.slider(S,t)}
-      <div class="sech">Chip</div><div class="row">${R.chip(S,t,'All',true)}${R.chip(S,t,'Design')}${R.chip(S,t,'Mobile')}${R.chip(S,t,'Expo')}</div>
+      <div class="sech">Chip</div><div class="row">${['All','Design','Mobile','Expo'].map((l,i)=>`<span data-sel="chip:${i}">${R.chip(S,t,l,sel('chip')===i)}</span>`).join('')}</div>
       <div class="sech">InputOTP</div>${R.otp(S,t)}<div style="height:24px"></div></div>` },
   'display-feedback': { title:'Display + Feedback', slots:['card.root','badge.root','avatar.root','list.section','list.item','skeleton.root','progress.track','alert.root','toast.root','empty-state.root'],
     render:(S,t)=>`<div class="sec"><div class="sech">Card · Avatar · Badge</div>${R.card(S,t,`<div style="display:flex;gap:12px;align-items:center">${R.avatar(S,t,'JD')}<div style="flex:1"><div style="font:${t.type.h4}">Jane Doe</div><div style="font:${t.type.small};color:${t.c.mutedForeground}">Product designer</div></div>${R.badge(S,t,'Pro')}</div><div class="row">${R.badge(S,t,'Active','success')}${R.badge(S,t,'Beta','secondary')}${R.badge(S,t,'3 issues','destructive')}</div>${R.button(S,t,'primary','View profile')}`)}
@@ -175,14 +178,15 @@ const GROUPS = {
       <div class="sech">Toast</div>${R.toast(S,t)}
       <div class="sech">EmptyState</div>${R.empty(S,t)}<div style="height:24px"></div></div>` },
   'navigation': { title:'Navigation', slots:['segmented-tabs.list','tab-navigation.bar','drawer.item'],
-    render:(S,t)=>`<div class="sec"><div class="sech">SegmentedTabs · segmented</div>${R.segmented(S,t)}
-      <div class="sech">SegmentedTabs · underline</div>${R.segmented(S,t,'underline')}
+    render:(S,t)=>`<div class="sec"><div class="sech">SegmentedTabs · segmented</div>${R.segmented(S,t)}<div style="font:${t.type.small};color:${t.c.mutedForeground};padding:10px 2px 0">Showing: <b style="color:${t.c.foreground}">${['Day','Week','Month'][sel('seg')]}</b> view</div>
+      <div class="sech">SegmentedTabs · underline</div>${R.segmented(S,t,'underline')}<div style="font:${t.type.small};color:${t.c.mutedForeground};padding:10px 2px 0">${['Overview content','Activity feed','Settings panel'][sel('under')]}</div>
       <div class="sech">Drawer items</div>${R.drawer(S,t)}
-      <div class="sech">TabNavigation · classic</div></div>${R.tabnav(S,t,'classic')}
-      <div class="sec"><div class="sech">TabNavigation · floating</div></div>${R.tabnav(S,t,'floating')}<div style="height:24px"></div>` },
+      <div class="sech">TabNavigation · classic (tap a tab)</div></div>${R.tabnav(S,t,'classic')}
+      <div class="sec"><div class="sech">TabNavigation · floating (tap a tab)</div></div>${R.tabnav(S,t,'floating')}<div style="height:24px"></div>` },
 };
 const KEYS = Object.keys(GROUPS);
-let state = { group: KEYS[0], scheme: 'light' };
+let state = { group: KEYS[0], scheme: 'light', sel: { seg:1, under:0, drawer:0, tabc:0, tabf:0, check:1, radio:0, sw1:1, sw2:0, chip:0 } };
+const sel = (k) => state.sel[k];
 
 function draw() {
   const t = T(state.scheme), g = GROUPS[state.group];
@@ -195,6 +199,8 @@ function draw() {
       el.onpointerup = el.onpointerleave = () => { el.style.filter = ''; el.style.transform = ''; };
     });
   }
+  document.querySelectorAll('[data-sel]').forEach(el => el.onclick = (e) => { e.stopPropagation(); const [k, v] = el.dataset.sel.split(':'); state.sel[k] = +v; draw(); });
+  document.querySelectorAll('[data-toggle]').forEach(el => el.onclick = (e) => { e.stopPropagation(); const k = el.dataset.toggle; state.sel[k] = state.sel[k] ? 0 : 1; draw(); });
   const dump = {}; for (const k of g.slots) dump[k] = { vega: VEGA[k](t), nova: NOVA[k](t) };
   document.getElementById('slots').textContent = JSON.stringify({ group: state.group, scheme: state.scheme, slots: dump }, null, 1).replace(/"(font|shadow)": "[^"]*"/g, m => m.length > 60 ? m.slice(0, 58) + '…"' : m);
   document.getElementById('title').textContent = g.title;
