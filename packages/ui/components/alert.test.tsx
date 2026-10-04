@@ -3,6 +3,8 @@ import { Terminal } from "lucide-react-native";
 import { Dimensions, StyleSheet, View } from "react-native";
 
 import { Alert, AlertDescription, AlertTitle, type AlertProps } from "@/registry/components/alert";
+import { FormField } from "@/registry/components/form-field";
+import { Input } from "@/registry/components/input";
 import { setActiveStyle } from "@/registry/styles";
 import {
   ThemeProvider,
@@ -13,6 +15,9 @@ import {
   tokens,
   useSchemeStore,
 } from "@/registry/theme";
+import { announce } from "@/registry/utils/announce";
+
+jest.mock("@/registry/utils/announce", () => ({ announce: jest.fn() }));
 
 // Default icons become marked Views that record their colour, so the Variant's icon can be found.
 jest.mock("lucide-react-native", () => {
@@ -52,8 +57,21 @@ async function renderAlert(props: Partial<AlertProps> = {}) {
 const flat = (el: { props: Record<string, unknown> }) =>
   StyleSheet.flatten(el.props.style as never) as Record<string, unknown>;
 
-beforeEach(() => useSchemeStore.setState({ scheme: "system", hydrated: true }));
+beforeEach(() => {
+  useSchemeStore.setState({ scheme: "system", hydrated: true });
+  jest.mocked(announce).mockClear();
+});
 afterEach(() => setActiveStyle("vega"));
+
+/** One Alert in a ThemeProvider, for render and rerender. */
+const alertUI = (props: Partial<AlertProps>, title: string, description?: string) => (
+  <ThemeProvider scheme="light">
+    <Alert testID="alert" {...props}>
+      <AlertTitle>{title}</AlertTitle>
+      {description ? <AlertDescription>{description}</AlertDescription> : null}
+    </Alert>
+  </ThemeProvider>
+);
 
 describe("Alert", () => {
   test("has the alert role and is read as one element", async () => {
@@ -130,5 +148,126 @@ describe("Alert", () => {
     expect(ref.current).not.toBeNull();
     expect(flat(el).marginTop).toBe(8);
     expect(el.props.accessibilityHint).toBe("Dismissable");
+  });
+});
+
+describe("Alert announcements", () => {
+  test.each([
+    ["destructive", "Error: Wrong password. Check it and try again."],
+    ["success", "Success: Wrong password. Check it and try again."],
+  ] as const)("%s is announced once when it appears", async (variant, spoken) => {
+    await render(alertUI({ variant }, "Wrong password", "Check it and try again."));
+    expect(announce).toHaveBeenCalledTimes(1);
+    expect(announce).toHaveBeenCalledWith(spoken);
+  });
+
+  test.each(["default", "warning", "info"] as const)("%s is not announced", async (variant) => {
+    await render(alertUI({ variant }, "Heads up", "Your session expires soon."));
+    expect(announce).not.toHaveBeenCalled();
+  });
+
+  test("announced again when its text changes, never on unrelated re-renders", async () => {
+    const { rerender } = await render(alertUI({ variant: "destructive" }, "Wrong password"));
+    expect(announce).toHaveBeenCalledTimes(1);
+    expect(announce).toHaveBeenLastCalledWith("Error: Wrong password");
+
+    // Same text, new props that do not change what is said: silent.
+    await rerender(alertUI({ variant: "destructive", style: { marginTop: 8 } }, "Wrong password"));
+    await rerender(alertUI({ variant: "destructive", icon: null }, "Wrong password"));
+    expect(announce).toHaveBeenCalledTimes(1);
+
+    await rerender(alertUI({ variant: "destructive" }, "Too many attempts", "Try again later."));
+    expect(announce).toHaveBeenCalledTimes(2);
+    expect(announce).toHaveBeenLastCalledWith("Error: Too many attempts. Try again later.");
+  });
+
+  test("announced when it changes to error or success, silent when it changes away", async () => {
+    const { rerender } = await render(alertUI({ variant: "default" }, "Saving"));
+    expect(announce).not.toHaveBeenCalled();
+    await rerender(alertUI({ variant: "success" }, "Saved"));
+    expect(announce).toHaveBeenCalledTimes(1);
+    expect(announce).toHaveBeenLastCalledWith("Success: Saved");
+    await rerender(alertUI({ variant: "info" }, "Saved"));
+    expect(announce).toHaveBeenCalledTimes(1);
+  });
+
+  test("announced again when it is shown again after being removed", async () => {
+    const { rerender } = await render(alertUI({ variant: "destructive" }, "Wrong password"));
+    await rerender(<ThemeProvider scheme="light">{null}</ThemeProvider>);
+    await rerender(alertUI({ variant: "destructive" }, "Wrong password"));
+    expect(announce).toHaveBeenCalledTimes(2);
+  });
+
+  test("text in nested elements and numbers is read in order; punctuation is kept", async () => {
+    await render(
+      <ThemeProvider scheme="light">
+        <Alert variant="destructive">
+          <AlertTitle>Upload failed!</AlertTitle>
+          <AlertDescription>
+            {3} of {5} files were too large
+          </AlertDescription>
+        </Alert>
+      </ThemeProvider>,
+    );
+    expect(announce).toHaveBeenCalledWith("Error: Upload failed! 3 of 5 files were too large");
+  });
+
+  test("aria-label replaces the text it says", async () => {
+    await render(alertUI({ variant: "success", "aria-label": "Profile saved" }, "Saved"));
+    expect(announce).toHaveBeenCalledWith("Success: Profile saved");
+  });
+
+  test("an Alert with no text is not announced", async () => {
+    await render(
+      <ThemeProvider scheme="light">
+        <Alert variant="destructive" />
+      </ThemeProvider>,
+    );
+    expect(announce).not.toHaveBeenCalled();
+  });
+
+  test("an Alert inside another Alert is announced only by the outer one", async () => {
+    await render(
+      <ThemeProvider scheme="light">
+        <Alert variant="destructive">
+          <AlertTitle>Payment failed</AlertTitle>
+          <Alert variant="destructive">
+            <AlertDescription>Card declined</AlertDescription>
+          </Alert>
+        </Alert>
+      </ThemeProvider>,
+    );
+    expect(announce).toHaveBeenCalledTimes(1);
+    expect(announce).toHaveBeenCalledWith("Error: Payment failed. Card declined");
+  });
+
+  test("inside a FormField with an error, only the FormField announces", async () => {
+    await render(
+      <ThemeProvider scheme="light">
+        <FormField label="Email" error="Enter a valid email">
+          <Input />
+          <Alert variant="destructive">
+            <AlertTitle>Enter a valid email</AlertTitle>
+          </Alert>
+        </FormField>
+      </ThemeProvider>,
+    );
+    expect(announce).toHaveBeenCalledTimes(1);
+    expect(announce).toHaveBeenCalledWith("Enter a valid email");
+  });
+
+  test("inside a FormField without an error, the Alert announces itself", async () => {
+    await render(
+      <ThemeProvider scheme="light">
+        <FormField label="Email">
+          <Input />
+          <Alert variant="success">
+            <AlertTitle>Email verified</AlertTitle>
+          </Alert>
+        </FormField>
+      </ThemeProvider>,
+    );
+    expect(announce).toHaveBeenCalledTimes(1);
+    expect(announce).toHaveBeenCalledWith("Success: Email verified");
   });
 });
