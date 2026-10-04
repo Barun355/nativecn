@@ -17,6 +17,7 @@ import {
   dependencyRuleViolations,
   loadPinnedModules,
 } from "../../ui/scripts/registry/dependency-rule.ts";
+import { BASE_ITEMS, STARTER_ITEMS } from "../src/commands/init.ts";
 
 const CLI = path.resolve(import.meta.dirname, "..");
 const REPO = path.resolve(CLI, "..", "..");
@@ -62,6 +63,100 @@ export function planLeg(sdk: string, latestVersion: string, starter: number): Le
     npmTag: sdk === "latest" ? "latest" : `sdk-${target}`,
     ...(target === starter ? {} : { switchFrom: starter }),
   };
+}
+
+/** Where each Destination lands in a created app (the Starter has src/). */
+const DESTINATION_DIRS: Record<string, string> = {
+  components: "src/components",
+  hooks: "src/hooks",
+  utils: "src/utils",
+  theme: "src/theme",
+  screens: "src/screens",
+};
+
+type IndexItem = { name: string; registryDependencies?: string[]; files?: { target: string }[] };
+
+/**
+ * The files `create` should install for `items` and everything they depend on, from a Style's
+ * registry.json index. Paths are relative to the app.
+ */
+export function expectedInstalledFiles(index: { items: IndexItem[] }, items: string[]): string[] {
+  const byName = new Map(index.items.map((i) => [i.name, i]));
+  const seen = new Set<string>();
+  const visit = (name: string): void => {
+    if (seen.has(name)) return;
+    seen.add(name);
+    for (const dep of byName.get(name)?.registryDependencies ?? []) visit(dep);
+  };
+  items.forEach(visit);
+  const files: string[] = [];
+  for (const name of seen)
+    for (const f of byName.get(name)?.files ?? []) {
+      const m = /^\{(\w+)\}\/(.*)$/.exec(f.target);
+      const dir = m ? DESTINATION_DIRS[m[1]!] : undefined;
+      if (dir) files.push(`${dir}/${m![2]}`);
+    }
+  return files.sort();
+}
+
+/** Every file under the app's Destination folders (and src/features). */
+function installedFiles(app: string): string[] {
+  const out: string[] = [];
+  const walk = (rel: string): void => {
+    const abs = path.join(app, rel);
+    if (!fs.existsSync(abs)) return;
+    for (const e of fs.readdirSync(abs, { withFileTypes: true }))
+      if (e.isDirectory()) walk(`${rel}/${e.name}`);
+      else out.push(`${rel}/${e.name}`);
+  };
+  [...Object.values(DESTINATION_DIRS), "src/features"].forEach(walk);
+  return out.sort();
+}
+
+/**
+ * What is wrong with a created app's promo Screen (#75). Its index route must be the Starter's own
+ * promo Screen, which reads the Preset from components.json. components.json must hold the chosen
+ * Preset. When `installed` is given, exactly those files must be installed: the Theme, the root
+ * Layout's items and #25's nine Starter items with their dependencies, nothing else. Empty when
+ * all is well.
+ */
+export function promoScreenProblems(
+  app: string,
+  expected: { preset: Record<string, string>; installed?: string[] },
+  starter = STARTER,
+): string[] {
+  const problems: string[] = [];
+  const routeFile = path.join(app, "src", "app", "index.tsx");
+  const route = fs.existsSync(routeFile) ? fs.readFileSync(routeFile, "utf8") : "";
+  if (route !== fs.readFileSync(path.join(starter, "src", "app", "index.tsx"), "utf8"))
+    problems.push("src/app/index.tsx is not the Starter's promo Screen");
+  if (!route.includes('import config from "../../components.json";'))
+    problems.push("src/app/index.tsx does not read components.json");
+  const config = JSON.parse(fs.readFileSync(path.join(app, "components.json"), "utf8")) as {
+    preset: Record<string, string>;
+  };
+  for (const [field, value] of Object.entries(expected.preset))
+    if (config.preset[field] !== value)
+      problems.push(`components.json preset.${field} is "${config.preset[field]}", not "${value}"`);
+  if (expected.installed) {
+    const want = new Set(expected.installed);
+    const have = installedFiles(app);
+    for (const f of have) if (!want.has(f)) problems.push(`installed but not expected: ${f}`);
+    for (const f of want) if (!have.includes(f)) problems.push(`expected but not installed: ${f}`);
+  }
+  return problems;
+}
+
+function assertPromoScreen(app: string, expected: Parameters<typeof promoScreenProblems>[1]) {
+  const problems = promoScreenProblems(app, expected);
+  if (problems.length)
+    throw new Error(
+      [`${path.basename(app)}: promo Screen`, ...problems.map((p) => `  - ${p}`)].join("\n"),
+    );
+  const exact = expected.installed
+    ? `, exactly the Starter's items installed (${expected.installed.length} files)`
+    : "";
+  console.log(`${path.basename(app)}: promo Screen and Preset OK${exact}`);
 }
 
 function run(command: string, args: string[], opts: SpawnSyncOptions & { cwd: string }): void {
@@ -132,6 +227,16 @@ async function main(): Promise<void> {
     // 1. The defaults: Vega, flat.
     cli(["create", "smoke-default", "--yes", "--defaults", "--cwd", work]);
     const defaultApp = path.join(work, "smoke-default");
+    /** What `create` installs: the Theme, the root Layout's items and #25's nine Starter items. */
+    const createFiles = (style: string) =>
+      expectedInstalledFiles(
+        JSON.parse(fs.readFileSync(path.join(registry, "styles", style, "registry.json"), "utf8")),
+        [...BASE_ITEMS, ...STARTER_ITEMS],
+      );
+    assertPromoScreen(defaultApp, {
+      preset: { style: "vega", baseColor: "neutral", accentColor: "neutral", bodyFont: "inter" },
+      installed: createFiles("vega"),
+    });
     switchSdk(defaultApp);
     apps.push(defaultApp);
 
@@ -151,8 +256,12 @@ async function main(): Promise<void> {
       work,
     ]);
     const customApp = path.join(work, "smoke-custom");
+    const customPreset = { style: "nova", accentColor: "violet", headingFont: "lora" };
+    assertPromoScreen(customApp, { preset: customPreset, installed: createFiles("nova") });
     switchSdk(customApp);
     cli(["add", "--all", "--yes", "--cwd", customApp]);
+    // `add --all` leaves the promo Screen alone.
+    assertPromoScreen(customApp, { preset: customPreset });
     apps.push(customApp);
 
     // Every item's dependencies on this SDK's pinned list (ADR 0007, ADR 0010).

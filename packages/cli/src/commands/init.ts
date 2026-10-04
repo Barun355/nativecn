@@ -29,7 +29,10 @@ export type Agent = AgentName;
 
 /** Items every nativecn app gets: the Theme and what the root Layout renders (#16, #105). */
 export const BASE_ITEMS = ["theme", "portal", "keyboard", "toast"];
-/** Registry Items the Starter's promo Screen uses (#25). */
+/**
+ * The Starter's install list: exactly the Registry Items its promo Screen
+ * (`starter/src/app/index.tsx`, a plain Starter file) imports, and nothing else (#25, #75).
+ */
 export const STARTER_ITEMS = [
   "text",
   "icon",

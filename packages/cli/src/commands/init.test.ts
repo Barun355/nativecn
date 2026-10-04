@@ -11,12 +11,13 @@ import { readConfig } from "../config.ts";
 import { clearRegistryCache } from "../registry.ts";
 import { checkExpoApp, SDK_MESSAGE } from "../utils/expo.ts";
 import { add } from "./add.ts";
-import { init, rootLayout } from "./init.ts";
+import { BASE_ITEMS, init, rootLayout, STARTER_ITEMS } from "./init.ts";
 
 const fixtures = path.join(import.meta.dirname, "__fixtures__", "init");
 process.env.NATIVECN_REGISTRY_URL = path.join(fixtures, "r");
 process.env.NATIVECN_FONTS_URL = path.join(fixtures, "fonts");
-process.env.NATIVECN_STARTER_DIR = path.join(import.meta.dirname, "..", "..", "starter");
+const STARTER = path.join(import.meta.dirname, "..", "..", "starter");
+process.env.NATIVECN_STARTER_DIR = STARTER;
 process.env.NATIVECN_SKIP_INSTALL = "1";
 // The Agent Kit from this checkout instead of GitHub.
 const AGENT_KIT = path.join(import.meta.dirname, "..", "..", "..", "..");
@@ -250,6 +251,13 @@ test("create: renamed Starter, composed Theme, root Layout, one commit", async (
   assert.equal(read(cwd, "src/app/_layout.tsx"), r.layout.snippet);
   assert.match(r.layout.snippet, /ThemeProvider/);
 
+  // The promo Screen is the Starter's own index route; create installs exactly #25's nine items.
+  assert.deepEqual(r.items.requested, [...BASE_ITEMS, ...STARTER_ITEMS]);
+  const index = read(cwd, "src/app/index.tsx");
+  assert.equal(index, read(STARTER, "src/app/index.tsx"));
+  assert.match(index, /import config from "\.\.\/\.\.\/components\.json";/);
+  assert.equal(exists(cwd, "src/screens"), false);
+
   assert.equal(r.git?.committed, true);
   const log = spawnSync("git", ["log", "--format=%s"], { cwd, encoding: "utf8" });
   assert.equal(log.stdout.trim(), "feat: initial commit");
@@ -259,6 +267,52 @@ test("create: renamed Starter, composed Theme, root Layout, one commit", async (
     assert.ok(tracked.split("\n").includes(f), f);
   const status = spawnSync("git", ["status", "--porcelain"], { cwd, encoding: "utf8" });
   assert.equal(status.stdout, "");
+});
+
+test("the Starter's install list is exactly #25's nine items", () => {
+  assert.deepEqual(STARTER_ITEMS, [
+    "text",
+    "icon",
+    "button",
+    "badge",
+    "card",
+    "separator",
+    "container",
+    "segmented-tabs",
+    "scheme-switcher",
+  ]);
+});
+
+test("the Starter's promo Screen imports only installed items, through the default aliases", () => {
+  const index = read(STARTER, "src/app/index.tsx");
+  const local = [...index.matchAll(/from "@\/([^"]+)"/g)].map((m) => m[1]!);
+  for (const spec of local) {
+    const [dest, name] = spec.split("/");
+    if (dest === "theme") continue;
+    assert.equal(dest, "components", spec);
+    assert.ok(STARTER_ITEMS.includes(name!), `${spec} is not in the Starter's install list`);
+  }
+  assert.ok(local.includes("components/scheme-switcher"));
+  assert.doesNotMatch(index, /expo-clipboard|@\/screens|@\/features/);
+  assert.match(index, /<Text variant="small" selectable>/);
+});
+
+test("create in feature mode keeps the promo Screen as the Starter's index route", async () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "ncn-create-"));
+  const r = await init([], {
+    cwd: root,
+    mode: "create",
+    name: "feat-app",
+    yes: true,
+    silent: true,
+    folderFeat: true,
+    agents: "none",
+  });
+  const cwd = path.join(root, "feat-app");
+  assert.equal(readConfig(cwd)!.structure, "feature");
+  assert.deepEqual(r.items.requested, [...BASE_ITEMS, ...STARTER_ITEMS]);
+  assert.equal(read(cwd, "src/app/index.tsx"), read(STARTER, "src/app/index.tsx"));
+  assert.equal(exists(cwd, "src/features"), false);
 });
 
 test("create refuses a non-empty folder", async () => {
