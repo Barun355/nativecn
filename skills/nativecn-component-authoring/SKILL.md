@@ -1,6 +1,7 @@
 ---
 name: nativecn-component-authoring
 description: Write or change nativecn Components so they follow the Component contract. Use when the user asks for a "new component", "custom component", "reusable component", "add a variant", "add a size", "make this pressable", or to edit a Component in src/components of a nativecn app, or when contributing a Component or Primitive to the nativecn repo.
+license: MIT
 ---
 
 # Author a nativecn Component

@@ -1,6 +1,7 @@
 ---
 name: nativecn-build-screen
 description: Build Screens in a nativecn Expo app from Blocks and Components. Use when the user asks to build, add or design a screen or flow, such as "build a login screen", "add a sign-up flow", "make a settings screen", "profile screen", "add a drawer", "add bottom tabs", or "wire up navigation" in a project with a nativecn components.json.
+license: MIT
 ---
 
 # Build a Screen with nativecn

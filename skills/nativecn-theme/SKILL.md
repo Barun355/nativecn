@@ -1,6 +1,7 @@
 ---
 name: nativecn-theme
 description: Change the look of a nativecn Expo app through its Theme. Use when the user asks to "change colours", "change the primary colour", "add a brand colour", "dark mode", "light mode", "add a theme switcher", "use a different font", "change spacing or radius", or to replace or migrate Expo's default theme files (constants/theme.ts, themed-text, themed-view, use-theme) in a project with a nativecn components.json.
+license: MIT
 ---
 
 # Theme a nativecn app
