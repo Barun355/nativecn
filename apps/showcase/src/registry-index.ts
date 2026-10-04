@@ -310,6 +310,24 @@ export const registryIndex: Record<string, RegistryIndexEntry> = {
     description: "Horizontal and vertical Separators.",
     load: () => import("@/registry/examples/separator-demo"),
   },
+  "sign-in-01": {
+    type: "registry:block",
+    description:
+      'A centred sign-in Screen: logo, email and password, Forgot password, an "or" divider, then Apple and Google, and a Sign up link.',
+    load: () => import("@/registry/screens/sign-in-01"),
+  },
+  "sign-in-02": {
+    type: "registry:block",
+    description:
+      'A social-first sign-in Screen: a dark brand hero (logo, headline, subtitle, centred) above a panel where Apple and Google lead and "Continue with email" reveals the email form.',
+    load: () => import("@/registry/screens/sign-in-02"),
+  },
+  "sign-in-03": {
+    type: "registry:block",
+    description:
+      'An email-first sign-in Screen in two steps: the email, then the password, with "Email me a code instead" switching to a 6-digit code (InputOTP). Lucide chevron-left Back buttons.',
+    load: () => import("@/registry/screens/sign-in-03"),
+  },
   skeleton: {
     type: "registry:ui",
     description:
