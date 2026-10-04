@@ -28,6 +28,8 @@
     "preset": "workspace:*",
     "react": "catalog:",
     "react-native": "catalog:",
+    "react-native-safe-area-context": "~5.7.0",
+    "react-native-screens": "~4.26.0",
     "test-renderer": "catalog:",
     "typescript": "catalog:",
     "zustand": "^5.0.15"
