@@ -40,9 +40,16 @@ export function useActiveStyle(): StyleName {
   );
 }
 
-/** A named place in a base Component's styles, filled by the active Style. */
-export function slot(name: SlotName, t: Theme) {
-  const fill = STYLES[active][name];
+/** The style object a Slot returns, typed from the canonical Style (Vega). */
+export type SlotStyle<N extends SlotName> = ReturnType<(typeof vega)[N]>;
+
+/**
+ * A named place in a base Component's styles, filled by the active Style. Typed per Slot, so
+ * `slot("button.pressed", t)` is a ViewStyle and `slot("button.label", t)` a TextStyle with no
+ * cast. The Registry build replaces each call with the Style's literal object.
+ */
+export function slot<N extends SlotName>(name: N, t: Theme): SlotStyle<N> {
+  const fill = STYLES[active][name] as ((theme: Theme) => SlotStyle<N>) | undefined;
   if (!fill) throw new Error(`Style "${active}" has no fill for slot "${name}".`);
   return fill(t);
 }

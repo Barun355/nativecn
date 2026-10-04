@@ -61,3 +61,16 @@ test("Vega is roomier than Nova for controls, rows and cards", () => {
 test("slot() throws a clear error for an unknown Slot", () => {
   expect(() => slot("nope" as never, testTheme())).toThrow(/has no fill for slot "nope"/);
 });
+
+test("Button sizes grow sm < md < lg in every Style", () => {
+  const t = testTheme();
+  for (const style of Object.keys(STYLES) as (keyof typeof STYLES)[]) {
+    setActiveStyle(style);
+    // Typed per Slot: no cast needed to read `height`.
+    const heights = [slot("button.sm", t), slot("button.root", t), slot("button.lg", t)].map(
+      (s) => s.height,
+    );
+    expect(heights).toEqual([...heights].sort((a, b) => a - b));
+    expect(new Set(heights).size).toBe(3);
+  }
+});

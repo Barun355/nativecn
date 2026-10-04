@@ -5,5 +5,9 @@ module.exports = {
   resolver: "react-native-worklets/jest/resolver",
   setupFiles: ["<rootDir>/test/jest-setup.cjs"],
   testPathIgnorePatterns: ["/node_modules/", "/scripts/"],
-  moduleNameMapper: { "^@/registry/(.*)$": "<rootDir>/$1" },
+  moduleNameMapper: {
+    "^@/registry/(.*)$": "<rootDir>/$1",
+    // Lucide's "react-native" export is untranspiled ESM (.mjs); Jest takes its CommonJS build.
+    "^lucide-react-native$": require.resolve("lucide-react-native"),
+  },
 };
