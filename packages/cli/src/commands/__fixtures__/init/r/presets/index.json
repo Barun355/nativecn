@@ -1,0 +1,83 @@
+{
+  "style": ["vega", "nova"],
+  "baseColor": ["neutral", "stone", "zinc", "mauve", "olive", "mist", "taupe"],
+  "accentColor": [
+    "neutral",
+    "stone",
+    "zinc",
+    "mauve",
+    "olive",
+    "mist",
+    "taupe",
+    "amber",
+    "blue",
+    "cyan",
+    "emerald",
+    "fuchsia",
+    "green",
+    "indigo",
+    "lime",
+    "orange",
+    "pink",
+    "purple",
+    "red",
+    "rose",
+    "sky",
+    "teal",
+    "violet",
+    "yellow"
+  ],
+  "radius": ["default", "none", "small", "medium", "large"],
+  "radiusBase": {
+    "default": null,
+    "none": 0,
+    "small": 7,
+    "medium": 10,
+    "large": 14
+  },
+  "bodyFont": [
+    "inter",
+    "geist",
+    "dm-sans",
+    "figtree",
+    "lora",
+    "source-serif-4",
+    "geist-mono",
+    "jetbrains-mono"
+  ],
+  "headingFont": [
+    "inherit",
+    "inter",
+    "geist",
+    "dm-sans",
+    "figtree",
+    "lora",
+    "source-serif-4",
+    "geist-mono",
+    "jetbrains-mono"
+  ],
+  "shared": {
+    "light": {
+      "destructive": "#e7000b",
+      "destructiveForeground": "#fff7f7",
+      "success": "#008236",
+      "successForeground": "#f0fdf4",
+      "warning": "#bb4d00",
+      "warningForeground": "#fffbeb",
+      "info": "#0069a8",
+      "infoForeground": "#f0f9ff",
+      "overlay": "#00000080"
+    },
+    "dark": {
+      "destructive": "#ff6467",
+      "destructiveForeground": "#460809",
+      "success": "#05df72",
+      "successForeground": "#032e15",
+      "warning": "#ffb900",
+      "warningForeground": "#461901",
+      "info": "#00bcff",
+      "infoForeground": "#052f4a",
+      "overlay": "#000000b3"
+    }
+  }
+}

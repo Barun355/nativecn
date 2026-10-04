@@ -1,0 +1,20 @@
+{
+  "id": "lora",
+  "name": "Lora",
+  "category": "serif",
+  "faces": {
+    "regular": "Lora-Regular",
+    "medium": "Lora-Medium",
+    "semibold": "Lora-SemiBold",
+    "bold": "Lora-Bold"
+  },
+  "files": {
+    "regular": "Lora-Regular.ttf",
+    "medium": "Lora-Medium.ttf",
+    "semibold": "Lora-SemiBold.ttf",
+    "bold": "Lora-Bold.ttf"
+  },
+  "license": "OFL.txt",
+  "source": "github.com/cyrealtype/Lora-Cyrillic v3.021 (Lora.zip ttf)",
+  "letterSpacingCorrection": 0.0125
+}

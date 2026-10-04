@@ -28,9 +28,11 @@ export type PresetIndex = {
   baseColor: string[];
   accentColor: string[];
   radius: string[];
-  radiusBase?: Record<string, number | null>;
+  radiusBase: Record<string, number | null>;
   bodyFont: string[];
   headingFont: string[];
+  /** Colour Roles shared by every Preset (destructive, success, warning, info, overlay). */
+  shared: Record<"light" | "dark", Record<string, string>>;
   [key: string]: unknown;
 };
 
@@ -139,6 +141,10 @@ export function createRegistryClient(opts: { base?: () => string; maxAgeMs?: num
     presets(): Promise<PresetIndex> {
       return get<PresetIndex>("presets/index.json");
     },
+    /** Any Registry JSON by relative path (Preset ingredients), cached like items. */
+    json<T>(relative: string): Promise<T> {
+      return get<T>(relative);
+    },
     clear(): void {
       cache.clear();
     },
@@ -155,6 +161,40 @@ export function fetchItem(name: string, style: string): Promise<RegistryItem> {
 
 export function fetchIndex(style: string): Promise<RegistryIndex> {
   return defaultClient.index(style);
+}
+
+export type SchemeName = "light" | "dark";
+export type ColorIngredient = { name: string } & Record<SchemeName, Record<string, string>>;
+export type FontFace = "regular" | "medium" | "semibold" | "bold";
+export type FontIngredient = {
+  id: string;
+  name: string;
+  faces: Record<FontFace, string>;
+  files: Record<FontFace, string>;
+  license: string;
+  letterSpacingCorrection: number;
+};
+
+/** Preset ingredients published by the Registry build (`/r/presets/...`, #13). */
+export function fetchPresetIndex(): Promise<PresetIndex> {
+  return defaultClient.presets();
+}
+
+function ingredientName(name: string): string {
+  if (!/^[a-z0-9-]+$/.test(name)) throw new RegistryError(`"${name}" is not a Preset option.`);
+  return name;
+}
+
+export function fetchBaseColor(name: string): Promise<ColorIngredient> {
+  return defaultClient.json(`presets/base/${ingredientName(name)}.json`);
+}
+
+export function fetchAccentColor(name: string): Promise<ColorIngredient> {
+  return defaultClient.json(`presets/accent/${ingredientName(name)}.json`);
+}
+
+export function fetchFont(id: string): Promise<FontIngredient> {
+  return defaultClient.json(`presets/fonts/${ingredientName(id)}.json`);
 }
 
 export function clearRegistryCache(): void {

@@ -1,0 +1,13 @@
+{
+  "name": "neutral",
+  "light": {
+    "primary": "#171717",
+    "primaryForeground": "#fafafa",
+    "ring": "#a1a1a1"
+  },
+  "dark": {
+    "primary": "#e5e5e5",
+    "primaryForeground": "#171717",
+    "ring": "#737373"
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "id": "inter",
+  "name": "Inter",
+  "category": "sans",
+  "faces": {
+    "regular": "Inter-Regular",
+    "medium": "Inter-Medium",
+    "semibold": "Inter-SemiBold",
+    "bold": "Inter-Bold"
+  },
+  "files": {
+    "regular": "Inter-Regular.ttf",
+    "medium": "Inter-Medium.ttf",
+    "semibold": "Inter-SemiBold.ttf",
+    "bold": "Inter-Bold.ttf"
+  },
+  "license": "OFL.txt",
+  "source": "github.com/rsms/inter v4.1 (extras/ttf)",
+  "letterSpacingCorrection": 0
+}
