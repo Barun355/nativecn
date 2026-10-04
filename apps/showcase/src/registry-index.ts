@@ -108,6 +108,24 @@ export const registryIndex: Record<string, RegistryIndexEntry> = {
       "Drawer panel content for Expo Router's drawer (expo-router/drawer): DrawerContent, DrawerHeader, DrawerSection, DrawerItem (label, icon, href, badge; active from the current route) and DrawerFooter.",
     load: () => import("@/registry/components/drawer"),
   },
+  "drawer-01": {
+    type: "registry:block",
+    description:
+      "Drawer panel with a profile header (avatar, name, email, plan Badge), labelled sections (Main, Workspace, Support) and Log out pinned in the footer.",
+    load: () => import("@/registry/components/drawer-01"),
+  },
+  "drawer-02": {
+    type: "registry:block",
+    description:
+      "Drawer panel for a SaaS workspace: logo and name with a close button, an Accent Colour onboarding item with a 5 Steps Badge, main items, a bottom group (Notifications with a count, Settings, Docs, Help) and a footer with a team switcher and the user's avatar.",
+    load: () => import("@/registry/components/drawer-02"),
+  },
+  "drawer-03": {
+    type: "registry:block",
+    description:
+      "Drawer panel with a dark cover (large avatar, name, View profile, a bell with a count, an overflow button and a round + action), icon items active in Accent Colour text, a divider and text-only secondary items.",
+    load: () => import("@/registry/components/drawer-03"),
+  },
   "drawer-demo": {
     type: "registry:example",
     description:
