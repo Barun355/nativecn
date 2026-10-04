@@ -1,9 +1,9 @@
 <!doctype html>
 <!--
   PROTOTYPE, throwaway. Not production code.
-  Question: what do drawer-01 / drawer-02 look like, built from the Drawer Components
+  Question: what do drawer-01 / drawer-02 / drawer-03 look like, built from the Drawer Components
   (DrawerContent, DrawerHeader, DrawerSection, DrawerItem, DrawerFooter)?
-  ?variant=drawer-01|drawer-02, bottom bar or ←/→. Toggle Vega/Nova Style, light/dark, and open/close.
+  ?variant=drawer-01|drawer-02|drawer-03, bottom bar or ←/→. Toggle Vega/Nova Style, light/dark, and open/close.
   Tap the ☰ button to open, the backdrop to close; tap items to select (the "screen" behind updates).
 -->
 <html lang="en">
@@ -31,7 +31,7 @@
 <body>
   <div class="phone" id="phone"></div>
   <div class="side"><span class="tag">PROTOTYPE</span><h3 id="title" style="margin:8px 0 2px"></h3><div id="why"></div>
-    <div><button id="style">Style: Vega</button><button id="dark">Toggle dark</button><button id="open">Close drawer</button></div>
+    <div><button id="style">Style: Vega</button><button id="dark">Toggle dark</button><button id="open">Close drawer</button><button id="accent">Accent: violet</button></div>
     <pre id="state"></pre></div>
   <div class="switcher"><button id="prev">←</button><span id="label"></span><button id="next">→</button></div>
 <script>
@@ -39,6 +39,10 @@ const COLORS = {
   light:{ background:'#ffffff', foreground:'#0a0a0a', card:'#ffffff', muted:'#f5f5f5', mutedForeground:'#737373', primary:'#171717', primaryForeground:'#fafafa', accent:'#f5f5f5', border:'#e5e5e5', destructive:'#dc2626', overlay:'rgba(0,0,0,.5)' },
   dark: { background:'#0a0a0a', foreground:'#fafafa', card:'#171717', muted:'#262626', mutedForeground:'#a3a3a3', primary:'#fafafa', primaryForeground:'#171717', accent:'#262626', border:'#2e2e2e', destructive:'#ef4444', overlay:'rgba(0,0,0,.7)' } };
 // drawer.item slot from "Vega and Nova values for each 0.1 Component"
+const ACCENTS = {
+  violet:{ light:{ primary:'#7c3aed', tint:'#ede9fe', onTint:'#6d28d9' }, dark:{ primary:'#a78bfa', tint:'#2e1065', onTint:'#c4b5fd' } },
+  blue:  { light:{ primary:'#2563eb', tint:'#dbeafe', onTint:'#1d4ed8' }, dark:{ primary:'#60a5fa', tint:'#172554', onTint:'#93c5fd' } },
+  neutral:{ light:{ primary:'#171717', tint:'#f5f5f5', onTint:'#171717' }, dark:{ primary:'#fafafa', tint:'#262626', onTint:'#fafafa' } } };
 const STYLES = {
   vega:{ item:{ h:48, r:8, padX:12, gap:12 }, avatar:40, sectionGap:20, pad:16, cardR:18, badge:{ h:22, r:6 } },
   nova:{ item:{ h:40, r:6, padX:10, gap:10 }, avatar:32, sectionGap:14, pad:12, cardR:14, badge:{ h:20, r:4 } } };
@@ -46,12 +50,19 @@ const I = (d, s=20) => `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill
 const ic = { home:'<path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>', inbox:'<path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.5 5h13L22 12v6a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-6z"/>',
   chart:'<path d="M3 3v18h18"/><path d="m7 15 4-4 3 3 5-6"/>', folder:'<path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>', users:'<circle cx="9" cy="8" r="4"/><path d="M2 21a7 7 0 0 1 14 0"/><path d="M16 4a4 4 0 0 1 0 8M22 21a7 7 0 0 0-4-6.3"/>',
   gear:'<circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.2 4.2l2.9 2.9M16.9 16.9l2.9 2.9M1 12h4M19 12h4"/>', help:'<circle cx="12" cy="12" r="10"/><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3M12 17h.01"/>',
-  out:'<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/>', menu:'<path d="M4 6h16M4 12h16M4 18h16"/>', x:'<path d="M18 6 6 18M6 6l12 12"/>', chev:'<path d="m7 15 5-5 5 5"/>', star:'<path d="m12 2 3 7h7l-5.5 4.5L18.5 21 12 16.5 5.5 21l2-7.5L2 9h7z"/>' };
+  out:'<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/>', menu:'<path d="M4 6h16M4 12h16M4 18h16"/>', x:'<path d="M18 6 6 18M6 6l12 12"/>', chev:'<path d="m7 15 5-5 5 5"/>', star:'<path d="m12 2 3 7h7l-5.5 4.5L18.5 21 12 16.5 5.5 21l2-7.5L2 9h7z"/>',
+  loader:'<path d="M21 12a9 9 0 1 1-6.2-8.6"/>', pkg:'<path d="m7.5 4.3 9 5.2M21 8 12 3 3 8v8l9 5 9-5z"/><path d="m3.3 7 8.7 5 8.7-5M12 22V12"/>', card:'<rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/>',
+  tag:'<path d="M12.6 2.6A2 2 0 0 0 11.2 2H4a2 2 0 0 0-2 2v7.2a2 2 0 0 0 .6 1.4l8.7 8.7a2.4 2.4 0 0 0 3.4 0l6.6-6.6a2.4 2.4 0 0 0 0-3.4z"/><circle cx="7.5" cy="7.5" r=".5"/>', wallet:'<path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1"/><path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4"/>',
+  bell:'<path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.9 1.9 0 0 0 3.4 0"/>', doc:'<path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7z"/><path d="M14 2v5h5M16 13H8M16 17H8"/>',
+  store:'<path d="m2 7 4.4-4.4A2 2 0 0 1 7.8 2h8.4a2 2 0 0 1 1.4.6L22 7"/><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><path d="M2 7h20v3a2 2 0 0 1-4 0 2 2 0 0 1-4 0 2 2 0 0 1-4 0 2 2 0 0 1-4 0 2 2 0 0 1-4 0z"/>',
+  cart:'<circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2 2h3l2.7 12.4a2 2 0 0 0 2 1.6h9.7a2 2 0 0 0 2-1.6L23 6H6"/>', history:'<path d="M3 12a9 9 0 1 0 9-9 9.8 9.8 0 0 0-6.7 2.7L3 8"/><path d="M3 3v5h5M12 7v5l4 2"/>',
+  plus:'<path d="M5 12h14M12 5v14"/>', dots:'<circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/>', chevd:'<path d="m6 9 6 6 6-6"/>' };
 const NAV = [['home','Home'],['inbox','Inbox','12'],['chart','Analytics'],['folder','Projects'],['users','Team'],['gear','Settings'],['help','Help']];
 
-let state = { variant:'drawer-01', style:'vega', scheme:'light', open:true, active:0, lastAction:'-' };
+let state = { variant:'drawer-01', style:'vega', scheme:'light', accent:'violet', open:true, active:{ 'drawer-01':0, 'drawer-02':2, 'drawer-03':0 }, lastAction:'-' };
+const act = () => state.active[state.variant];
 
-const item = (S, c, k, opts={}) => { const [i, l, badge] = NAV[k]; const on = k===state.active; const it = S.item;
+const item = (S, c, k, opts={}) => { const [i, l, badge] = NAV[k]; const on = k===act(); const it = S.item;
   if (opts.iconOnly) return `<div class="press" data-go="${k}" role="button" aria-label="${l}" aria-selected="${on}" title="${l}" style="width:${it.h}px;height:${it.h}px;border-radius:${it.r}px;display:flex;align-items:center;justify-content:center;position:relative;${on?`background:${c.primary};color:${c.primaryForeground};`:`color:${c.mutedForeground};`}">${I(ic[i],22)}${badge?`<span style="position:absolute;top:6px;right:6px;width:8px;height:8px;border-radius:50%;background:${c.destructive}"></span>`:''}</div>`;
   return `<div class="press" data-go="${k}" role="button" aria-selected="${on}" style="height:${it.h}px;border-radius:${it.r}px;padding:0 ${it.padX}px;display:flex;align-items:center;gap:${it.gap}px;font:500 15px/20px Inter;${on?`background:${opts.strong?c.primary:c.accent};color:${opts.strong?c.primaryForeground:c.foreground};`:`color:${c.foreground};`}">${I(ic[i],20)}<span style="flex:1">${l}</span>${badge?`<span style="height:${S.badge.h}px;border-radius:${S.badge.r}px;padding:0 7px;font:500 12px/16px Inter;display:inline-flex;align-items:center;background:${on&&opts.strong?c.primaryForeground:c.muted};color:${on&&opts.strong?c.primary:c.foreground}">${badge}</span>`:''}</div>`; };
 const sectionLabel = (c, l) => `<div style="font:600 11px/16px Inter;letter-spacing:.06em;text-transform:uppercase;color:${c.mutedForeground};padding:0 4px 6px">${l}</div>`;
@@ -67,22 +78,46 @@ const VARIANTS = {
         <div>${sectionLabel(c,'Workspace')}${item(S,c,3)}${item(S,c,4)}</div>
         <div>${sectionLabel(c,'Support')}${item(S,c,5)}${item(S,c,6)}</div></div>
       <div style="border-top:1px solid ${c.border};padding-top:12px"><div class="press" data-act="logout" role="button" style="height:${S.item.h}px;border-radius:${S.item.r}px;padding:0 ${S.item.padX}px;display:flex;align-items:center;gap:${S.item.gap}px;font:500 15px Inter;color:${c.destructive}">${I(ic.out,20)}Log out</div></div></div>` },
-  'drawer-02': { name:'Floating card panel', width:316, floating:true,
-    why:['The panel floats inset from the edges (12px) with large rounded corners and a shadow, over a dimmed screen', 'A compact header with app name and close (×) button', 'Active item strongly filled (primary)', 'Footer card with an upgrade prompt and the user row', 'A modern, softer feel (Linear/Arc-like)'],
-    panel:(S,c)=>`<div style="height:100%;display:flex;flex-direction:column;background:${c.card};border-radius:${S.cardR+6}px;box-shadow:0 12px 40px rgba(0,0,0,.25);border:1px solid ${c.border};padding:${S.pad}px">
-      <div style="display:flex;align-items:center;justify-content:space-between;padding:4px 4px 14px"><div style="display:flex;gap:10px;align-items:center"><span style="width:30px;height:30px;border-radius:9px;background:${c.primary};color:${c.primaryForeground};display:inline-flex;align-items:center;justify-content:center;font:700 14px Inter">N</span><span style="font:600 16px Inter;color:${c.foreground}">nativecn</span></div>
-        <span class="press" data-act="close" role="button" aria-label="Close menu" style="width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;color:${c.mutedForeground}">${I(ic.x,20)}</span></div>
-      <div style="flex:1;overflow:auto;display:grid;gap:2px;align-content:start">${[0,1,2,3,4,5,6].map(k=>item(S,c,k,{strong:true})).join('')}</div>
-      <div style="border-radius:${S.cardR}px;background:${c.muted};padding:14px;display:grid;gap:10px">
-        <div style="display:flex;gap:8px;align-items:center;font:600 14px Inter;color:${c.foreground}">${I(ic.star,18)}Upgrade to Pro</div>
-        <div style="font:400 13px/18px Inter;color:${c.mutedForeground}">Unlock team workspaces and analytics.</div>
-        <div style="display:flex;gap:10px;align-items:center;padding-top:6px;border-top:1px solid ${c.border}">${avatar(S,c,32)}<div style="flex:1"><div style="font:500 14px Inter;color:${c.foreground}">Jane Doe</div><div style="font:400 12px Inter;color:${c.mutedForeground}">jane@example.com</div></div><span style="color:${c.mutedForeground}">${I(ic.chev,18)}</span></div></div></div>` },
+  'drawer-02': { name:'SaaS workspace', width:290, nav:[['loader','Checklist'],['home','Home'],['pkg','Products'],['card','Payment page'],['tag','Promo codes'],['users','Customers'],['wallet','Payments'],['bell','Notification'],['gear','Settings'],['doc','Docs'],['help','Help']],
+    why:['Logo + app name header with a close (×) button', 'A highlighted onboarding item ("Checklist") tinted with the Accent Colour and a "5 Steps" badge', 'Main items; the active one gets a muted background (DrawerItem)', 'A bottom DrawerSection pushed down (Notification with an accent "+9" badge, Settings, Docs, Help)', 'DrawerFooter: team switcher on the left and the user avatar + chevron on the right'],
+    panel:(S,c,a)=>{ const nav=VARIANTS['drawer-02'].nav; const it=S.item;
+      const row=(k)=>{ const [i,l]=nav[k]; const on=k===act(); const check=k===0;
+        const badge = check ? `<span style="height:${S.badge.h}px;border-radius:999px;padding:0 9px;font:500 12px Inter;display:inline-flex;align-items:center;background:${a.tint};color:${a.onTint}">5 Steps</span>`
+          : l==='Notification' ? `<span style="height:${S.badge.h-2}px;border-radius:999px;padding:0 7px;font:600 11px Inter;display:inline-flex;align-items:center;background:${a.primary};color:#fff">+9</span>` : '';
+        return `<div class="press" data-go="${k}" role="button" aria-selected="${on}" style="height:${it.h}px;border-radius:${it.r}px;padding:0 ${it.padX}px;display:flex;align-items:center;gap:${it.gap}px;font:500 15px Inter;color:${check?a.onTint:c.foreground};${on?`background:${check?a.tint:c.muted};`:''}">${I(ic[i],19)}<span style="flex:1">${l}</span>${badge}</div>`; };
+      return `<div style="height:100%;display:flex;flex-direction:column;background:${c.background};padding:${44+8}px ${S.pad}px ${34}px">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:4px 4px 14px;border-bottom:1px solid ${c.border};margin-bottom:12px">
+          <div style="display:flex;gap:8px;align-items:center;color:${a.onTint};font:600 18px Inter">${I('<rect x="4" y="4" width="16" height="16" rx="5" transform="rotate(12 12 12)"/>',22)}Lancy</div>
+          <span class="press" data-act="close" role="button" aria-label="Close menu" style="width:36px;height:36px;display:flex;align-items:center;justify-content:center;color:${c.mutedForeground}">${I(ic.x,20)}</span></div>
+        <div style="display:grid;gap:2px">${[0,1,2,3,4,5,6].map(row).join('')}</div>
+        <div style="flex:1"></div>
+        <div style="display:grid;gap:2px;padding-bottom:12px">${[7,8,9,10].map(row).join('')}</div>
+        <div style="border-top:1px solid ${c.border};padding:12px 4px 0;display:flex;align-items:center;justify-content:space-between">
+          <span class="press" role="button" aria-label="Switch team" style="display:flex;align-items:center;gap:8px;font:500 15px Inter;color:${c.foreground}"><span style="width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,${a.primary},#f0abfc)"></span>Team ${I(ic.chev,16)}</span>
+          <span class="press" role="button" aria-label="Account menu" style="display:flex;align-items:center;gap:6px;color:${c.mutedForeground}">${avatar(S,c,30)}${I(ic.chev,16)}</span></div></div>`; } },
+  'drawer-03': { name:'Cover header', width:330, nav:[['home','Home'],['store','Shop'],['cart','Shopping Cart'],['history','Same-Day Delivery'],[null,'Invite Friends'],[null,'Find Friends'],[null,'Account'],[null,'Settings']],
+    why:['A dark cover header: large avatar, name, a "View profile" link, a notification bell with a count and an overflow (⋮) menu', 'A round primary action (+) anchored to the header', 'Primary DrawerItems with icons; the active item is shown by Accent Colour text and icon, with no background', 'A divider, then a secondary DrawerSection of text-only items', 'Typical consumer or commerce app pattern'],
+    panel:(S,c,a)=>{ const nav=VARIANTS['drawer-03'].nav; const it=S.item;
+      const row=(k)=>{ const [i,l]=nav[k]; const on=k===act();
+        return `<div class="press" data-go="${k}" role="button" aria-selected="${on}" style="height:${i?it.h+8:it.h}px;padding:0 ${S.pad+8}px;display:flex;align-items:center;gap:${it.gap+12}px;font:${i?'500 16px':'500 15px'} Inter;color:${on?a.primary:c.foreground}">${i?`<span style="color:${on?a.primary:c.mutedForeground}">${I(ic[i],22)}</span>`:''}${l}</div>`; };
+      return `<div style="height:100%;display:flex;flex-direction:column;background:${c.background}">
+        <div style="position:relative;background:#1f2328;color:#fff;padding:${44+8}px ${S.pad+8}px 20px">
+          <div style="position:absolute;top:${44+4}px;right:12px;display:flex;gap:6px;align-items:center">
+            <span class="press" role="button" aria-label="Notifications, 45 unread" style="position:relative;width:40px;height:40px;display:flex;align-items:center;justify-content:center">${I(ic.bell,22)}<span style="position:absolute;top:2px;right:0;background:${a.primary};color:#fff;font:600 10px Inter;border-radius:4px;padding:1px 4px">45</span></span>
+            <span class="press" role="button" aria-label="More" style="width:32px;height:40px;display:flex;align-items:center;justify-content:center">${I(ic.dots,22)}</span></div>
+          ${avatar(S,c,64)}
+          <div style="margin-top:14px;font:600 18px Inter">Jane Doe</div>
+          <div class="press" role="link" style="font:400 15px Inter;opacity:.7;margin-top:2px">View profile</div>
+          <span class="press" role="button" aria-label="Create" style="position:absolute;right:20px;bottom:18px;width:48px;height:48px;border-radius:50%;background:${a.primary};color:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(0,0,0,.3)">${I(ic.plus,24)}</span></div>
+        <div style="padding:8px 0">${[0,1,2,3].map(row).join('')}</div>
+        <div style="height:1px;background:${c.border};margin:0 0 8px"></div>
+        <div>${[4,5,6,7].map(row).join('')}</div></div>`; } },
 };
 const KEYS = Object.keys(VARIANTS);
 
 function draw() {
-  const c = COLORS[state.scheme], S = STYLES[state.style], v = VARIANTS[state.variant];
-  const [icon, label] = NAV[state.active];
+  const c = COLORS[state.scheme], S = STYLES[state.style], v = VARIANTS[state.variant], a = ACCENTS[state.accent][state.scheme];
+  const navList = v.nav || NAV; const [icon0, label] = navList[act()]; const icon = icon0 || 'home';
   const screen = `<div style="position:absolute;inset:0;background:${c.background};color:${c.foreground}">
       <div style="height:${44+56}px;padding:44px 12px 0;display:flex;align-items:center;gap:8px;border-bottom:1px solid ${c.border}">
         <span class="press" data-act="open" role="button" aria-label="Open menu" style="width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center">${I(ic.menu,22)}</span>
@@ -90,16 +125,17 @@ function draw() {
       <div style="padding:16px;display:grid;gap:12px">${[1,2,3,4].map(n=>`<div style="height:72px;border-radius:12px;background:${c.muted};display:flex;align-items:center;padding:0 16px;gap:12px;color:${c.mutedForeground};font:400 14px Inter">${I(ic[icon],20)}${label} item ${n}</div>`).join('')}</div></div>`;
   const inset = v.floating ? 12 : 0;
   const top = v.floating ? 44 + 8 : 0, bottom = v.floating ? 34 + 8 : 0; // safe areas: status bar 44, home indicator 34
-  const panel = `<div class="anim" style="position:absolute;top:${top}px;bottom:${bottom}px;left:${inset}px;width:${v.width}px;transform:translateX(${state.open?0:-(v.width+inset+20)}px)">${v.panel(S,c)}</div>`;
+  const panel = `<div class="anim" style="position:absolute;top:${top}px;bottom:${bottom}px;left:${inset}px;width:${v.width}px;transform:translateX(${state.open?0:-(v.width+inset+20)}px)">${v.panel(S,c,a)}</div>`;
   const backdrop = `<div class="anim" data-act="close" style="position:absolute;inset:0;background:${c.overlay};opacity:${state.open?1:0};pointer-events:${state.open?'auto':'none'}"></div>`;
   document.getElementById('phone').innerHTML = screen + backdrop + panel;
-  document.querySelectorAll('[data-go]').forEach(el => el.onclick = e => { e.stopPropagation(); state.active = +el.dataset.go; state.lastAction = 'navigate:' + NAV[state.active][1]; state.open = false; draw(); });
+  document.querySelectorAll('[data-go]').forEach(el => el.onclick = e => { e.stopPropagation(); state.active[state.variant] = +el.dataset.go; state.lastAction = 'navigate:' + (VARIANTS[state.variant].nav || NAV)[act()][1]; state.open = false; draw(); });
   document.querySelectorAll('[data-act]').forEach(el => el.onclick = e => { e.stopPropagation(); const a = el.dataset.act; state.lastAction = a; if (a === 'open') state.open = true; if (a === 'close') state.open = false; if (a === 'logout') state.open = false; draw(); });
   document.getElementById('title').textContent = `${state.variant}: ${v.name}`;
   document.getElementById('why').innerHTML = `<ul>${v.why.map(w=>`<li>${w}</li>`).join('')}</ul>`;
   document.getElementById('label').textContent = `${state.variant} (${state.style})`;
   document.getElementById('style').textContent = `Style: ${state.style === 'vega' ? 'Vega' : 'Nova'}`;
   document.getElementById('open').textContent = state.open ? 'Close drawer' : 'Open drawer';
+  document.getElementById('accent').textContent = `Accent: ${state.accent}`;
   document.getElementById('state').textContent = JSON.stringify({ ...state, drawerItemSlot: S.item }, null, 1);
   const u = new URL(location); u.searchParams.set('variant', state.variant); history.replaceState(null, '', u);
 }
@@ -108,6 +144,7 @@ document.getElementById('prev').onclick = () => cycle(-1);
 document.getElementById('next').onclick = () => cycle(1);
 document.getElementById('style').onclick = () => { state.style = state.style === 'vega' ? 'nova' : 'vega'; draw(); };
 document.getElementById('dark').onclick = () => { state.scheme = state.scheme === 'light' ? 'dark' : 'light'; draw(); };
+document.getElementById('accent').onclick = () => { const k = Object.keys(ACCENTS); state.accent = k[(k.indexOf(state.accent) + 1) % k.length]; draw(); };
 document.getElementById('open').onclick = () => { state.open = !state.open; draw(); };
 addEventListener('keydown', e => { if (e.key === 'ArrowLeft') cycle(-1); if (e.key === 'ArrowRight') cycle(1); if (e.key === 'Escape') { state.open = false; draw(); } });
 const q = new URLSearchParams(location.search).get('variant'); if (KEYS.includes(q)) state.variant = q;
