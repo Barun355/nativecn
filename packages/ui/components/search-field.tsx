@@ -1,9 +1,16 @@
 import { Search, X } from "lucide-react-native";
 import { useCallback, useRef, useState, type Ref } from "react";
-import { TextInput, View, type StyleProp, type TextInputProps, type ViewStyle } from "react-native";
+import {
+  Pressable as RNPressable,
+  StyleSheet,
+  TextInput,
+  type StyleProp,
+  type TextInputProps,
+  type ViewStyle,
+} from "react-native";
 
 import { Icon } from "@/registry/components/icon";
-import { Pressable } from "@/registry/components/primitives/pressable";
+import { Pressable, touchTargetHitSlop } from "@/registry/components/primitives/pressable";
 import { Spinner } from "@/registry/components/spinner";
 import { useControllableState } from "@/registry/hooks/use-controllable-state";
 import { slot } from "@/registry/styles";
@@ -90,7 +97,7 @@ export function SearchField({
   ref,
   ...props
 }: SearchFieldProps) {
-  const { colors, iconSize } = useTheme();
+  const { colors, iconSize, minTouchTarget } = useTheme();
   const styles = useStyles();
   const [text, setText] = useControllableState({
     value,
@@ -115,15 +122,33 @@ export function SearchField({
   };
 
   const side = iconSize.sm;
+  const isEditable = !disabled && editable !== false;
+  const frameStyle: StyleProp<ViewStyle> = [
+    styles.root,
+    focused ? styles.focused : null,
+    disabled ? styles.disabled : null,
+    style,
+  ];
+  // TextInput has no hitSlop, so the frame extends the tap area to 48 above and below. The
+  // height is known before layout (the Style Slot, or a height set through `style`).
+  const { height: frameHeight } = StyleSheet.flatten(frameStyle) ?? {};
+  const hitSlop = touchTargetHitSlop(
+    undefined,
+    typeof frameHeight === "number" ? frameHeight : undefined,
+    minTouchTarget,
+  );
 
   return (
-    <View
-      style={[
-        styles.root,
-        focused ? styles.focused : null,
-        disabled ? styles.disabled : null,
-        style,
-      ]}
+    // A tap on the frame or within its hitSlop focuses the field. The frame is invisible to
+    // screen readers, which reach the searchbox (and the clear button) directly.
+    <RNPressable
+      accessible={false}
+      focusable={false}
+      importantForAccessibility="no"
+      disabled={!isEditable}
+      hitSlop={hitSlop}
+      onPress={isEditable ? () => inputRef.current?.focus() : undefined}
+      style={frameStyle}
     >
       {loading && !disabled ? (
         // The field itself is announced busy, so the Spinner stays silent.
@@ -137,7 +162,7 @@ export function SearchField({
         aria-label={ariaLabel ?? placeholder}
         aria-disabled={disabled}
         aria-busy={loading && !disabled}
-        editable={!disabled && editable !== false}
+        editable={isEditable}
         value={text}
         onChangeText={setText}
         placeholder={placeholder}
@@ -171,6 +196,6 @@ export function SearchField({
           <Icon icon={X} size="sm" color="mutedForeground" />
         </Pressable>
       ) : null}
-    </View>
+    </RNPressable>
   );
 }

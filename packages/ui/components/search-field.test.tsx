@@ -10,6 +10,7 @@ import {
   computeScale,
   scaleTokens,
   scaleValue,
+  tokens,
   useSchemeStore,
 } from "@/registry/theme";
 
@@ -88,6 +89,65 @@ describe("SearchField", () => {
     await renderSearch({ defaultValue: "a" });
     const slop = clearButton()!.props.hitSlop;
     expect(t.iconSize.sm + slop.top + slop.bottom).toBeCloseTo(48);
+  });
+
+  describe("48 touch target", () => {
+    /** The frame (a Pressable that focuses the field) around the TextInput. */
+    const frameEl = () => screen.getByTestId("search").parent!;
+
+    test.each([
+      ["vega", t.controlHeight.md],
+      ["nova", t.controlHeight.sm],
+    ] as const)(
+      "%s: the visual height stays, the tap area reaches 48 above and below",
+      async (style, h) => {
+        setActiveStyle(style);
+        await renderSearch();
+        expect(flat(frameEl().props.style).height).toBe(h);
+        const slop = frameEl().props.hitSlop;
+        if (h >= tokens.minTouchTarget) {
+          expect(slop).toBeUndefined();
+        } else {
+          expect(slop).toMatchObject({ left: 0, right: 0 });
+          expect(slop.top).toBe(slop.bottom);
+          expect(h + slop.top + slop.bottom).toBeCloseTo(tokens.minTouchTarget);
+        }
+      },
+    );
+
+    test("Nova's 36-high field gets hitSlop at Scale 1", async () => {
+      // The test window's Scale is above 1; a height set through style is used as-is.
+      setActiveStyle("nova");
+      await renderSearch({ style: { height: 36 } });
+      expect(frameEl().props.hitSlop).toEqual({ top: 6, bottom: 6, left: 0, right: 0 });
+    });
+
+    test("a tap on the frame focuses the field, except while disabled", async () => {
+      setActiveStyle("nova");
+      const ref = { current: null as TextInput | null };
+      await renderSearch({ ref });
+      const focus = jest.spyOn(ref.current!, "focus").mockImplementation(() => {});
+      focus.mockClear();
+      await fireEvent.press(frameEl());
+      expect(focus).toHaveBeenCalledTimes(1);
+
+      focus.mockClear();
+      await renderSearch({ ref, disabled: true });
+      await fireEvent.press(frameEl());
+      expect(focus).not.toHaveBeenCalled();
+      focus.mockRestore();
+    });
+
+    test("screen readers skip the frame and reach the searchbox", async () => {
+      setActiveStyle("nova");
+      const el = await renderSearch();
+      expect(frameEl().props).toMatchObject({
+        accessible: false,
+        importantForAccessibility: "no",
+      });
+      expect(frameEl().props.role).toBeUndefined();
+      expect(screen.getByRole("searchbox", { name: "Search" })).toBe(el);
+    });
   });
 
   test("works controlled", async () => {

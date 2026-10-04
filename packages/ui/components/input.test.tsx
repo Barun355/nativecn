@@ -113,6 +113,73 @@ describe("Input: Style Slots and Colour Roles", () => {
   });
 });
 
+describe("Input: 48 touch target", () => {
+  /** The frame (a Pressable that focuses the field) around the TextInput. */
+  const frameEl = () => screen.getByTestId("input").parent!;
+
+  /** The tap area extends above and below the frame to 48; sides are left alone. */
+  function expectHitArea(h: number) {
+    const slop = frameEl().props.hitSlop;
+    if (h >= tokens.minTouchTarget) {
+      expect(slop).toBeUndefined();
+      return;
+    }
+    expect(slop.left).toBe(0);
+    expect(slop.right).toBe(0);
+    expect(slop.top).toBe(slop.bottom);
+    expect(h + slop.top + slop.bottom).toBeCloseTo(tokens.minTouchTarget);
+  }
+
+  test.each([
+    ["vega", "sm", t.controlHeight.sm],
+    ["vega", "md", t.controlHeight.md],
+    ["vega", "lg", t.controlHeight.lg],
+    ["nova", "sm", s(32)],
+    ["nova", "md", t.controlHeight.sm],
+    ["nova", "lg", t.controlHeight.md],
+  ] as const)("%s %s: the visual height stays, the tap area reaches 48", async (style, size, h) => {
+    setActiveStyle(style);
+    expect(frame(await renderInput({ size })).height).toBe(h);
+    expectHitArea(h);
+  });
+
+  test("Nova's 36-high field gets hitSlop at Scale 1", async () => {
+    // The test window's Scale is above 1; a height set through style is used as-is.
+    setActiveStyle("nova");
+    await renderInput({ style: { height: 36 } });
+    expect(frameEl().props.hitSlop).toEqual({ top: 6, bottom: 6, left: 0, right: 0 });
+  });
+
+  test("a tap on the frame or its hitSlop focuses the field", async () => {
+    setActiveStyle("nova");
+    const ref = { current: null as TextInput | null };
+    await renderInput({ ref });
+    const focus = jest.spyOn(ref.current!, "focus").mockImplementation(() => {});
+    await fireEvent.press(frameEl());
+    expect(focus).toHaveBeenCalledTimes(1);
+    focus.mockRestore();
+  });
+
+  test("no focus from the frame while disabled or not editable", async () => {
+    for (const props of [{ disabled: true }, { editable: false }]) {
+      const ref = { current: null as TextInput | null };
+      await renderInput({ ref, ...props });
+      const focus = jest.spyOn(ref.current!, "focus").mockImplementation(() => {});
+      await fireEvent.press(frameEl());
+      expect(focus).not.toHaveBeenCalled();
+      focus.mockRestore();
+    }
+  });
+
+  test("screen readers skip the frame and reach the TextInput", async () => {
+    setActiveStyle("nova");
+    const input = await renderInput();
+    expect(frameEl().props).toMatchObject({ accessible: false, importantForAccessibility: "no" });
+    expect(frameEl().props.role).toBeUndefined();
+    expect(screen.getByLabelText("Email")).toBe(input);
+  });
+});
+
 describe("Input: states", () => {
   test.each([
     ["error", colors.light.destructive],
