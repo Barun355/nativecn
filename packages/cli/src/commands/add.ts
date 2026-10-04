@@ -3,6 +3,7 @@ import path from "node:path";
 
 import * as p from "@clack/prompts";
 import { createTwoFilesPatch } from "diff";
+import type { Preset } from "preset";
 
 import { readConfig, type Config } from "../config.ts";
 import { destinationAlias, resolveTarget } from "../destinations.ts";
@@ -12,6 +13,7 @@ import { fetchIndex, fetchItem, type RegistryItem } from "../registry.ts";
 import { collectDependencies, resolveTree } from "../resolve.ts";
 import { addConfigPlugins } from "../utils/app-config.ts";
 import { detectPackageManager, installPlan, runInstall } from "../utils/pm.ts";
+import { composePresetThemeFile } from "../utils/preset-theme.ts";
 
 export type AddOptions = {
   cwd: string;
@@ -69,7 +71,7 @@ export async function add(names: string[], opts: AddOptions): Promise<AddResult>
     throw new AddError("Name at least one item, e.g. `nativecn-cli add button`.");
 
   const tree = await resolveTree(names, (n) => fetchItem(n, style));
-  const files = plan(tree, config, opts);
+  const files = await plan(tree, config, opts);
 
   if (opts.view !== undefined && opts.view !== false) {
     for (const f of filterByPath(files, opts.view))
@@ -138,7 +140,11 @@ export async function add(names: string[], opts: AddOptions): Promise<AddResult>
   return { files, written, skipped, dependencies, routes, plugins, rebuild };
 }
 
-function plan(tree: RegistryItem[], config: Config, opts: AddOptions): PlannedFile[] {
+async function plan(
+  tree: RegistryItem[],
+  config: Config,
+  opts: AddOptions,
+): Promise<PlannedFile[]> {
   const out: PlannedFile[] = [];
   for (const item of tree) {
     const feature = isScreenBlock(item) ? featureFor(item, opts) : undefined;
@@ -156,7 +162,11 @@ function plan(tree: RegistryItem[], config: Config, opts: AddOptions): PlannedFi
       if (opts.path && file.target.startsWith("{components}")) {
         target = path.posix.join(opts.path, file.target.slice("{components}/".length));
       }
-      const content = rewriteImports(file.content, config, feature);
+      let content = rewriteImports(file.content, config, feature);
+      // The Preset owns colors.ts and parts of tokens.ts (#16): compare against, and write, what
+      // create/init compose for this project's Preset, never the Registry's default (#114).
+      if (item.name === "theme")
+        content = await composePresetThemeFile(file.target, content, config.preset as Preset);
       const abs = path.join(opts.cwd, target);
       const status: FileStatus = !fs.existsSync(abs)
         ? "new"
