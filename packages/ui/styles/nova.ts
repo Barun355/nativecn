@@ -52,6 +52,10 @@ export const nova = defineStyle({
   }),
   "radio.dot": (t) => ({ width: t.scaleValue(18), height: t.scaleValue(18) }),
   "switch.track": (t) => ({ width: t.scaleValue(44), height: t.scaleValue(26) }),
+  // Pressed look of the Checkbox, RadioGroupItem and Switch rows (the whole row, label included).
+  "checkbox.pressed": () => ({ opacity: 0.7 }),
+  "radio.pressed": () => ({ opacity: 0.7 }),
+  "switch.pressed": () => ({ opacity: 0.7 }),
   "slider.track": (t) => ({ height: t.scaleValue(4) }),
   "slider.thumb": (t) => ({ width: t.scaleValue(20), height: t.scaleValue(20) }),
   "chip.root": (t) => ({
@@ -62,6 +66,7 @@ export const nova = defineStyle({
     fontSize: t.scaleValue(13),
     lineHeight: t.scaleValue(18),
   }),
+  "chip.pressed": () => ({ filter: [{ brightness: 0.88 }], transform: [{ scale: 0.98 }] }),
   "input-otp.cell": (t) => ({
     width: t.scaleValue(40),
     height: t.scaleValue(48),
