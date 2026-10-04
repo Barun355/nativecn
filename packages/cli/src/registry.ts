@@ -157,6 +157,44 @@ export function fetchIndex(style: string): Promise<RegistryIndex> {
   return defaultClient.index(style);
 }
 
+export type SchemeName = "light" | "dark";
+export type PresetIndex = {
+  radiusBase: Record<string, number | null>;
+  shared: Record<SchemeName, Record<string, string>>;
+};
+export type ColorIngredient = { name: string } & Record<SchemeName, Record<string, string>>;
+export type FontFace = "regular" | "medium" | "semibold" | "bold";
+export type FontIngredient = {
+  id: string;
+  name: string;
+  faces: Record<FontFace, string>;
+  files: Record<FontFace, string>;
+  license: string;
+  letterSpacingCorrection: number;
+};
+
+/** Preset ingredients published by the Registry build (`/r/presets/...`, #13). */
+export function fetchPresetIndex(): Promise<PresetIndex> {
+  return getJson("presets/index.json");
+}
+
+function ingredientName(name: string): string {
+  if (!/^[a-z0-9-]+$/.test(name)) throw new RegistryError(`"${name}" is not a Preset option.`);
+  return name;
+}
+
+export function fetchBaseColor(name: string): Promise<ColorIngredient> {
+  return getJson(`presets/base/${ingredientName(name)}.json`);
+}
+
+export function fetchAccentColor(name: string): Promise<ColorIngredient> {
+  return getJson(`presets/accent/${ingredientName(name)}.json`);
+}
+
+export function fetchFont(id: string): Promise<FontIngredient> {
+  return getJson(`presets/fonts/${ingredientName(id)}.json`);
+}
+
 export function clearRegistryCache(): void {
   defaultClient.clear();
 }

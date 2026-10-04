@@ -1,0 +1,13 @@
+{
+  "name": "blue",
+  "light": {
+    "primary": "#1447e6",
+    "primaryForeground": "#eff6ff",
+    "ring": "#1447e6"
+  },
+  "dark": {
+    "primary": "#193cb8",
+    "primaryForeground": "#eff6ff",
+    "ring": "#193cb8"
+  }
+}

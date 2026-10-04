@@ -44,7 +44,7 @@ export function scaleTokens(scale: number, base = { radiusBase: undefined as num
         fontFamily: family,
         fontSize: s(step.size),
         lineHeight: s(step.lineHeight),
-        letterSpacing: (step.tracking + fonts.trackingOffset[step.role]) * scale,
+        letterSpacing: (step.tracking + fonts.trackingOffset[step.role] * step.size) * scale,
       };
       return [variant, style];
     }),

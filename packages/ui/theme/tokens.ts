@@ -43,7 +43,7 @@ export const fonts = {
     semibold: "Inter-SemiBold",
     bold: "Inter-Bold",
   },
-  /** Letter-spacing correction for the chosen Body/Heading Font (Inter is the baseline, 0). */
+  /** Letter-spacing correction in em for the Body/Heading Font (Inter is the baseline, 0). */
   trackingOffset: { body: 0, heading: 0 },
 } as const;
 
