@@ -23,7 +23,7 @@ The one package and command through which users create apps, run Init, and add R
 _Avoid_: nativecn (as a package), @nativecn, create-nativecn
 
 **Starter**:
-nativecn's own base Expo app, created by `nativecn-cli create` the same way `create-expo-app` creates one (copy, install, set up). nativecn Components and Theme replace Expo's default themed components and colours.
+nativecn's own base Expo app (kept in the nativecn repo, pinned to the current Expo SDK) from which `nativecn-cli create` builds a new project, the way shadcn builds projects from its own templates. It has no Expo default theming.
 _Avoid_: Template, boilerplate
 
 **Init**:
