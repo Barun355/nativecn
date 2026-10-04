@@ -22,7 +22,7 @@ export const registryIndex: Record<string, RegistryIndexEntry> = {
   announce: {
     type: "registry:lib",
     description:
-      "Reliable screen-reader announcements on iOS and Android (Button and Input status, Toast).",
+      "Reliable screen-reader announcements on iOS and Android (Button and Input status, Toast, error and success Alerts).",
     load: () => import("@/registry/utils/announce"),
   },
   avatar: {
