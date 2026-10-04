@@ -23,6 +23,7 @@
     "@types/react": "catalog:",
     "expo": "catalog:",
     "expo-font": "~57.0.4",
+    "expo-haptics": "~57.0.3",
     "expo-splash-screen": "~57.0.9",
     "jest": "catalog:",
     "jest-expo": "catalog:",
