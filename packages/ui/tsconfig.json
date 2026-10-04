@@ -8,5 +8,5 @@
     "types": ["jest", "node"]
   },
   "include": ["**/*.ts", "**/*.tsx"],
-  "exclude": ["node_modules"]
+  "exclude": ["node_modules", "scripts/registry/__fixtures__", ".registry-build"]
 }

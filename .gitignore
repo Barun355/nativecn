@@ -8,3 +8,6 @@ dist/
 coverage/
 .expo/
 .next/
+packages/ui/.registry-build/
+apps/web/public/r/styles/
+apps/web/public/r/presets/
