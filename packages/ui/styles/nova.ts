@@ -153,4 +153,11 @@ export const nova = defineStyle({
     paddingHorizontal: t.scaleValue(10),
     gap: t.scaleValue(10),
   }),
+  "drawer.label": (t) => ({
+    ...t.type.label,
+    fontSize: t.scaleValue(13),
+    lineHeight: t.scaleValue(18),
+  }),
+  "drawer.pressed": (t) => ({ backgroundColor: t.colors.muted }),
+  "drawer.tint": (t) => ({ backgroundColor: t.colors.primary, opacity: 0.12 }),
 } satisfies Record<SlotName, SlotFill>);

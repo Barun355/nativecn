@@ -129,6 +129,10 @@ export const vega = defineStyle({
     paddingHorizontal: t.spacing[3],
     gap: t.spacing[3],
   }),
+  "drawer.label": (t) => ({ ...t.type.label }),
+  "drawer.pressed": (t) => ({ backgroundColor: t.colors.muted }),
+  // The Accent Colour (primary) tint behind an accent-tone item, drawn as an overlay layer.
+  "drawer.tint": (t) => ({ backgroundColor: t.colors.primary, opacity: 0.12 }),
 });
 
 export type SlotName = keyof typeof vega;
