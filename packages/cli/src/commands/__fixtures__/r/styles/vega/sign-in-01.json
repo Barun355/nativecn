@@ -1,0 +1,24 @@
+{
+  "name": "sign-in-01",
+  "type": "registry:block",
+  "categories": ["auth"],
+  "registryDependencies": ["text", "pressable"],
+  "meta": {
+    "route": "(auth)/sign-in",
+    "component": "SignIn01"
+  },
+  "files": [
+    {
+      "path": "screens/sign-in-01/index.tsx",
+      "type": "registry:file",
+      "target": "{screens}/sign-in-01/index.tsx",
+      "content": "import { Text } from \"@/registry/components/text\";\nimport { Form } from \"@/registry/screens/sign-in-01/components/form\";\nexport function SignIn01() { return Text() + Form; }\n"
+    },
+    {
+      "path": "screens/sign-in-01/components/form.tsx",
+      "type": "registry:file",
+      "target": "{screens}/sign-in-01/components/form.tsx",
+      "content": "export const Form = 1;\n"
+    }
+  ]
+}

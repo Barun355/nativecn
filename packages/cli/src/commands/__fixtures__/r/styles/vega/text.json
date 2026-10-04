@@ -1,0 +1,13 @@
+{
+  "name": "text",
+  "type": "registry:ui",
+  "registryDependencies": ["theme"],
+  "files": [
+    {
+      "path": "components/text.tsx",
+      "type": "registry:ui",
+      "target": "{components}/text.tsx",
+      "content": "import { theme } from \"@/registry/theme\";\nexport const Text = () => theme;\n"
+    }
+  ]
+}
