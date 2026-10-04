@@ -265,6 +265,18 @@ export const registryIndex: Record<string, RegistryIndexEntry> = {
     description: "A controlled Switch with a label, an uncontrolled one and a disabled one.",
     load: () => import("@/registry/examples/switch-demo"),
   },
+  "tab-navigation": {
+    type: "registry:ui",
+    description:
+      "The bottom tab bar: the custom tabBar of an Expo Router JS Tabs Layout, with classic and floating Variants, per-tab icons and badges from Tabs.Screen options.",
+    load: () => import("@/registry/components/tab-navigation"),
+  },
+  "tab-navigation-demo": {
+    type: "registry:example",
+    description:
+      "A tabs Layout using TabNavigation (floating) as the tabBar of Expo Router's JS Tabs, with icons and a badge.",
+    load: () => import("@/registry/examples/tab-navigation-demo"),
+  },
   text: {
     type: "registry:ui",
     description:

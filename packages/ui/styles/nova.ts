@@ -142,6 +142,10 @@ export const nova = defineStyle({
     lineHeight: t.scaleValue(12),
   }),
   "tab-navigation.floating": (t) => ({ borderRadius: t.radius.xl }),
+  "tab-navigation.pressed": () => ({
+    filter: [{ brightness: 0.88 }],
+    transform: [{ scale: 0.98 }],
+  }),
   "drawer.item": (t) => ({
     height: t.scaleValue(40),
     borderRadius: t.radius.sm,

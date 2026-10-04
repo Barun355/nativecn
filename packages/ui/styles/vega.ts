@@ -121,6 +121,7 @@ export const vega = defineStyle({
     lineHeight: t.scaleValue(14),
   }),
   "tab-navigation.floating": (t) => ({ borderRadius: t.radius["2xl"] }),
+  "tab-navigation.pressed": () => ({ filter: [{ brightness: 0.88 }] }),
   "drawer.item": (t) => ({
     height: t.scaleValue(48),
     borderRadius: t.radius.md,
