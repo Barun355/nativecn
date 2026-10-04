@@ -92,6 +92,18 @@ export const registryIndex: Record<string, RegistryIndexEntry> = {
       "Wraps a Screen: safe-area edges, scrolling, keyboard avoidance, Token padding and a max content width.",
     load: () => import("@/registry/components/container"),
   },
+  drawer: {
+    type: "registry:ui",
+    description:
+      "Drawer panel content for Expo Router's drawer (expo-router/drawer): DrawerContent, DrawerHeader, DrawerSection, DrawerItem (label, icon, href, badge; active from the current route) and DrawerFooter.",
+    load: () => import("@/registry/components/drawer"),
+  },
+  "drawer-demo": {
+    type: "registry:example",
+    description:
+      "An app/(drawer)/_layout.tsx: a profile header, titled sections, an accent item, a bottom group and a Log out footer.",
+    load: () => import("@/registry/examples/drawer-demo"),
+  },
   "empty-state": {
     type: "registry:ui",
     description:

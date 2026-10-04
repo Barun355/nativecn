@@ -900,4 +900,73 @@ export default [
     "The segmented and icon Variants, sharing the persisted Scheme.",
     ["scheme-switcher", "theme"],
   ),
+  // Navigation
+  component(
+    "drawer",
+    "Drawer panel content for Expo Router's drawer (expo-router/drawer): DrawerContent, DrawerHeader, DrawerSection, DrawerItem (label, icon, href, badge; active from the current route) and DrawerFooter.",
+    ["expo-router", "react-native-safe-area-context"],
+    ["theme", "pressable", "text", "icon", "badge"],
+    {
+      title: "Drawer",
+      categories: ["navigation"],
+      meta: {
+        kind: "Component",
+        props: {
+          DrawerContent: {
+            "...DrawerContentComponentProps":
+              "Expo Router's drawer props (state, navigation, descriptors): spread the drawerContent props in",
+            children:
+              "DrawerHeader (pinned on top), DrawerSections and DrawerItems (scrolling) and DrawerFooter (pinned at the bottom), in any order",
+            contentContainerStyle: "the scrolling area's content, merged last",
+            style: "merged last onto the panel",
+          },
+          DrawerHeader: {
+            children: "a profile, a logo and name, or a cover",
+            style: "merged last; the top padding includes the status bar inset",
+          },
+          DrawerSection: {
+            title: "string: a small muted heading (role heading)",
+            children: "DrawerItems",
+            style: 'merged last; { marginTop: "auto" } pushes the group to the bottom',
+          },
+          DrawerItem: {
+            label: "string (required): the visible text and accessible name",
+            icon: "a Lucide icon component; leave it out for text-only items",
+            href: "Href: pressing navigates there and closes the drawer; active while the pathname is this route or below it",
+            badge: "string | number (a secondary Badge) | ReactElement (rendered as-is)",
+            active: "boolean: overrides the active state derived from the route",
+            variant:
+              '"default" (default): active on a muted background | "text": active in the Accent Colour, no background',
+            tone: '"default" (default) | "accent": an Accent Colour tint with Accent Colour text and icon',
+            onPress:
+              "(event) => void: runs before navigating; without href the item is an action (role button) and the drawer stays open",
+            disabled: "boolean (default false)",
+            style: "layout only, merged last onto the root",
+          },
+          DrawerFooter: {
+            children: "Log out, a team switcher, the user",
+            style: "merged last; the bottom padding includes the home indicator inset",
+          },
+        },
+        variants: { variant: ["default", "text"], tone: ["default", "accent"] },
+        docs: "Built only on expo-router/drawer, which ships inside Expo Router (react-native-drawer-layout): never install @react-navigation/drawer or the npm package expo-drawer. In app/(drawer)/_layout.tsx render <Drawer drawerContent={(props) => <DrawerContent {...props}>…</DrawerContent>} />. Each DrawerItem with href has role link and aria-selected, derived from usePathname() (route groups such as (drawer) and index are ignored); tapping it calls router.navigate(href) and closes the drawer. Items are sized by the drawer.item Style Slot (Vega 48, Nova 40) with the tap area extended to 48; the label, pressed look and accent tint come from drawer.label, drawer.pressed and drawer.tint. The panel keeps clear of the status bar and home indicator.",
+        keywords: [
+          "drawer",
+          "side menu",
+          "sidebar",
+          "navigation drawer",
+          "hamburger menu",
+          "nav menu",
+          "expo-router drawer",
+        ],
+        examples: ["drawer-demo"],
+      },
+    },
+  ),
+  example(
+    "drawer-demo",
+    "Drawer demo",
+    "An app/(drawer)/_layout.tsx: a profile header, titled sections, an accent item, a bottom group and a Log out footer.",
+    ["drawer", "avatar", "badge", "separator", "text", "theme"],
+  ),
 ] satisfies RegistryItem[];
