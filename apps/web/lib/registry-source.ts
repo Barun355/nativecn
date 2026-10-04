@@ -8,6 +8,7 @@ import type { RegistryItem } from "../../../packages/cli/src/registry.ts";
 import components from "../../../packages/ui/components/_registry.ts";
 import primitives from "../../../packages/ui/components/primitives/_registry.ts";
 import hooks from "../../../packages/ui/hooks/_registry.ts";
+import screens from "../../../packages/ui/screens/_registry.ts";
 import theme from "../../../packages/ui/theme/_registry.ts";
 import utils from "../../../packages/ui/utils/_registry.ts";
 
@@ -16,6 +17,7 @@ export const sourceItems: RegistryItem[] = [
   ...components,
   ...primitives,
   ...hooks,
+  ...screens,
   ...theme,
   ...utils,
 ] as RegistryItem[];
