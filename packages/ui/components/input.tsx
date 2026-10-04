@@ -1,6 +1,13 @@
 import { Eye, EyeOff, type LucideIcon } from "lucide-react-native";
 import { useCallback, useEffect, useRef, useState, type Ref } from "react";
-import { TextInput, View, type StyleProp, type TextInputProps, type ViewStyle } from "react-native";
+import {
+  Pressable as RNPressable,
+  StyleSheet,
+  TextInput,
+  type StyleProp,
+  type TextInputProps,
+  type ViewStyle,
+} from "react-native";
 
 import { Icon, type IconSize } from "@/registry/components/icon";
 import { useFocusChainField } from "@/registry/components/primitives/focus-chain";
@@ -9,7 +16,7 @@ import {
   type FormFieldState,
   type FormFieldStatus,
 } from "@/registry/components/primitives/form-field-context";
-import { Pressable } from "@/registry/components/primitives/pressable";
+import { Pressable, touchTargetHitSlop } from "@/registry/components/primitives/pressable";
 import { slot } from "@/registry/styles";
 import { createStyles, useTheme } from "@/registry/theme";
 import { announce } from "@/registry/utils/announce";
@@ -75,6 +82,17 @@ export const useInputStyles = createStyles((t) => {
     pressed: slot("button.pressed", t),
   };
 });
+
+/**
+ * The extra tap area above and below a text field's frame so it reaches `min` (the 48 touch
+ * target), from the frame's height. The height is known before layout (a Size's Style Slot, or
+ * a height set through `style`), so the tap area is right from the first frame. Width is left
+ * alone: fields are wide.
+ */
+function fieldHitSlop(frameStyle: StyleProp<ViewStyle>, min: number) {
+  const { height } = StyleSheet.flatten(frameStyle) ?? {};
+  return touchTargetHitSlop(undefined, typeof height === "number" ? height : undefined, min);
+}
 
 export type TextFieldOptions = Pick<
   TextInputProps,
@@ -174,7 +192,7 @@ export function Input({
   ref,
   ...props
 }: InputProps) {
-  const { colors, iconSize } = useTheme();
+  const { colors, iconSize, minTouchTarget } = useTheme();
   const styles = useInputStyles();
   const inputRef = useRef<TextInput | null>(null);
   // Merge the own ref (stable, for FocusChain) with the user's `ref` prop.
@@ -205,22 +223,34 @@ export function Input({
   });
 
   const toggleSide = iconSize[iconSizes[size]];
+  const isEditable = !f.disabled && editable !== false;
+  const frameStyle: StyleProp<ViewStyle> = [
+    styles.root,
+    styles[size],
+    f.focused ? styles.focused : null,
+    f.status ? styles[f.status] : null,
+    f.disabled ? styles.disabled : null,
+    style,
+  ];
+  const hitSlop = fieldHitSlop(frameStyle, minTouchTarget);
 
   return (
-    <View
-      style={[
-        styles.root,
-        styles[size],
-        f.focused ? styles.focused : null,
-        f.status ? styles[f.status] : null,
-        f.disabled ? styles.disabled : null,
-        style,
-      ]}
+    // The frame extends the tap area to 48 (TextInput has no hitSlop): a tap on the frame or
+    // within its hitSlop focuses the field. It is invisible to screen readers, which reach the
+    // TextInput (and the password toggle) directly.
+    <RNPressable
+      accessible={false}
+      focusable={false}
+      importantForAccessibility="no"
+      disabled={!isEditable}
+      hitSlop={hitSlop}
+      onPress={isEditable ? () => inputRef.current?.focus() : undefined}
+      style={frameStyle}
     >
       {icon ? <Icon icon={icon} size={iconSizes[size]} color="mutedForeground" /> : null}
       <TextInput
         ref={setRef}
-        editable={!f.disabled && editable !== false}
+        editable={isEditable}
         placeholder={placeholder}
         placeholderTextColor={placeholderTextColor ?? colors.mutedForeground}
         selectionColor={colors.primary}
@@ -241,6 +271,6 @@ export function Input({
           <Icon icon={revealed ? EyeOff : Eye} size={iconSizes[size]} color="mutedForeground" />
         </Pressable>
       ) : null}
-    </View>
+    </RNPressable>
   );
 }
