@@ -117,6 +117,23 @@ export function composeTokensFile(
   return out.replace(fontsRe, block);
 }
 
+/**
+ * What create/init write for a Preset-owned file of the `theme` item (#16): `{theme}/colors.ts`
+ * fully from the Preset's colours, `{theme}/tokens.ts` with the Preset's radius base and fonts.
+ * `target` is the Registry file's target; any other file is returned unchanged.
+ */
+export async function composePresetThemeFile(
+  target: string,
+  content: string,
+  preset: Preset,
+): Promise<string> {
+  if (target === "{theme}/colors.ts")
+    return composeColorsFile(content, await presetColors(preset), preset);
+  if (target === "{theme}/tokens.ts")
+    return composeTokensFile(content, await presetRadiusBase(preset), await presetFonts(preset));
+  return content;
+}
+
 /** Where fonts are downloaded from: nativecn.dev, or NATIVECN_FONTS_URL (a URL or local folder). */
 export function fontsBase(): string {
   return process.env.NATIVECN_FONTS_URL ?? "https://nativecn.dev/fonts";

@@ -10,6 +10,7 @@ import { encodePreset } from "preset";
 import { readConfig } from "../config.ts";
 import { clearRegistryCache } from "../registry.ts";
 import { checkExpoApp, SDK_MESSAGE } from "../utils/expo.ts";
+import { add } from "./add.ts";
 import { init, rootLayout } from "./init.ts";
 
 const fixtures = path.join(import.meta.dirname, "__fixtures__", "init");
@@ -278,4 +279,73 @@ test("rootLayout: Toaster appears only once the toast item is installed", () => 
   assert.doesNotMatch(without, /PortalHost/);
   const full = rootLayout(config, { portal: true, keyboard: true, toast: true });
   assert.match(full, /<Stack \/>\n\s+<PortalHost \/>\n\s+<Toaster \/>/);
+});
+
+const THEME_FILES = ["src/theme/colors.ts", "src/theme/tokens.ts"];
+const themeStatuses = (r: Awaited<ReturnType<typeof add>>) =>
+  THEME_FILES.map((t) => r.files.find((f) => f.target === t)?.status);
+
+test("add after create: the Preset-composed Theme files are not reported as edits", async () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "ncn-create-"));
+  await init([], {
+    cwd: root,
+    mode: "create",
+    name: "app",
+    yes: true,
+    silent: true,
+    accent: "blue",
+  });
+  const cwd = path.join(root, "app");
+  const before = THEME_FILES.map((f) => read(cwd, f));
+  clearRegistryCache();
+  const r = await add(["text"], { cwd, yes: true, silent: true });
+  assert.deepEqual(themeStatuses(r), ["identical", "identical"]);
+  assert.deepEqual(r.skipped, []);
+  assert.deepEqual(
+    THEME_FILES.map((f) => read(cwd, f)),
+    before,
+  );
+});
+
+test("add after init: real Theme edits are kept with -y; -o restores the Preset's version", async () => {
+  const cwd = expoApp();
+  await init([], {
+    cwd,
+    yes: true,
+    silent: true,
+    agents: "none",
+    accent: "blue",
+    base: "stone",
+    radius: "large",
+    font: "lora",
+    headingFont: "inter",
+  });
+  const composed = THEME_FILES.map((f) => read(cwd, f));
+  assert.match(composed[0]!, /Accent Colour "blue"/);
+  assert.match(composed[1]!, /export const radiusBase = 14;/);
+
+  clearRegistryCache();
+  const clean = await add(["text"], { cwd, yes: true, silent: true });
+  assert.deepEqual(themeStatuses(clean), ["identical", "identical"]);
+  assert.deepEqual(clean.skipped, []);
+
+  const edited = [
+    composed[0]!.replace(/primary: "[^"]+"/, 'primary: "#ff00ff"'),
+    composed[1]!.replace("export const radiusBase = 14;", "export const radiusBase = 3;"),
+  ];
+  THEME_FILES.forEach((f, i) => write(cwd, f, edited[i]!));
+  const kept = await add(["text"], { cwd, yes: true, silent: true });
+  assert.deepEqual(themeStatuses(kept), ["different", "different"]);
+  assert.deepEqual(kept.skipped, THEME_FILES);
+  assert.deepEqual(
+    THEME_FILES.map((f) => read(cwd, f)),
+    edited,
+  );
+
+  const restored = await add(["text"], { cwd, yes: true, overwrite: true, silent: true });
+  assert.deepEqual(restored.skipped, []);
+  assert.deepEqual(
+    THEME_FILES.map((f) => read(cwd, f)),
+    composed,
+  );
 });

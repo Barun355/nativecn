@@ -18,15 +18,7 @@ import { fetchItem, RegistryError } from "../registry.ts";
 import { addFontPlugin, type FontPluginResult } from "../utils/app-config.ts";
 import { checkExpoApp, overlappingThemeFiles } from "../utils/expo.ts";
 import { detectPackageManager, runInstall } from "../utils/pm.ts";
-import {
-  composeColorsFile,
-  composeTokensFile,
-  downloadFonts,
-  presetColors,
-  presetFonts,
-  presetRadiusBase,
-  type FontDownload,
-} from "../utils/preset-theme.ts";
+import { downloadFonts, presetFonts, type FontDownload } from "../utils/preset-theme.ts";
 import { fetchStarter, gitInitialCommit, renameStarter, type GitResult } from "../utils/starter.ts";
 import { add, type AddResult } from "./add.ts";
 import { AGENTS, agents, type AgentName, type AgentsResult } from "./agents.ts";
@@ -218,8 +210,8 @@ export async function init(items: string[], opts: InitOptions): Promise<InitResu
     ? await add(available, { cwd, yes: true, silent: opts.silent })
     : undefined;
 
-  // Compose the Theme from the Preset ingredients.
-  const theme = await composeTheme(cwd, preset, added, warn);
+  // `add` composed the Theme from the Preset ingredients (components.json is written above).
+  const theme = themeStatus(added, warn);
   const fonts = await presetFonts(preset);
   const fontFiles = await downloadFonts(
     cwd,
@@ -401,46 +393,26 @@ async function partitionAvailable(names: string[], style: string, explicit: stri
 }
 
 /**
- * Rewrite `{theme}/colors.ts` and the radius/font parts of `{theme}/tokens.ts` from the Preset,
- * but only where the file is still the Registry's default (never over the user's own file).
+ * Report the Preset-composed Theme files. `add` composes `{theme}/colors.ts` and the radius/font
+ * parts of `{theme}/tokens.ts` from the components.json Preset (`composePresetThemeFile`), and
+ * never writes over the user's own file.
  */
-async function composeTheme(
-  cwd: string,
-  preset: Preset,
+function themeStatus(
   added: AddResult | undefined,
   warn: (msg: string) => void,
-): Promise<InitResult["theme"]> {
-  const status: InitResult["theme"] = { colors: "missing", tokens: "missing" };
+): InitResult["theme"] {
   const files = (added?.files ?? []).filter((f) => f.item === "theme");
-  const fresh = (suffix: string) => {
+  const status = (suffix: string, what: string): ThemeFileStatus => {
     const f = files.find((x) => x.target.endsWith(suffix));
-    if (!f) return undefined;
-    const untouched = added!.written.includes(f.target) || f.status === "identical";
-    return { file: f, untouched };
+    if (!f) return "missing";
+    if (added!.written.includes(f.target) || f.status === "identical") return "written";
+    warn(`Kept your ${f.target}; the Preset's ${what} were not applied to it.`);
+    return "kept";
   };
-  const colors = fresh("/colors.ts");
-  if (colors?.untouched) {
-    const content = composeColorsFile(colors.file.content, await presetColors(preset), preset);
-    fs.writeFileSync(path.join(cwd, colors.file.target), content);
-    status.colors = "written";
-  } else if (colors) {
-    status.colors = "kept";
-    warn(`Kept your ${colors.file.target}; the Preset's colours were not applied to it.`);
-  }
-  const tokens = fresh("/tokens.ts");
-  if (tokens?.untouched) {
-    const content = composeTokensFile(
-      tokens.file.content,
-      await presetRadiusBase(preset),
-      await presetFonts(preset),
-    );
-    fs.writeFileSync(path.join(cwd, tokens.file.target), content);
-    status.tokens = "written";
-  } else if (tokens) {
-    status.tokens = "kept";
-    warn(`Kept your ${tokens.file.target}; the Preset's radius and fonts were not applied to it.`);
-  }
-  return status;
+  return {
+    colors: status("/colors.ts", "colours"),
+    tokens: status("/tokens.ts", "radius and fonts"),
+  };
 }
 
 /** Offer to add "@/*" to tsconfig.json when it is missing (yes by default with --yes). */
