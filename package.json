@@ -9,6 +9,7 @@
     "lint": "turbo run lint",
     "typecheck": "turbo run typecheck",
     "test": "turbo run test",
+    "check:turbo-inputs": "node --no-warnings scripts/check-turbo-inputs.ts",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "changeset": "changeset",

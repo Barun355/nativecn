@@ -232,12 +232,18 @@ importers:
       eslint-config-next:
         specifier: ^16.3.8
         version: 16.3.8(@typescript-eslint/parser@8.71.0(eslint@9.39.5(jiti@2.7.0)(supports-color@8.1.1))(supports-color@8.1.1)(typescript@6.0.3))(eslint@9.39.5(jiti@2.7.0)(supports-color@8.1.1))(supports-color@8.1.1)(typescript@6.0.3)
+      nativecn-cli:
+        specifier: workspace:*
+        version: link:../../packages/cli
       tailwindcss:
         specifier: ^4.3.3
         version: 4.3.3
       typescript:
         specifier: 'catalog:'
         version: 6.0.3
+      ui:
+        specifier: workspace:*
+        version: link:../../packages/ui
 
   packages/agent-kit: {}
 

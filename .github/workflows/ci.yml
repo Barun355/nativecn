@@ -6,7 +6,8 @@ name: CI
 # Blocking (every PR):
 #   verify     lint, format, type-check; Jest + RNTL; Registry validation, Style Slot completeness,
 #              the contrast check and the dependency rule (Registry build); dependency coverage;
-#              the Preset code guard; Agent Kit limits; docs coverage
+#              the Preset code guard; Agent Kit limits; docs coverage. Lint, types and tests use the
+#              Turborepo cache, once the cache-safety check (scripts/check-turbo-inputs.ts) passes
 #   changeset  a changeset for every changed package Changesets versions (nativecn-cli, ui)
 # Blocking (PRs touching the CLI, packages/ui, the Starter or the Preset code):
 #   starter-smoke  create/add end to end on SDK 57 and the latest SDK
@@ -35,11 +36,31 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - name: Format (Prettier)
         run: pnpm format:check
+      # Turborepo caching (#31, #136). A task is replayed from the cache only when its hash is
+      # unchanged, and the hash covers everything it reads from other packages (turbo.json). This
+      # check fails if a cross-package read is not in the hash, and --mutate proves it: it edits
+      # each read file and requires every task that reads it to miss the cache.
+      - name: Turborepo inputs cover every cross-package read
+        run: pnpm check:turbo-inputs --mutate
+      # The local Turborepo cache, kept between runs with the GitHub Actions cache (no remote
+      # cache, so no secrets). Each run saves under its own commit; the restore keys pick up the
+      # newest earlier one.
+      - name: Restore the Turborepo cache
+        uses: actions/cache@v4
+        with:
+          path: .turbo/cache
+          key: turbo-${{ runner.os }}-node24-${{ hashFiles('pnpm-lock.yaml') }}-${{ github.sha }}
+          restore-keys: |
+            turbo-${{ runner.os }}-node24-${{ hashFiles('pnpm-lock.yaml') }}-
+            turbo-${{ runner.os }}-node24-
       # lint + type-check every package; tests: Jest + RNTL (Components, a11y), contrast, Style
       # Slots, the dependency rule, dependency coverage (showcase), the Preset code guard (preset),
       # Agent Kit limits (agent-kit) and docs coverage (web).
       - name: Lint, type-check and tests
-        run: pnpm turbo run lint typecheck test
+        run: pnpm turbo run lint typecheck test --cache-dir=.turbo/cache
+      # Drop entries no run has written for a week, so the saved cache doesn't grow without bound.
+      - name: Prune the Turborepo cache
+        run: find .turbo/cache -type f -mtime +7 -delete 2>/dev/null || true
       # Registry validation, Style Slot completeness, the contrast check and the dependency rule.
       - name: Registry build
         run: pnpm --filter ui build

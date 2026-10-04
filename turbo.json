@@ -1,10 +1,26 @@
 {
   "$schema": "https://turborepo.com/schema.json",
   "agentGuidance": false,
+  "globalDependencies": ["tsconfig.base.json", "eslint.config.js"],
   "tasks": {
+    "transit": {
+      "dependsOn": ["^transit"]
+    },
+    "nativecn-cli#transit": {
+      "dependsOn": ["^transit"],
+      "inputs": ["$TURBO_DEFAULT$", "$TURBO_ROOT$/packages/ui/scripts/registry/dependency-rule.ts"]
+    },
     "build": {
       "dependsOn": ["^build"],
       "outputs": ["dist/**"]
+    },
+    "ui#build": {
+      "dependsOn": ["^build"],
+      "outputs": [
+        "$TURBO_ROOT$/apps/web/public/r/styles/**",
+        "$TURBO_ROOT$/apps/web/public/r/presets/**"
+      ],
+      "inputs": ["$TURBO_DEFAULT$", "$TURBO_ROOT$/docs/adr/**"]
     },
     "web#build": {
       "dependsOn": ["^build", "ui#build"],
@@ -24,54 +40,45 @@
       "cache": false,
       "persistent": true
     },
-    "lint": {},
+    "lint": {
+      "dependsOn": ["transit"]
+    },
     "start": {
       "cache": false,
       "persistent": true
     },
-    "showcase#lint": {
-      "inputs": [
-        "$TURBO_DEFAULT$",
-        "$TURBO_ROOT$/packages/ui/**/*.{ts,tsx}",
-        "!$TURBO_ROOT$/packages/ui/node_modules/**"
-      ]
-    },
     "typecheck": {
-      "dependsOn": ["^build"]
+      "dependsOn": ["^build", "transit"]
     },
     "test": {
+      "dependsOn": ["transit"],
       "outputs": []
     },
     "ui#test": {
+      "dependsOn": ["transit"],
       "outputs": [],
       "inputs": [
         "$TURBO_DEFAULT$",
         "$TURBO_ROOT$/apps/web/public/fonts/**",
-        "$TURBO_ROOT$/docs/adr/**",
-        "$TURBO_ROOT$/packages/preset/src/**"
+        "$TURBO_ROOT$/docs/adr/**"
       ]
     },
-    "web#test": {
+    "nativecn-cli#test": {
+      "dependsOn": ["transit"],
       "outputs": [],
       "inputs": [
         "$TURBO_DEFAULT$",
-        "$TURBO_ROOT$/packages/ui/**",
-        "!$TURBO_ROOT$/packages/ui/node_modules/**",
-        "!$TURBO_ROOT$/packages/ui/.registry-build/**",
-        "$TURBO_ROOT$/packages/cli/src/**",
-        "$TURBO_ROOT$/packages/preset/src/**"
-      ]
-    },
-    "showcase#test": {
-      "outputs": [],
-      "inputs": [
-        "$TURBO_DEFAULT$",
-        "$TURBO_ROOT$/packages/ui/**",
-        "!$TURBO_ROOT$/packages/ui/node_modules/**",
-        "!$TURBO_ROOT$/packages/ui/.registry-build/**"
+        "$TURBO_ROOT$/packages/agent-kit/rules/**",
+        "$TURBO_ROOT$/skills/**",
+        "$TURBO_ROOT$/.claude-plugin/**",
+        "$TURBO_ROOT$/.cursor-plugin/**",
+        "$TURBO_ROOT$/plugin.json",
+        "$TURBO_ROOT$/mcp.json",
+        "$TURBO_ROOT$/mcp_config.json"
       ]
     },
     "agent-kit#test": {
+      "dependsOn": ["transit"],
       "outputs": [],
       "inputs": ["$TURBO_DEFAULT$", "$TURBO_ROOT$/skills/**"]
     }
