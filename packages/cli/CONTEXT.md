@@ -7,12 +7,16 @@ How Registry Items reach a user's Expo app: the Registry they are fetched from, 
 ### Registry
 
 **Registry**:
-The catalogue served from nativecn.dev from which Registry Items are fetched, in a shadcn-compatible format.
+The catalogue served from nativecn.dev from which Registry Items are fetched. It is written in shadcn's item format but is not installable by the shadcn CLI.
 
 **Registry Item**:
 One installable entry in the Registry (a Component, Theme or Block), including its files, dependencies, docs and usage examples.
 
 ### nativecn-cli
+
+**Destination**:
+The kind of place a Registry Item's file installs to (`components`, `hooks`, `utils`, `theme`, `screens`, `app`), resolved to a real folder for each project from its aliases and Structure.
+_Avoid_: Target path, install path
 
 **nativecn-cli**:
 The one package and command through which users create apps, run Init, and add Registry Items. It is the only published name.

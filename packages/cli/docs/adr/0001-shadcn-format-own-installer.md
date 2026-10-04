@@ -1,22 +1,14 @@
-# shadcn's registry format, our own installer
+# shadcn's item format as internal tooling, with our own installer and no shadcn compatibility
 
-Registry Items follow shadcn's format exactly:
-- item definitions are written in TS and validated with `shadcn/schema`;
-- `shadcn build` emits `{name}.json` with each file's contents inlined, served from nativecn.dev/r/;
-- source files import registry-internal paths (`@/registry/<style>/…`), which are rewritten to the user's aliases on install;
-- the registry is always "latest", and updates come through `add --diff` / `add --overwrite`.
+Registry Items are written in shadcn's registry item format, typed and validated with `shadcn/schema`, and built with `shadcn build` into `{name}.json` files with their contents inlined, served from nativecn.dev/r/styles/<style>/. This is purely **internal tooling**: a free schema, validator and builder we don't maintain, in an item shape agents already recognise.
 
-That keeps `npx shadcn add @nativecn-cli/…`, shadcn's registry directory and shadcn's MCP working as extra ways in. It also lets the Showcase App and nativecn.dev import source straight from `packages/ui` through the `@/registry/*` alias.
+nativecn is **not** compatible with the stock shadcn CLI or the shadcn MCP, and is not listed in shadcn's registry directory:
+- A project's `components.json` is nativecn's own. It carries the Preset, `structure`, extra aliases, `routes` and `agents`. shadcn's strict config schema rejects it, and that is accepted.
+- Items follow no shadcn-only compatibility rules: no stubbed Tailwind fields, no `@/registry/<style>/…` output form, and `registryDependencies` use plain item names that our CLI resolves.
+- There are no third-party or private registries. The CLI knows only nativecn's own Registry, and its address is built in.
 
-nativecn-cli does **not** depend on `@shadcn/registry` to fetch, resolve, rewrite imports or write files. It has its own small installer for the same JSON. The reasons:
-- `@shadcn/registry` assumes a Tailwind-shaped `components.json` that we'd have to fill with dummy values.
-- It applies web-only transformers we'd have to switch off.
-- shadcn moves its internals around: this code was recently split out of the CLI into a separate package.
+nativecn-cli has its own installer for this JSON (it does not depend on `@shadcn/registry`). It adds the Expo-specific steps: `expo install` for SDK-matched versions, Config Plugins, Destination resolution per Structure, Preset ingredients and font downloads.
 
-Our installer adds the Expo-specific steps: `expo install` for dependency versions matched to the SDK, Config Plugins, and Expo Router targets for Blocks.
-
-## Consequences
-- We maintain resolution and import rewriting ourselves.
-- From 0.1, every item is written so the stock shadcn CLI can install it: dependencies are always namespaced (`@nativecn-cli/<name>`, because bare names resolve to shadcn's web registry), and Block Screens use `registry:file` with an Expo Router `target` (`registry:page` is silently dropped in Expo apps).
-- Actively supporting the shadcn path is deferred to 0.3: the directory listing, a CI check that stock shadcn still installs our items, and the docs for that path. Until then it works but is untested and undocumented.
-- Web-only fields (`tailwind`, `cssVars`, `css`) stay empty in every item.
+## Considered and rejected
+- **Keeping items installable by the stock shadcn CLI**, which would need two config files or a dummy Tailwind section in every project.
+- **Listing nativecn in shadcn's directory.** It was first deferred to 0.3, then dropped.
