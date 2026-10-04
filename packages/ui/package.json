@@ -32,6 +32,7 @@
     "lucide-react-native": "^1.51.0",
     "preset": "workspace:*",
     "react": "catalog:",
+    "react-hook-form": "^7.89.0",
     "react-native": "catalog:",
     "react-native-gesture-handler": "~2.32.0",
     "react-native-keyboard-controller": "1.21.9",
@@ -43,6 +44,7 @@
     "shadcn": "4.21.1",
     "test-renderer": "catalog:",
     "typescript": "catalog:",
+    "zod": "^4.6.5",
     "zustand": "^5.0.15"
   },
   "type": "module"
