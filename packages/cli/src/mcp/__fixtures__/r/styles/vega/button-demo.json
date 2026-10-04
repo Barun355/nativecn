@@ -10,7 +10,7 @@
       "path": "examples/button-demo.tsx",
       "type": "registry:example",
       "target": "{components}/examples/button-demo.tsx",
-      "content": "import { Button } from \"@/components/button\";\nexport default function ButtonDemo() {\n  return <Button variant=\"outline\">Save</Button>;\n}\n"
+      "content": "import { Button } from \"@/registry/components/button\";\nexport default function ButtonDemo() {\n  return <Button variant=\"outline\">Save</Button>;\n}\n"
     }
   ]
 }

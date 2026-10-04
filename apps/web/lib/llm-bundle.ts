@@ -1,8 +1,10 @@
 // The "Copy to LLM" bundle for a Component or Block page (decision #27): description, add command,
 // props, usage examples and source, as one prompt-ready markdown block. Pure and browser-safe;
-// built from the same Registry item JSON the CLI installs and the MCP serves.
+// built from the same Registry item JSON the CLI installs and the MCP serves, with its imports
+// rewritten by the CLI's own rewriteImports.
 import { planAddCommands } from "../../../packages/cli/src/mcp/add-command.ts";
 import { isScreenBlock, kindOf } from "../../../packages/cli/src/mcp/catalog.ts";
+import { rewriteItemImports } from "../../../packages/cli/src/imports.ts";
 import type { RegistryIndexItem, RegistryItem } from "../../../packages/cli/src/registry.ts";
 
 /**
@@ -51,6 +53,9 @@ export function itemBundle({
   examples?: RegistryItem[];
   style?: string;
 }): string {
+  // Code is shown with the imports `add` writes into a fresh `create` app (#137).
+  item = rewriteItemImports(item);
+  examples = examples.map((ex) => rewriteItemImports(ex));
   const out = [`# ${item.title ? `${item.title} (${item.name})` : item.name}`];
   if (item.description) out.push("", item.description);
   out.push(

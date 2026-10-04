@@ -7,7 +7,7 @@ import type { Preset } from "preset";
 
 import { readConfig, type Config } from "../config.ts";
 import { destinationAlias, resolveTarget } from "../destinations.ts";
-import { rewriteImports } from "../imports.ts";
+import { rewriteImports, screenBlockFeature } from "../imports.ts";
 import { aliasToDir } from "../paths.ts";
 import { fetchIndex, fetchItem, type RegistryItem } from "../registry.ts";
 import { collectDependencies, resolveTree } from "../resolve.ts";
@@ -46,14 +46,6 @@ export type AddResult = {
 export class AddError extends Error {}
 
 const interactive = (opts: AddOptions) => !opts.yes && Boolean(process.stdin.isTTY) && !opts.silent;
-
-/** Default Feature for a Screen Block in feature mode: its first category (e.g. "auth"). */
-function featureFor(
-  item: RegistryItem & { categories?: string[] },
-  opts: AddOptions,
-): string | undefined {
-  return opts.feature ?? item.categories?.[0];
-}
 
 function isScreenBlock(item: RegistryItem): boolean {
   return (item.files ?? []).some((f) => f.target.startsWith("{screens}"));
@@ -147,7 +139,7 @@ async function plan(
 ): Promise<PlannedFile[]> {
   const out: PlannedFile[] = [];
   for (const item of tree) {
-    const feature = isScreenBlock(item) ? featureFor(item, opts) : undefined;
+    const feature = screenBlockFeature(item, opts.feature);
     if (
       isScreenBlock(item) &&
       config.structure === "feature" &&
@@ -192,7 +184,7 @@ async function createRoutes(tree: RegistryItem[], config: Config, opts: AddOptio
       route = typeof answer === "string" && answer.trim() ? answer.trim() : undefined;
     }
     if (!route) continue;
-    const feature = featureFor(item as RegistryItem & { categories?: string[] }, opts);
+    const feature = screenBlockFeature(item, opts.feature);
     const screens = destinationAlias("screens", config, feature);
     const component = meta.component ?? pascal(item.name);
     const snippet = `import { ${component} } from "${screens}/${item.name}";\n\nexport default function Screen() {\n  return <${component} />;\n}\n`;
