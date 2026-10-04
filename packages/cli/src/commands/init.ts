@@ -29,9 +29,10 @@ import {
 } from "../utils/preset-theme.ts";
 import { fetchStarter, gitInitialCommit, renameStarter, type GitResult } from "../utils/starter.ts";
 import { add, type AddResult } from "./add.ts";
+import { AGENTS, agents, type AgentName, type AgentsResult } from "./agents.ts";
 
-export const AGENTS = ["claude", "codex", "cursor", "antigravity"] as const;
-export type Agent = (typeof AGENTS)[number];
+export { AGENTS };
+export type Agent = AgentName;
 
 /** Items every nativecn app gets: the Theme and what the root Layout renders (#16, #105). */
 export const BASE_ITEMS = ["theme", "portal", "keyboard", "toast"];
@@ -83,6 +84,8 @@ export type InitResult = {
   overlaps: string[];
   layout: { file: string; snippet: string; written: boolean };
   git?: GitResult;
+  /** The Agent Kit written for the chosen agents (none when no agents were chosen). */
+  agentKit?: AgentsResult;
 };
 
 export class InitError extends Error {}
@@ -225,7 +228,11 @@ export async function init(items: string[], opts: InitOptions): Promise<InitResu
   const fontPlugin = addFontPlugin(cwd, fontFiles.faces);
   if (fontPlugin.manual) warn(`Add to the plugins in your app config: ${fontPlugin.manual}`);
 
-  writeAgentKit(cwd, agents, info);
+  // Interactive runs may still be asked before an edited AGENTS.md section is replaced.
+  const agentKit = await writeAgentKit(cwd, agents, {
+    yes: opts.yes || !interactive,
+    silent: opts.silent,
+  });
 
   const installed = new Set((added?.files ?? []).map((f) => f.item));
   const layoutFile = path.posix.join(config.routes, "_layout.tsx");
@@ -245,6 +252,7 @@ export async function init(items: string[], opts: InitOptions): Promise<InitResu
     tsconfig,
     overlaps: [],
     layout: { file: layoutFile, snippet, written: false },
+    agentKit,
   };
 
   if (mode === "create") {
@@ -275,12 +283,16 @@ export async function init(items: string[], opts: InitOptions): Promise<InitResu
 }
 
 /**
- * Agent Kit call site. `nativecn-cli agents` (#57) writes AGENTS.md, the Skills, MCP configs and
- * plugin hints; wire it in here once it lands.
+ * Write the Agent Kit for the chosen agents (#16 step 8) via `nativecn-cli agents` (#57). A failed
+ * GitHub fetch doesn't stop create/init: `agents()` prints how to retry and reports it.
  */
-export function writeAgentKit(_cwd: string, agents: Agent[], log: (msg: string) => void): void {
-  if (agents.length === 0) return;
-  log("Agent Kit: run `npx nativecn-cli agents` (coming in #57)");
+export async function writeAgentKit(
+  cwd: string,
+  chosen: Agent[],
+  opts: { yes?: boolean; silent?: boolean },
+): Promise<AgentsResult | undefined> {
+  if (chosen.length === 0) return undefined;
+  return agents({ cwd, agents: chosen, yes: opts.yes, silent: opts.silent });
 }
 
 export function validAppName(name: string): boolean {

@@ -7,7 +7,7 @@ Placeholders, read from `app.json`:
 - `<package>`: `android.package` (`host.exp.exponent` for Expo Go);
 - `<bundleId>`: `ios.bundleIdentifier` (`host.exp.Exponent` for Expo Go);
 - `<route>`: the Expo Router path, e.g. `sign-in` or `settings/profile`;
-- `<tmp>`: the OS temp folder; `<device>`: the device serial or Simulator id; `<timestamp>`, `<screen>`: for the file name.
+- `<tmp>`: the OS temp folder; `<device>`: the serial from `adb devices -l` or the `udid` from `xcrun simctl list devices booted -j` (also when `-s` is left out; `android` or `ios` if unknown). It only names the laptop folder; `<timestamp>`, `<screen>`: for the file name.
 
 ## Android (adb)
 

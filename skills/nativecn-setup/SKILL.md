@@ -90,7 +90,7 @@ Ask which agents the user works with and pass `--agents`. The CLI writes, per ag
 - **MCP config:** `.mcp.json`, `.cursor/mcp.json`, `.codex/config.toml` (Codex loads it only in a trusted project) or `.agents/mcp_config.json`.
 - **Plugin:** it only prints the install command, because Plugins install per user.
 
-If fetching the Skills fails (offline), the command still finishes; retry later with `npx nativecn-cli@latest agents`.
+The Rules and Skills are fetched from the nativecn GitHub repo. If that fails (offline, no git), the command still finishes and says "Agent Kit not installed"; retry later with `npx nativecn-cli@latest agents`. Re-running it keeps anything the user edited unless you pass `--update` (interactive runs show a diff and ask).
 
 ### `--qa-permissions`
 

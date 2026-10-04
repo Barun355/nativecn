@@ -2,6 +2,7 @@
 import { Command } from "commander";
 
 import { add } from "./commands/add.ts";
+import { agents, parseAgents } from "./commands/agents.ts";
 import { runStdio } from "./mcp/index.ts";
 import { init, type InitOptions } from "./commands/init.ts";
 import { cliVersion } from "./utils/starter.ts";
@@ -16,6 +17,13 @@ export { add, type AddOptions, type AddResult } from "./commands/add.ts";
 export { createServer, runStdio, type CreateServerOptions } from "./mcp/index.ts";
 export { init, type InitOptions, type InitResult } from "./commands/init.ts";
 export { checkExpoApp } from "./utils/expo.ts";
+export {
+  agents,
+  AGENTS,
+  type AgentName,
+  type AgentsOptions,
+  type AgentsResult,
+} from "./commands/agents.ts";
 
 export const program = new Command()
   .name("nativecn-cli")
@@ -88,6 +96,32 @@ program
   .action(async (items: string[], opts) => {
     try {
       await add(items, { ...opts, yes: opts.yes || !process.stdin.isTTY });
+    } catch (err) {
+      console.error((err as Error).message);
+      process.exit(1);
+    }
+  });
+
+program
+  .command("agents")
+  .description("write or refresh the Agent Kit: Rules, Skills, MCP config and Plugin hints")
+  .option("--agents <list>", "comma-separated: claude,codex,cursor,antigravity")
+  .option("--update", "replace nativecn content that differs from this version", false)
+  .option("--qa-permissions", "write allow-only rules for the Visual QA device commands", false)
+  .option("-y, --yes", "skip prompts (keeps your edits unless --update)", false)
+  .option("-c, --cwd <cwd>", "the project folder", process.cwd())
+  .option("-s, --silent", "no output", false)
+  .action(async (opts) => {
+    try {
+      const result = await agents({
+        cwd: opts.cwd,
+        agents: opts.agents ? parseAgents(opts.agents) : undefined,
+        update: opts.update,
+        qaPermissions: opts.qaPermissions,
+        yes: opts.yes || !process.stdin.isTTY,
+        silent: opts.silent,
+      });
+      if (!result.kit.installed) process.exitCode = 1;
     } catch (err) {
       console.error((err as Error).message);
       process.exit(1);

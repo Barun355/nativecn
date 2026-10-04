@@ -20,7 +20,7 @@ An AI design and UX review of the running app. It is **not** pixel comparison or
 
 1. Read `app.json` (or `app.config.*`): the `scheme`, `android.package` and `ios.bundleIdentifier`.
 2. Resolve the OS temp folder (`node -p "require('os').tmpdir()"`). This run uses:
-   - screenshots: `<tmp>/nativecn-qa/<device-id>/<timestamp>-<screen>.png`;
+   - screenshots: `<tmp>/nativecn-qa/<device>/<timestamp>-<screen>.png`, where `<device>` is the serial or Simulator `udid` from step 3 (`android` / `ios` if unknown);
    - the report: `<tmp>/nativecn-qa/<run-timestamp>/report.md`.
    Keep only the last 20 screenshots per device; delete older ones.
 3. List devices (`adb devices -l`, `xcrun simctl list devices booted -j`).
