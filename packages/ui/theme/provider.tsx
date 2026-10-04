@@ -102,8 +102,16 @@ export function useTheme(): Theme {
  * Build a Component's styles from the Theme. StyleSheet.create runs once per (Scale, Scheme)
  * and is cached, never per render.
  */
+const styleCaches = new Set<Map<string, unknown>>();
+
+/** Drop every cached Component style, so the next render rebuilds them (e.g. after switching Style in the Showcase App). */
+export function resetStyles(): void {
+  for (const cache of styleCaches) cache.clear();
+}
+
 export function createStyles<T extends StyleSheet.NamedStyles<T>>(factory: (theme: Theme) => T) {
   const cache = new Map<string, T>();
+  styleCaches.add(cache);
   return function useStyles(): T {
     const theme = useTheme();
     const key = `${theme.scale}|${theme.scheme}`;
