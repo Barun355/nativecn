@@ -134,9 +134,9 @@ The Visual QA Loop drives devices with raw platform tools. Use only the commands
 | open a screen | `adb shell am start -a android.intent.action.VIEW -d <scheme>://<route> -p <package>` | `xcrun simctl launch booted <bundleId>`, `xcrun simctl openurl booted <scheme>://<route>` |
 | navigate | `adb shell input tap <x> <y>` / `swipe` / `text` / `keyevent BACK`; `adb exec-out uiautomator dump /dev/tty` to find tap targets | deep links only |
 | light/dark | `adb shell cmd uimode night yes` / `no` | `xcrun simctl ui booted appearance dark` / `light` |
-| tidy status bar | `adb shell settings put global sysui_demo_allowed 1` + the demo-mode broadcast | `xcrun simctl status_bar booted override --time 9:41 --batteryLevel 100` |
+| tidy status bar | `adb shell settings put global sysui_demo_allowed 1`, then `adb shell am broadcast -a com.android.systemui.demo -e command enter` (leave with `-e command exit`) | `xcrun simctl status_bar booted override --time 9:41 --batteryLevel 100` |
 
-**Screenshots.** Save under `<OS temp>/nativecn-qa/<device>/<timestamp>-<screen>.png` and keep the last 20 per device.
+**Screenshots.** Save under `<OS temp>/nativecn-qa/<device>/<timestamp>-<screen>.png` and keep the last 20 per device. `<device>` is the serial from `adb devices -l` or the `udid` from `xcrun simctl list devices booted -j`, even when `-s` is left out; use `android` or `ios` if it is unknown.
 
 Android: save → pull → delete. All three steps, every time; the delete is mandatory.
 

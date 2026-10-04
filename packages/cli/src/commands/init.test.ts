@@ -17,6 +17,9 @@ process.env.NATIVECN_REGISTRY_URL = path.join(fixtures, "r");
 process.env.NATIVECN_FONTS_URL = path.join(fixtures, "fonts");
 process.env.NATIVECN_STARTER_DIR = path.join(import.meta.dirname, "..", "..", "starter");
 process.env.NATIVECN_SKIP_INSTALL = "1";
+// The Agent Kit from this checkout instead of GitHub.
+const AGENT_KIT = path.join(import.meta.dirname, "..", "..", "..", "..");
+process.env.NATIVECN_AGENT_KIT_DIR = AGENT_KIT;
 
 const read = (cwd: string, f: string) => fs.readFileSync(path.join(cwd, f), "utf8");
 const json = (cwd: string, f: string) => JSON.parse(read(cwd, f));
@@ -90,6 +93,16 @@ test("init (src/): components.json, composed Theme, only the chosen fonts, nothi
   assert.equal(config.aliases.features, undefined);
   assert.deepEqual(config.agents, ["claude", "cursor"]);
   assert.equal(r.tsconfig, "present");
+
+  // The Agent Kit for the chosen agents only.
+  assert.equal(r.agentKit?.kit.installed, true);
+  assert.deepEqual(r.agentKit?.agents, ["claude", "cursor"]);
+  assert.match(read(cwd, "AGENTS.md"), /<!-- nativecn:start -->/);
+  assert.equal(read(cwd, "CLAUDE.md").trim(), "@AGENTS.md");
+  assert.ok(exists(cwd, ".agents/skills/nativecn-setup/SKILL.md"));
+  assert.ok(exists(cwd, ".claude/skills/nativecn-setup/SKILL.md"));
+  assert.ok(exists(cwd, ".mcp.json") && exists(cwd, ".cursor/mcp.json"));
+  assert.ok(!exists(cwd, ".codex/config.toml") && !exists(cwd, ".agents/mcp_config.json"));
 
   // colors.ts: stone base + blue accent + shared roles, light and dark.
   const fixture = (rel: string) => json(path.join(fixtures, "r", "presets"), rel);
@@ -177,6 +190,22 @@ test("init without src/: root aliases, routes 'app', and '@/*' added to tsconfig
   assert.equal(exists(cwd, "src"), false);
   assert.deepEqual(r.overlaps, ["constants/theme.ts"]);
   assert.match(r.layout.snippet, /from "@\/theme"/);
+  assert.equal(r.agentKit, undefined);
+  assert.equal(exists(cwd, "AGENTS.md"), false);
+});
+
+test("init finishes when the Agent Kit can't be fetched, and says so", async (t) => {
+  process.env.NATIVECN_AGENT_KIT_DIR = path.join(os.tmpdir(), "nativecn-no-such-kit");
+  t.after(() => {
+    process.env.NATIVECN_AGENT_KIT_DIR = AGENT_KIT;
+  });
+  const cwd = expoApp();
+  const r = await init([], { cwd, yes: true, silent: true, agents: "codex" });
+  assert.equal(r.agentKit?.kit.installed, false);
+  assert.match(r.agentKit?.kit.error ?? "", /NATIVECN_AGENT_KIT_DIR/);
+  assert.equal(exists(cwd, "AGENTS.md"), false);
+  assert.ok(exists(cwd, ".codex/config.toml"), "MCP config doesn't need the fetch");
+  assert.ok(exists(cwd, "components.json"));
 });
 
 test("init rejects unknown Preset values and codes", async () => {
@@ -223,6 +252,10 @@ test("create: renamed Starter, composed Theme, root Layout, one commit", async (
   assert.equal(r.git?.committed, true);
   const log = spawnSync("git", ["log", "--format=%s"], { cwd, encoding: "utf8" });
   assert.equal(log.stdout.trim(), "feat: initial commit");
+  // The Agent Kit is part of the one initial commit.
+  const tracked = spawnSync("git", ["ls-files"], { cwd, encoding: "utf8" }).stdout;
+  for (const f of ["AGENTS.md", ".mcp.json", ".codex/config.toml", ".agents/mcp_config.json"])
+    assert.ok(tracked.split("\n").includes(f), f);
   const status = spawnSync("git", ["status", "--porcelain"], { cwd, encoding: "utf8" });
   assert.equal(status.stdout, "");
 });

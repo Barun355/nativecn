@@ -21,11 +21,17 @@ export function cliVersion(): string {
   return "0.0.0";
 }
 
-/** The git ref the Starter is fetched at: the release tag, or main for 0.0.x and dev builds. */
-export function starterRef(version = cliVersion()): string {
+/**
+ * The git ref the nativecn repo (Starter, Agent Kit) is fetched at: the release tag
+ * `nativecn-cli@<version>`, or main for 0.0.x and dev builds.
+ */
+export function repoRef(version = cliVersion()): string {
   if (version.startsWith("0.0.") || version.includes("-")) return "main";
   return `nativecn-cli@${version}`;
 }
+
+/** The ref the Starter is fetched at (same as the Agent Kit). */
+export const starterRef = repoRef;
 
 const git = (args: string[], cwd: string, env?: NodeJS.ProcessEnv) =>
   spawnSync("git", args, { cwd, encoding: "utf8", env: { ...process.env, ...env } });
@@ -51,25 +57,49 @@ export function fetchStarter(dest: string, log: (msg: string) => void = () => {}
     copyStarter(local, dest);
     return;
   }
-  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "nativecn-starter-"));
+  withRepoCheckout([STARTER_PATH], (dir) => copyStarter(path.join(dir, STARTER_PATH), dest), {
+    what: "Starter",
+    log,
+  });
+}
+
+export class RepoFetchError extends Error {}
+
+/**
+ * A shallow sparse git checkout of `paths` from the nativecn repo at `repoRef()`, falling back to
+ * main when that tag is missing (as shadcn fetches its templates). Used for the Starter and the
+ * Agent Kit. `use` gets the checkout folder, which is deleted afterwards; `what` names the content
+ * in messages. Throws RepoFetchError when git is missing or the fetch fails (e.g. offline).
+ */
+export function withRepoCheckout<T>(
+  paths: string[],
+  use: (dir: string, ref: string) => T,
+  opts: { what: string; log?: (msg: string) => void },
+): T {
+  const log = opts.log ?? (() => {});
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "nativecn-repo-"));
   try {
     const clone = (ref: string) =>
       git(
         ["clone", "--depth", "1", "--filter=blob:none", "--sparse", "--branch", ref, REPO_URL, tmp],
         os.tmpdir(),
       );
-    const ref = starterRef();
+    let ref = repoRef();
     let res = clone(ref);
-    if (res.status !== 0 && ref !== "main") {
-      log(`No Starter at ${ref}; using main.`);
+    if (res.status !== 0 && !res.error && ref !== "main") {
+      log(`No ${opts.what} at ${ref}; using main.`);
       fs.rmSync(tmp, { recursive: true, force: true });
-      res = clone("main");
+      ref = "main";
+      res = clone(ref);
     }
-    if (res.error) throw new Error(`git is needed to fetch the Starter: ${res.error.message}`);
-    if (res.status !== 0) throw new Error(`Could not fetch the Starter:\n${res.stderr}`);
-    const sparse = git(["sparse-checkout", "set", STARTER_PATH], tmp);
-    if (sparse.status !== 0) throw new Error(`Could not fetch the Starter:\n${sparse.stderr}`);
-    copyStarter(path.join(tmp, STARTER_PATH), dest);
+    if (res.error)
+      throw new RepoFetchError(`git is needed to fetch the ${opts.what}: ${res.error.message}`);
+    if (res.status !== 0)
+      throw new RepoFetchError(`could not fetch the ${opts.what}: ${res.stderr.trim()}`);
+    const sparse = git(["sparse-checkout", "set", ...paths], tmp);
+    if (sparse.status !== 0)
+      throw new RepoFetchError(`could not fetch the ${opts.what}: ${sparse.stderr.trim()}`);
+    return use(tmp, ref);
   } finally {
     fs.rmSync(tmp, { recursive: true, force: true });
   }
