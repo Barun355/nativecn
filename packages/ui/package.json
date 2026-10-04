@@ -17,6 +17,7 @@
     "@react-native-async-storage/async-storage": "2.2.0",
     "@testing-library/react-native": "catalog:",
     "@types/jest": "catalog:",
+    "@types/node": "catalog:",
     "@types/react": "catalog:",
     "expo": "catalog:",
     "expo-font": "~57.0.4",
