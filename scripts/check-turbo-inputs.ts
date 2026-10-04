@@ -60,6 +60,11 @@ const RUNTIME_READS: RuntimeRead[] = [
   },
   {
     tasks: ["web#test"],
+    files: [/^packages\/ui\/(components|screens|theme|hooks|utils|styles)\/(?!.*\.test\.tsx?$)/],
+    why: "import-paths.test.ts reads every item's files and the Style Slots from packages/ui",
+  },
+  {
+    tasks: ["web#test"],
     files: ["packages/cli/src/mcp/__fixtures__/r/"],
     why: "mcp.test.ts points NATIVECN_REGISTRY_URL at the CLI's fixture Registry",
   },
