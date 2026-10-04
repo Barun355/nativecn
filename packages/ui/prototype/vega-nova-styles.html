@@ -1,0 +1,213 @@
+<!doctype html>
+<!--
+  PROTOTYPE, throwaway. Not production code.
+  Question: what do the Vega and Nova Style Slot fills look like for every 0.1 Component?
+  Vega = clean and balanced, Nova = compact. The same components are rendered from two slot-fill objects
+  (the shape of packages/ui/styles/vega.ts and nova.ts), side by side in 390-wide frames.
+  ?variant= cycles component groups (core-forms, display-feedback, navigation). The "dark" toggle switches Scheme.
+  The panel on the right prints the exact slot values for the current group.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Vega vs Nova (prototype)</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  body { margin:0; font-family:Inter, system-ui, sans-serif; background:#e9e9ec; padding:24px 16px 110px; display:flex; gap:28px; justify-content:center; align-items:flex-start; }
+  .col { display:flex; flex-direction:column; align-items:center; gap:10px; }
+  .col h2 { margin:0; font-size:16px; } .col p { margin:0; font-size:12px; color:#666; }
+  .phone { width:390px; height:844px; border-radius:44px; box-shadow:0 0 0 10px #111, 0 20px 50px rgba(0,0,0,.25); overflow:hidden; display:flex; flex-direction:column; }
+  .phone .bar { height:44px; flex:none; }
+  .phone .scr { flex:1; overflow:auto; }
+  .side { width:300px; font-size:13px; }
+  .side .tag { display:inline-block; background:#171717; color:#fff; border-radius:999px; padding:2px 10px; font-size:12px; }
+  .side pre { background:#fff; border-radius:10px; padding:10px; font:11px/1.45 ui-monospace, monospace; white-space:pre-wrap; max-height:640px; overflow:auto; }
+  .side button { margin:8px 0; padding:6px 12px; border-radius:8px; border:1px solid #ccc; background:#fff; cursor:pointer; }
+  .switcher { position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:#ff3d7f; color:#fff; border-radius:999px; display:flex; align-items:center; gap:4px; padding:6px; box-shadow:0 6px 20px rgba(0,0,0,.3); font:600 14px ui-monospace, monospace; z-index:10; }
+  .switcher button { background:rgba(255,255,255,.2); color:#fff; border:0; border-radius:999px; width:36px; height:36px; font-size:18px; cursor:pointer; }
+  .switcher span { padding:0 14px; min-width:220px; text-align:center; }
+  .sec { padding:0 16px; } .sech { font:600 11px Inter; letter-spacing:.06em; text-transform:uppercase; opacity:.5; margin:18px 0 8px; }
+  .row { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+  .pressable { cursor:pointer; user-select:none; transition:transform .1s, filter .1s; }
+</style>
+</head>
+<body>
+  <div class="col"><h2>Vega</h2><p>clean, balanced</p><div class="phone" id="vega"><div class="bar"></div><div class="scr"></div></div></div>
+  <div class="col"><h2>Nova</h2><p>compact</p><div class="phone" id="nova"><div class="bar"></div><div class="scr"></div></div></div>
+  <div class="side"><span class="tag">PROTOTYPE</span><h3 id="title" style="margin:8px 0 2px"></h3>
+    <div style="color:#666">Both Styles use the same Tokens (neutral Preset, Inter); only the Style Slot fills differ. Press any button or chip to see the pressed slot.</div>
+    <button id="dark">Toggle dark</button><pre id="slots"></pre></div>
+  <div class="switcher"><button id="prev">←</button><span id="label"></span><button id="next">→</button></div>
+<script>
+/* ---------- Tokens (from Token set for 0.1) ---------- */
+const COLORS = {
+  light: { background:'#ffffff', foreground:'#0a0a0a', card:'#ffffff', muted:'#f5f5f5', mutedForeground:'#737373', primary:'#171717', primaryForeground:'#fafafa',
+           secondary:'#f5f5f5', border:'#e5e5e5', input:'#e5e5e5', ring:'#a3a3a3', destructive:'#dc2626', success:'#16a34a', warning:'#d97706', info:'#0284c7', accent:'#f5f5f5' },
+  dark:  { background:'#0a0a0a', foreground:'#fafafa', card:'#171717', muted:'#262626', mutedForeground:'#a3a3a3', primary:'#fafafa', primaryForeground:'#171717',
+           secondary:'#262626', border:'#2e2e2e', input:'#333333', ring:'#737373', destructive:'#ef4444', success:'#22c55e', warning:'#f59e0b', info:'#38bdf8', accent:'#262626' } };
+const T = (scheme) => ({
+  c: COLORS[scheme],
+  s: { 0.5:2, 1:4, 2:8, 3:12, 4:16, 5:20, 6:24, 8:32, 10:40, 12:48 },
+  r: { sm:6, md:8, lg:10, xl:14, '2xl':18, full:9999 },
+  h: { sm:36, md:44, lg:52 },
+  type: { h3:'600 20px/28px Inter', h4:'600 17px/24px Inter', body:'400 16px/24px Inter', label:'500 14px/20px Inter', small:'400 14px/20px Inter', caption:'400 12px/16px Inter', button:'600 15px/20px Inter' },
+  shadow: { sm: scheme==='dark' ? '0 1px 2px rgba(0,0,0,.6)' : '0 1px 2px rgba(0,0,0,.06)', md: scheme==='dark' ? '0 4px 12px rgba(0,0,0,.6)' : '0 4px 12px rgba(0,0,0,.08)', lg: scheme==='dark' ? '0 8px 24px rgba(0,0,0,.7)' : '0 8px 24px rgba(0,0,0,.14)' },
+});
+
+/* ---------- Style Slot fills (shape of styles/vega.ts and styles/nova.ts) ---------- */
+const VEGA = {
+  'button.root':      t => ({ height:t.h.md, radius:t.r.md, padX:t.s[4], gap:t.s[2], font:t.type.button }),
+  'button.pressed':   t => ({ filter:'brightness(.88)', scale:1 }),
+  'input.root':       t => ({ height:t.h.md, radius:t.r.md, padX:t.s[3], border:1, font:t.type.body }),
+  'form-field.root':  t => ({ gap:t.s[2] }),
+  'checkbox.box':     t => ({ size:20, radius:t.r.sm }),
+  'radio.dot':        t => ({ size:20 }),
+  'switch.track':     t => ({ w:52, h:32 }),
+  'slider.track':     t => ({ h:6, thumb:24 }),
+  'chip.root':        t => ({ height:32, radius:t.r.full, padX:t.s[3], font:t.type.label }),
+  'input-otp.cell':   t => ({ w:48, h:56, radius:t.r.md, gap:t.s[2] }),
+  'search-field.root':t => ({ height:t.h.md, radius:t.r.md, padX:t.s[3] }),
+  'card.root':        t => ({ radius:t.r.xl, pad:t.s[6], gap:t.s[4], border:1, shadow:t.shadow.sm }),
+  'badge.root':       t => ({ height:22, radius:t.r.sm, padX:t.s[2], font:'500 12px/16px Inter' }),
+  'avatar.root':      t => ({ size:40 }),
+  'list.section':     t => ({ radius:t.r.xl, inset:t.s[4] }),
+  'list.item':        t => ({ height:52, padX:t.s[4], gap:t.s[3] }),
+  'skeleton.root':    t => ({ radius:t.r.md }),
+  'progress.track':   t => ({ h:8, radius:t.r.full }),
+  'alert.root':       t => ({ radius:t.r.lg, pad:t.s[4], gap:t.s[3], border:1 }),
+  'toast.root':       t => ({ radius:t.r.xl, pad:t.s[4], shadow:t.shadow.lg }),
+  'empty-state.root': t => ({ pad:t.s[8], icon:48, gap:t.s[3] }),
+  'segmented-tabs.list': t => ({ height:40, radius:t.r.lg, inner:t.r.md, pad:3 }),
+  'tab-navigation.bar':  t => ({ height:64, icon:24, labelFont:'500 11px/14px Inter', floatingRadius:t.r['2xl'] }),
+  'drawer.item':      t => ({ height:48, radius:t.r.md, padX:t.s[3], gap:t.s[3] }),
+};
+const NOVA = {
+  'button.root':      t => ({ height:t.h.sm, radius:t.r.sm, padX:t.s[3], gap:6, font:'600 14px/20px Inter' }),
+  'button.pressed':   t => ({ filter:'brightness(.88)', scale:.98 }),
+  'input.root':       t => ({ height:t.h.sm, radius:t.r.sm, padX:10, border:1, font:'400 15px/20px Inter' }),
+  'form-field.root':  t => ({ gap:6 }),
+  'checkbox.box':     t => ({ size:18, radius:4 }),
+  'radio.dot':        t => ({ size:18 }),
+  'switch.track':     t => ({ w:44, h:26 }),
+  'slider.track':     t => ({ h:4, thumb:20 }),
+  'chip.root':        t => ({ height:28, radius:t.r.sm, padX:10, font:'500 13px/18px Inter' }),
+  'input-otp.cell':   t => ({ w:40, h:48, radius:t.r.sm, gap:6 }),
+  'search-field.root':t => ({ height:t.h.sm, radius:t.r.sm, padX:10 }),
+  'card.root':        t => ({ radius:t.r.lg, pad:t.s[4], gap:t.s[3], border:1, shadow:'none' }),
+  'badge.root':       t => ({ height:20, radius:4, padX:6, font:'500 11px/14px Inter' }),
+  'avatar.root':      t => ({ size:32 }),
+  'list.section':     t => ({ radius:t.r.lg, inset:t.s[3] }),
+  'list.item':        t => ({ height:44, padX:t.s[3], gap:10 }),
+  'skeleton.root':    t => ({ radius:t.r.sm }),
+  'progress.track':   t => ({ h:4, radius:t.r.full }),
+  'alert.root':       t => ({ radius:t.r.md, pad:t.s[3], gap:10, border:1 }),
+  'toast.root':       t => ({ radius:t.r.lg, pad:t.s[3], shadow:t.shadow.md }),
+  'empty-state.root': t => ({ pad:t.s[6], icon:36, gap:t.s[2] }),
+  'segmented-tabs.list': t => ({ height:32, radius:t.r.md, inner:t.r.sm, pad:2 }),
+  'tab-navigation.bar':  t => ({ height:52, icon:20, labelFont:'500 10px/12px Inter', floatingRadius:t.r.xl }),
+  'drawer.item':      t => ({ height:40, radius:t.r.sm, padX:10, gap:10 }),
+};
+
+/* ---------- tiny Lucide icons ---------- */
+const I = (d, s=20, c='currentColor') => `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${d}</svg>`;
+const ic = { arrow:'<path d="M5 12h14"/><path d="m12 5 7 7-7 7"/>', check:'<path d="M20 6 9 17l-5-5"/>', search:'<circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>',
+  home:'<path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>', user:'<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>', bell:'<path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/>',
+  gear:'<circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.2 4.2l2.9 2.9M16.9 16.9l2.9 2.9M1 12h4M19 12h4"/>', chev:'<path d="m9 18 6-6-6-6"/>', inbox:'<path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.5 5h13L22 12v6a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-6z"/>',
+  alert:'<circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/>', trash:'<path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/>' };
+
+/* ---------- renderers (one per Component; read only slots + tokens) ---------- */
+const R = {
+  button: (S,t,v='primary',label='Continue',icon) => { const b=S['button.root'](t);
+    const bg = v==='primary'?t.c.primary:v==='destructive'?t.c.destructive:v==='secondary'?t.c.secondary:'transparent';
+    const fg = v==='primary'?t.c.primaryForeground:v==='destructive'?'#fff':t.c.foreground;
+    const bd = v==='outline'?`1px solid ${t.c.border}`:'0';
+    return `<div class="pressable" data-pressed="button" style="height:${b.height}px;border-radius:${b.radius}px;padding:0 ${label?b.padX:0}px;${label?'':`width:${b.height}px;`}background:${bg};color:${fg};border:${bd};display:inline-flex;align-items:center;justify-content:center;gap:${b.gap}px;font:${b.font}">${icon?I(ic[icon],18):''}${label||''}</div>`; },
+  input: (S,t,ph,err) => { const x=S['input.root'](t); const f=S['form-field.root'](t);
+    return `<div style="display:flex;flex-direction:column;gap:${f.gap}px;margin-bottom:12px"><div style="font:${t.type.label};color:${t.c.foreground}">Email</div>
+      <div style="height:${x.height}px;border-radius:${x.radius}px;border:${x.border}px solid ${err?t.c.destructive:t.c.input};padding:0 ${x.padX}px;display:flex;align-items:center;font:${x.font};color:${t.c.mutedForeground}">${ph}</div>
+      ${err?`<div style="font:${t.type.caption};color:${t.c.destructive}">Enter a valid email</div>`:''}</div>`; },
+  checkbox: (S,t,on) => { const x=S['checkbox.box'](t); return `<span style="display:inline-flex;align-items:center;gap:8px;font:${t.type.small}"><span style="width:${x.size}px;height:${x.size}px;border-radius:${x.radius}px;border:1.5px solid ${on?t.c.primary:t.c.input};background:${on?t.c.primary:'transparent'};display:inline-flex;align-items:center;justify-content:center;color:${t.c.primaryForeground}">${on?I(ic.check,x.size-6):''}</span>Remember me</span>`; },
+  radio: (S,t,on,l) => { const x=S['radio.dot'](t); return `<span style="display:inline-flex;align-items:center;gap:8px;font:${t.type.small}"><span style="width:${x.size}px;height:${x.size}px;border-radius:50%;border:1.5px solid ${on?t.c.primary:t.c.input};display:inline-flex;align-items:center;justify-content:center">${on?`<span style="width:${x.size/2}px;height:${x.size/2}px;border-radius:50%;background:${t.c.primary}"></span>`:''}</span>${l}</span>`; },
+  switch: (S,t,on) => { const x=S['switch.track'](t), k=x.h-4; return `<span style="width:${x.w}px;height:${x.h}px;border-radius:${x.h}px;background:${on?t.c.primary:t.c.input};display:inline-flex;align-items:center;padding:2px;justify-content:${on?'flex-end':'flex-start'}"><span style="width:${k}px;height:${k}px;border-radius:50%;background:${on?t.c.primaryForeground:'#fff'};box-shadow:0 1px 2px rgba(0,0,0,.2)"></span></span>`; },
+  slider: (S,t) => { const x=S['slider.track'](t); return `<div style="position:relative;height:${x.thumb}px;display:flex;align-items:center;margin:8px 0"><div style="height:${x.h}px;border-radius:${x.h}px;background:${t.c.muted};width:100%"><div style="height:100%;width:60%;background:${t.c.primary};border-radius:${x.h}px"></div></div><div style="position:absolute;left:calc(60% - ${x.thumb/2}px);width:${x.thumb}px;height:${x.thumb}px;border-radius:50%;background:${t.c.background};border:2px solid ${t.c.primary}"></div></div>`; },
+  chip: (S,t,l,on) => { const x=S['chip.root'](t); return `<span class="pressable" data-pressed="button" style="height:${x.height}px;border-radius:${x.radius}px;padding:0 ${x.padX}px;font:${x.font};display:inline-flex;align-items:center;background:${on?t.c.primary:'transparent'};color:${on?t.c.primaryForeground:t.c.foreground};border:1px solid ${on?t.c.primary:t.c.border}">${l}</span>`; },
+  otp: (S,t) => { const x=S['input-otp.cell'](t); return `<div style="display:flex;gap:${x.gap}px">${[4,2,9,'','',''].map((d,i)=>`<span style="width:${x.w}px;height:${x.h}px;border-radius:${x.radius}px;border:${i===3?2:1}px solid ${i===3?t.c.ring:t.c.input};display:inline-flex;align-items:center;justify-content:center;font:600 20px Inter">${d}</span>`).join('')}</div>`; },
+  search: (S,t) => { const x=S['search-field.root'](t); return `<div style="height:${x.height}px;border-radius:${x.radius}px;background:${t.c.muted};padding:0 ${x.padX}px;display:flex;align-items:center;gap:8px;color:${t.c.mutedForeground};font:${t.type.body}">${I(ic.search,18)}Search</div>`; },
+  card: (S,t,inner) => { const x=S['card.root'](t); return `<div style="border-radius:${x.radius}px;padding:${x.pad}px;border:${x.border}px solid ${t.c.border};box-shadow:${x.shadow};background:${t.c.card};display:flex;flex-direction:column;gap:${x.gap}px">${inner}</div>`; },
+  badge: (S,t,l,tone='primary') => { const x=S['badge.root'](t); const bg={primary:t.c.primary,secondary:t.c.secondary,destructive:t.c.destructive,success:t.c.success}[tone]; const fg=tone==='secondary'?t.c.foreground:tone==='primary'?t.c.primaryForeground:'#fff';
+    return `<span style="height:${x.height}px;border-radius:${x.radius}px;padding:0 ${x.padX}px;font:${x.font};display:inline-flex;align-items:center;background:${bg};color:${fg}">${l}</span>`; },
+  avatar: (S,t,txt) => { const x=S['avatar.root'](t); return `<span style="width:${x.size}px;height:${x.size}px;border-radius:50%;background:${t.c.muted};display:inline-flex;align-items:center;justify-content:center;font:600 ${Math.round(x.size*.38)}px Inter">${txt}</span>`; },
+  list: (S,t) => { const sec=S['list.section'](t), it=S['list.item'](t); const row=(icon,l,trail,last)=>`<div style="height:${it.height}px;padding:0 ${it.padX}px;display:flex;align-items:center;gap:${it.gap}px;background:${t.c.card};${last?'':`border-bottom:1px solid ${t.c.border};`}">${I(ic[icon],20)}<span style="flex:1;font:${t.type.body}">${l}</span>${trail}</div>`;
+    return `<div style="border-radius:${sec.radius}px;overflow:hidden;border:1px solid ${t.c.border}">${row('bell','Notifications',R.switch(S,t,true))}${row('user','Account',`<span style="color:${t.c.mutedForeground}">${I(ic.chev,18)}</span>`)}${row('trash','Delete account',`<span style="color:${t.c.mutedForeground}">${I(ic.chev,18)}</span>`,true)}</div>`; },
+  skeleton: (S,t) => { const x=S['skeleton.root'](t); return `<div style="display:flex;gap:12px;align-items:center"><span style="width:40px;height:40px;border-radius:50%;background:${t.c.muted}"></span><div style="flex:1;display:grid;gap:8px"><span style="height:12px;width:70%;border-radius:${x.radius}px;background:${t.c.muted}"></span><span style="height:12px;width:45%;border-radius:${x.radius}px;background:${t.c.muted}"></span></div></div>`; },
+  progress: (S,t) => { const x=S['progress.track'](t); return `<div style="height:${x.h}px;border-radius:${x.radius}px;background:${t.c.muted}"><div style="width:42%;height:100%;border-radius:${x.radius}px;background:${t.c.primary}"></div></div>`; },
+  spinner: (S,t) => `<span style="width:20px;height:20px;border-radius:50%;border:2px solid ${t.c.muted};border-top-color:${t.c.foreground};display:inline-block"></span>`,
+  alert: (S,t) => { const x=S['alert.root'](t); return `<div style="border-radius:${x.radius}px;padding:${x.pad}px;border:${x.border}px solid ${t.c.border};display:flex;gap:${x.gap}px;color:${t.c.foreground}">${I(ic.alert,18)}<div><div style="font:${t.type.label}">Heads up</div><div style="font:${t.type.small};color:${t.c.mutedForeground}">You can add components with the CLI.</div></div></div>`; },
+  toast: (S,t) => { const x=S['toast.root'](t); return `<div style="border-radius:${x.radius}px;padding:${x.pad}px;box-shadow:${x.shadow};background:${t.c.card};border:1px solid ${t.c.border};display:flex;gap:10px;align-items:flex-start"><span style="color:${t.c.success}">${I(ic.check,18)}</span><div><div style="font:${t.type.label}">Account created</div><div style="font:${t.type.small};color:${t.c.mutedForeground}">Welcome to nativecn.</div></div></div>`; },
+  empty: (S,t) => { const x=S['empty-state.root'](t); return `<div style="padding:${x.pad}px;display:flex;flex-direction:column;align-items:center;gap:${x.gap}px;text-align:center;border:1px dashed ${t.c.border};border-radius:12px"><span style="color:${t.c.mutedForeground}">${I(ic.inbox,x.icon)}</span><div style="font:${t.type.h4}">No messages yet</div><div style="font:${t.type.small};color:${t.c.mutedForeground}">New messages will show up here.</div>${R.button(S,t,'outline','Refresh')}</div>`; },
+  segmented: (S,t,variant) => { const x=S['segmented-tabs.list'](t);
+    if (variant==='underline') return `<div style="display:flex;gap:20px;border-bottom:1px solid ${t.c.border};font:${t.type.label}">${['Overview','Activity','Settings'].map((l,i)=>`<span style="padding:10px 0;${i===0?`border-bottom:2px solid ${t.c.foreground};`:`color:${t.c.mutedForeground}`}">${l}</span>`).join('')}</div>`;
+    return `<div style="height:${x.height}px;border-radius:${x.radius}px;background:${t.c.muted};padding:${x.pad}px;display:flex">${['Day','Week','Month'].map((l,i)=>`<span style="flex:1;border-radius:${x.inner}px;display:flex;align-items:center;justify-content:center;font:${t.type.label};${i===1?`background:${t.c.background};box-shadow:${t.shadow.sm};`:`color:${t.c.mutedForeground};`}">${l}</span>`).join('')}</div>`; },
+  tabnav: (S,t,variant) => { const x=S['tab-navigation.bar'](t); const items=[['home','Home'],['search','Search'],['bell','Inbox'],['user','Profile']];
+    const inner = items.map(([i,l],k)=>`<span style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;color:${k===0?t.c.foreground:t.c.mutedForeground};font:${x.labelFont}">${I(ic[i],x.icon)}${l}</span>`).join('');
+    return variant==='floating'
+      ? `<div style="height:${x.height}px;margin:0 8px;border-radius:${x.floatingRadius}px;background:${t.c.card};box-shadow:${t.shadow.lg};border:1px solid ${t.c.border};display:flex;align-items:center">${inner}</div>`
+      : `<div style="height:${x.height}px;border-top:1px solid ${t.c.border};background:${t.c.background};display:flex;align-items:center">${inner}</div>`; },
+  drawer: (S,t) => { const x=S['drawer.item'](t); const item=(i,l,on,badge)=>`<div style="height:${x.height}px;border-radius:${x.radius}px;padding:0 ${x.padX}px;display:flex;align-items:center;gap:${x.gap}px;font:${t.type.label};${on?`background:${t.c.accent};`:''}">${I(ic[i],18)}<span style="flex:1">${l}</span>${badge?R.badge(S,t,badge,'secondary'):''}</div>`;
+    return `<div style="border:1px solid ${t.c.border};border-radius:14px;padding:8px;background:${t.c.card}">${item('home','Home',true)}${item('bell','Inbox',false,'12')}${item('gear','Settings')}</div>`; },
+};
+
+const GROUPS = {
+  'core-forms': { title:'Core + Forms', slots:['button.root','button.pressed','input.root','form-field.root','checkbox.box','radio.dot','switch.track','slider.track','chip.root','input-otp.cell','search-field.root'],
+    render:(S,t)=>`<div class="sec"><div class="sech">Button</div><div class="row">${R.button(S,t,'primary','Continue','arrow')}${R.button(S,t,'secondary','Cancel')}${R.button(S,t,'outline','Edit')}${R.button(S,t,'destructive','',`trash`)}</div>
+      <div class="sech">Input / FormField</div>${R.input(S,t,'you@example.com')}${R.input(S,t,'not-an-email',true)}
+      <div class="sech">Search field</div>${R.search(S,t)}
+      <div class="sech">Checkbox · Radio · Switch</div><div class="row" style="gap:16px">${R.checkbox(S,t,true)}${R.radio(S,t,true,'Monthly')}${R.radio(S,t,false,'Yearly')}${R.switch(S,t,true)}${R.switch(S,t,false)}</div>
+      <div class="sech">Slider</div>${R.slider(S,t)}
+      <div class="sech">Chip</div><div class="row">${R.chip(S,t,'All',true)}${R.chip(S,t,'Design')}${R.chip(S,t,'Mobile')}${R.chip(S,t,'Expo')}</div>
+      <div class="sech">InputOTP</div>${R.otp(S,t)}<div style="height:24px"></div></div>` },
+  'display-feedback': { title:'Display + Feedback', slots:['card.root','badge.root','avatar.root','list.section','list.item','skeleton.root','progress.track','alert.root','toast.root','empty-state.root'],
+    render:(S,t)=>`<div class="sec"><div class="sech">Card · Avatar · Badge</div>${R.card(S,t,`<div style="display:flex;gap:12px;align-items:center">${R.avatar(S,t,'JD')}<div style="flex:1"><div style="font:${t.type.h4}">Jane Doe</div><div style="font:${t.type.small};color:${t.c.mutedForeground}">Product designer</div></div>${R.badge(S,t,'Pro')}</div><div class="row">${R.badge(S,t,'Active','success')}${R.badge(S,t,'Beta','secondary')}${R.badge(S,t,'3 issues','destructive')}</div>${R.button(S,t,'primary','View profile')}`)}
+      <div class="sech">List (settings rows)</div>${R.list(S,t)}
+      <div class="sech">Skeleton · Spinner · Progress</div>${R.skeleton(S,t)}<div style="height:12px"></div><div class="row" style="gap:16px">${R.spinner(S,t)}<div style="flex:1">${R.progress(S,t)}</div></div>
+      <div class="sech">Alert (inline)</div>${R.alert(S,t)}
+      <div class="sech">Toast</div>${R.toast(S,t)}
+      <div class="sech">EmptyState</div>${R.empty(S,t)}<div style="height:24px"></div></div>` },
+  'navigation': { title:'Navigation', slots:['segmented-tabs.list','tab-navigation.bar','drawer.item'],
+    render:(S,t)=>`<div class="sec"><div class="sech">SegmentedTabs · segmented</div>${R.segmented(S,t)}
+      <div class="sech">SegmentedTabs · underline</div>${R.segmented(S,t,'underline')}
+      <div class="sech">Drawer items</div>${R.drawer(S,t)}
+      <div class="sech">TabNavigation · classic</div></div>${R.tabnav(S,t,'classic')}
+      <div class="sec"><div class="sech">TabNavigation · floating</div></div>${R.tabnav(S,t,'floating')}<div style="height:24px"></div>` },
+};
+const KEYS = Object.keys(GROUPS);
+let state = { group: KEYS[0], scheme: 'light' };
+
+function draw() {
+  const t = T(state.scheme), g = GROUPS[state.group];
+  for (const [id, S] of [['vega', VEGA], ['nova', NOVA]]) {
+    const p = document.getElementById(id); p.style.background = t.c.background; p.style.color = t.c.foreground;
+    p.querySelector('.scr').innerHTML = g.render(S, t);
+    p.querySelectorAll('.pressable').forEach(el => {
+      const pr = S['button.pressed'](t);
+      el.onpointerdown = () => { el.style.filter = pr.filter; el.style.transform = `scale(${pr.scale})`; };
+      el.onpointerup = el.onpointerleave = () => { el.style.filter = ''; el.style.transform = ''; };
+    });
+  }
+  const dump = {}; for (const k of g.slots) dump[k] = { vega: VEGA[k](t), nova: NOVA[k](t) };
+  document.getElementById('slots').textContent = JSON.stringify({ group: state.group, scheme: state.scheme, slots: dump }, null, 1).replace(/"(font|shadow)": "[^"]*"/g, m => m.length > 60 ? m.slice(0, 58) + '…"' : m);
+  document.getElementById('title').textContent = g.title;
+  document.getElementById('label').textContent = `${state.group} (${state.scheme})`;
+  const u = new URL(location); u.searchParams.set('variant', state.group); history.replaceState(null, '', u);
+}
+const cycle = d => { state.group = KEYS[(KEYS.indexOf(state.group) + d + KEYS.length) % KEYS.length]; draw(); };
+document.getElementById('prev').onclick = () => cycle(-1);
+document.getElementById('next').onclick = () => cycle(1);
+document.getElementById('dark').onclick = () => { state.scheme = state.scheme === 'light' ? 'dark' : 'light'; draw(); };
+addEventListener('keydown', e => { if (e.key === 'ArrowLeft') cycle(-1); if (e.key === 'ArrowRight') cycle(1); });
+const q = new URLSearchParams(location.search).get('variant'); if (KEYS.includes(q)) state.group = q;
+draw();
+</script>
+</body>
+</html>
