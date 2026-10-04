@@ -17,7 +17,7 @@ import { announce } from "@/registry/utils/announce";
 
 jest.mock("@/registry/utils/announce", () => ({ announce: jest.fn() }));
 
-// Status icons become marked Views, so the icon slot's content can be found.
+// Status and spinner icons become marked Views, so the icon slot's content can be found.
 jest.mock("lucide-react-native", () => {
   const actual = jest.requireActual("lucide-react-native");
   const { View: RNView } = jest.requireActual("react-native");
@@ -25,6 +25,7 @@ jest.mock("lucide-react-native", () => {
     ...actual,
     Check: () => <RNView testID="status-success" />,
     CircleAlert: () => <RNView testID="status-error" />,
+    LoaderCircle: () => <RNView testID="spinner" />,
   };
 });
 
@@ -45,12 +46,6 @@ async function renderButton(props: Partial<ButtonProps> = {}) {
 
 const flat = (el: { props: Record<string, unknown> }) =>
   StyleSheet.flatten(el.props.style as never) as Record<string, unknown>;
-
-type HostNode = { type: string; children: (HostNode | string)[] };
-const hostTypes = (node: HostNode): string[] => [
-  node.type,
-  ...node.children.flatMap((c) => (typeof c === "string" ? [] : hostTypes(c))),
-];
 
 beforeEach(() => {
   useSchemeStore.setState({ scheme: "system", hydrated: true });
@@ -192,8 +187,10 @@ describe("Button: accessibility and states", () => {
     expect(el.props.accessibilityState.disabled).toBe(false);
     expect(screen.getByText("Save")).toBeTruthy();
     expect(screen.getByRole("button", { name: "Save" })).toBeTruthy();
-    // The spinner replaces the icon (start) and the label stays.
-    expect(hostTypes(el)).toEqual(["View", "ActivityIndicator", "Text"]);
+    // The Spinner replaces the icon (start), stays silent (the Button is busy) and the label stays.
+    expect(screen.getByTestId("spinner", hidden)).toBeTruthy();
+    expect(screen.queryByRole("progressbar")).toBeNull();
+    expect(el.children).toHaveLength(2);
     await fireEvent.press(el);
     await fireEvent(el, "press");
     expect(onPress).not.toHaveBeenCalled();

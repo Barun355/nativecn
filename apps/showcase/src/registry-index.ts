@@ -8,6 +8,17 @@ export type RegistryIndexEntry = {
 };
 
 export const registryIndex: Record<string, RegistryIndexEntry> = {
+  alert: {
+    type: "registry:ui",
+    description:
+      "Alert, AlertTitle and AlertDescription: an inline message with Variants (default, destructive, success, warning, info), each with a default icon.",
+    load: () => import("@/registry/components/alert"),
+  },
+  "alert-demo": {
+    type: "registry:example",
+    description: "Alerts in every Variant, and one with a custom icon.",
+    load: () => import("@/registry/examples/alert-demo"),
+  },
   announce: {
     type: "registry:lib",
     description:
@@ -25,6 +36,17 @@ export const registryIndex: Record<string, RegistryIndexEntry> = {
     description:
       "Wraps a Screen: safe-area edges, scrolling, keyboard avoidance, Token padding and a max content width.",
     load: () => import("@/registry/components/container"),
+  },
+  "empty-state": {
+    type: "registry:ui",
+    description:
+      "What a Screen or list shows when there is nothing to show yet: an icon, a title, a description and an action.",
+    load: () => import("@/registry/components/empty-state"),
+  },
+  "empty-state-demo": {
+    type: "registry:example",
+    description: "An empty inbox with a New message action.",
+    load: () => import("@/registry/examples/empty-state-demo"),
   },
   "focus-chain": {
     type: "registry:ui",
@@ -94,6 +116,17 @@ export const registryIndex: Record<string, RegistryIndexEntry> = {
       "Pressed look from a Style Slot, tap area extended to 48, no handlers while disabled or loading, optional haptics, role and aria-* states.",
     load: () => import("@/registry/components/primitives/pressable"),
   },
+  progress: {
+    type: "registry:ui",
+    description:
+      "A horizontal progress bar: a value 0–100 that animates, or indeterminate; role progressbar with its value.",
+    load: () => import("@/registry/components/progress"),
+  },
+  "progress-demo": {
+    type: "registry:example",
+    description: "A determinate bar that fills up, and an indeterminate one.",
+    load: () => import("@/registry/examples/progress-demo"),
+  },
   "search-field": {
     type: "registry:ui",
     description:
@@ -110,6 +143,28 @@ export const registryIndex: Record<string, RegistryIndexEntry> = {
     description:
       "Single or multiple choice within a group, with radio, tab or checkbox roles and selected states.",
     load: () => import("@/registry/components/primitives/selection-group"),
+  },
+  skeleton: {
+    type: "registry:ui",
+    description:
+      "A placeholder shape shown while content loads; pulses unless Reduce Motion is on, hidden from screen readers.",
+    load: () => import("@/registry/components/skeleton"),
+  },
+  "skeleton-demo": {
+    type: "registry:example",
+    description: "A list row while it loads: an avatar circle and two lines.",
+    load: () => import("@/registry/examples/skeleton-demo"),
+  },
+  spinner: {
+    type: "registry:ui",
+    description:
+      "An indeterminate loading indicator in a Colour Role, announced as busy; still under Reduce Motion.",
+    load: () => import("@/registry/components/spinner"),
+  },
+  "spinner-demo": {
+    type: "registry:example",
+    description: "Spinners in each size, a Colour Role and a specific name.",
+    load: () => import("@/registry/examples/spinner-demo"),
   },
   text: {
     type: "registry:ui",

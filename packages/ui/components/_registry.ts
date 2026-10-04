@@ -47,6 +47,8 @@ const example = (
 
 /** lucide-react-native is the recorded ADR 0007 exception (Lucide decision); react-native-svg is SDK-pinned. */
 const LUCIDE = ["lucide-react-native@^1.51.0", "react-native-svg"];
+/** Reanimated and its Worklets runtime are SDK-pinned. */
+const REANIMATED = ["react-native-reanimated", "react-native-worklets"];
 
 export default [
   component(
@@ -64,8 +66,8 @@ export default [
   component(
     "button",
     "Button with Variants (primary, secondary, outline, ghost, destructive, link), Sizes, an icon slot, loading and status; icon-only requires aria-label.",
-    LUCIDE,
-    ["theme", "pressable", "text", "icon", "announce"],
+    [...LUCIDE, ...REANIMATED],
+    ["theme", "pressable", "text", "icon", "spinner", "announce"],
   ),
   component(
     "container",
@@ -288,4 +290,142 @@ export default [
     "A controlled SearchField with loading and onSubmit.",
     ["search-field"],
   ),
+
+  // Feedback
+  component(
+    "skeleton",
+    "A placeholder shape shown while content loads; pulses unless Reduce Motion is on, hidden from screen readers.",
+    REANIMATED,
+    ["theme", "use-motion"],
+    {
+      title: "Skeleton",
+      categories: ["feedback"],
+      meta: {
+        kind: "Component",
+        props: {
+          width: "number | percentage string",
+          height: "number | percentage string; with circle and no width, also the width",
+          circle: "boolean (default false): fully rounded",
+        },
+        docs: "Always hidden from screen readers: put aria-busy and an aria-label on the loading container instead. Pulses with the slow motion Token and is still under Reduce Motion. The corner radius comes from the skeleton.root Style Slot.",
+        keywords: ["loading", "placeholder", "shimmer", "pulse", "content loader"],
+        examples: ["skeleton-demo"],
+      },
+    },
+  ),
+  component(
+    "spinner",
+    "An indeterminate loading indicator in a Colour Role, announced as busy; still under Reduce Motion.",
+    [...LUCIDE, ...REANIMATED],
+    ["theme", "icon", "use-motion"],
+    {
+      title: "Spinner",
+      categories: ["feedback"],
+      meta: {
+        kind: "Component",
+        props: {
+          size: "sm | md | lg (default md): 16 · 20 · 24 from the iconSize Tokens",
+          color: "Colour Role (default foreground)",
+          "aria-label": 'string (default "Loading")',
+          "aria-hidden": "boolean: silences it inside a parent that is already busy",
+        },
+        variants: ["sm", "md", "lg"],
+        docs: "A Lucide LoaderCircle turning once every 800ms (2 × the slow motion Token); role progressbar with aria-busy. Button uses it for `loading`, with aria-hidden since the Button itself is busy. Use it instead of ActivityIndicator.",
+        keywords: ["loading", "loader", "activity indicator", "busy", "spinning"],
+        examples: ["spinner-demo"],
+      },
+    },
+  ),
+  component(
+    "progress",
+    "A horizontal progress bar: a value 0–100 that animates, or indeterminate; role progressbar with its value.",
+    REANIMATED,
+    ["theme", "use-motion"],
+    {
+      title: "Progress",
+      categories: ["feedback"],
+      meta: {
+        kind: "Component",
+        props: {
+          value: "number 0–100, clamped (default 0)",
+          indeterminate: "boolean (default false): a bar sweeps along the track; announced busy",
+        },
+        docs: "role progressbar with aria-valuemin 0, aria-valuemax 100 and aria-valuenow (left out while indeterminate). Value changes animate with the base motion Token; the sweep is still under Reduce Motion. The track height comes from the progress.track Style Slot; set its width with style.",
+        keywords: ["progress bar", "loading", "upload", "download", "percent", "meter"],
+        examples: ["progress-demo"],
+      },
+    },
+  ),
+  component(
+    "alert",
+    "Alert, AlertTitle and AlertDescription: an inline message with Variants (default, destructive, success, warning, info), each with a default icon.",
+    LUCIDE,
+    ["theme", "text", "icon"],
+    {
+      title: "Alert",
+      categories: ["feedback"],
+      meta: {
+        kind: "Component",
+        props: {
+          variant: "default | destructive | success | warning | info (default default)",
+          icon: "Lucide icon component; each Variant has a default (Info, CircleAlert, CircleCheck, TriangleAlert, Info); null hides it",
+          "AlertTitle, AlertDescription": "Text props (children); the colour follows the Variant",
+        },
+        variants: ["default", "destructive", "success", "warning", "info"],
+        docs: "role alert, read as one element. Never use Alert.alert or any platform dialog: use this inline Alert, or toast() for transient and server feedback. The border, icon and title take the Variant's Colour Role on a card background.",
+        keywords: ["callout", "banner", "notice", "message", "error", "warning", "info", "success"],
+        examples: ["alert-demo"],
+      },
+    },
+  ),
+  component(
+    "empty-state",
+    "What a Screen or list shows when there is nothing to show yet: an icon, a title, a description and an action.",
+    LUCIDE,
+    ["theme", "text", "icon"],
+    {
+      title: "Empty State",
+      categories: ["feedback"],
+      meta: {
+        kind: "Component",
+        props: {
+          icon: "Lucide icon component, drawn in a muted circle",
+          title: "string (required), read as a heading",
+          description: "string",
+          children: "the action, usually a Button",
+        },
+        docs: "Centre it in the free space (style={{ flex: 1 }}, or a list's ListEmptyComponent). Padding, gap and icon size come from the empty-state.root and empty-state.icon Style Slots.",
+        keywords: ["empty", "no results", "no data", "zero state", "blank slate"],
+        examples: ["empty-state-demo"],
+      },
+    },
+  ),
+
+  // Examples
+  example(
+    "skeleton-demo",
+    "Skeleton demo",
+    "A list row while it loads: an avatar circle and two lines.",
+    ["skeleton", "theme"],
+  ),
+  example(
+    "spinner-demo",
+    "Spinner demo",
+    "Spinners in each size, a Colour Role and a specific name.",
+    ["spinner", "theme"],
+  ),
+  example(
+    "progress-demo",
+    "Progress demo",
+    "A determinate bar that fills up, and an indeterminate one.",
+    ["progress", "theme"],
+  ),
+  example("alert-demo", "Alert demo", "Alerts in every Variant, and one with a custom icon.", [
+    "alert",
+    "theme",
+  ]),
+  example("empty-state-demo", "Empty State demo", "An empty inbox with a New message action.", [
+    "empty-state",
+    "button",
+  ]),
 ] satisfies RegistryItem[];
