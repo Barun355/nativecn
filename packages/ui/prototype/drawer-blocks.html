@@ -1,0 +1,122 @@
+<!doctype html>
+<!--
+  PROTOTYPE, throwaway. Not production code.
+  Question: what do drawer-01 / drawer-02 / drawer-03 look like, built from the Drawer Components
+  (DrawerContent, DrawerHeader, DrawerSection, DrawerItem, DrawerFooter)?
+  ?variant=drawer-01|drawer-02|drawer-03, bottom bar or ←/→. Toggle Vega/Nova Style, light/dark, and open/close.
+  Tap the ☰ button to open, the backdrop to close; tap items to select (the "screen" behind updates).
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Drawer Blocks (prototype)</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  body { margin:0; font-family:Inter, system-ui, sans-serif; background:#e9e9ec; padding:24px 16px 110px; display:flex; gap:32px; justify-content:center; align-items:flex-start; }
+  .phone { width:390px; height:844px; border-radius:44px; box-shadow:0 0 0 10px #111, 0 20px 50px rgba(0,0,0,.25); overflow:hidden; position:relative; }
+  .side { width:300px; font-size:13px; }
+  .side .tag { display:inline-block; background:#171717; color:#fff; border-radius:999px; padding:2px 10px; font-size:12px; }
+  .side ul { padding-left:18px; } .side button { margin:4px 4px 4px 0; padding:6px 12px; border-radius:8px; border:1px solid #ccc; background:#fff; cursor:pointer; }
+  .side pre { background:#fff; border-radius:10px; padding:10px; font:11px/1.45 ui-monospace, monospace; white-space:pre-wrap; }
+  .switcher { position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:#ff3d7f; color:#fff; border-radius:999px; display:flex; align-items:center; gap:4px; padding:6px; box-shadow:0 6px 20px rgba(0,0,0,.3); font:600 14px ui-monospace, monospace; z-index:10; }
+  .switcher button { background:rgba(255,255,255,.2); color:#fff; border:0; border-radius:999px; width:36px; height:36px; font-size:18px; cursor:pointer; }
+  .switcher span { padding:0 14px; min-width:260px; text-align:center; }
+  .press { cursor:pointer; user-select:none; }
+  .press:active { filter:brightness(.92); }
+  .anim { transition:transform .25s cubic-bezier(.2,.8,.2,1), opacity .25s; }
+</style>
+</head>
+<body>
+  <div class="phone" id="phone"></div>
+  <div class="side"><span class="tag">PROTOTYPE</span><h3 id="title" style="margin:8px 0 2px"></h3><div id="why"></div>
+    <div><button id="style">Style: Vega</button><button id="dark">Toggle dark</button><button id="open">Close drawer</button></div>
+    <pre id="state"></pre></div>
+  <div class="switcher"><button id="prev">←</button><span id="label"></span><button id="next">→</button></div>
+<script>
+const COLORS = {
+  light:{ background:'#ffffff', foreground:'#0a0a0a', card:'#ffffff', muted:'#f5f5f5', mutedForeground:'#737373', primary:'#171717', primaryForeground:'#fafafa', accent:'#f5f5f5', border:'#e5e5e5', destructive:'#dc2626', overlay:'rgba(0,0,0,.5)' },
+  dark: { background:'#0a0a0a', foreground:'#fafafa', card:'#171717', muted:'#262626', mutedForeground:'#a3a3a3', primary:'#fafafa', primaryForeground:'#171717', accent:'#262626', border:'#2e2e2e', destructive:'#ef4444', overlay:'rgba(0,0,0,.7)' } };
+// drawer.item slot from "Vega and Nova values for each 0.1 Component"
+const STYLES = {
+  vega:{ item:{ h:48, r:8, padX:12, gap:12 }, avatar:40, sectionGap:20, pad:16, cardR:18, badge:{ h:22, r:6 } },
+  nova:{ item:{ h:40, r:6, padX:10, gap:10 }, avatar:32, sectionGap:14, pad:12, cardR:14, badge:{ h:20, r:4 } } };
+const I = (d, s=20) => `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
+const ic = { home:'<path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>', inbox:'<path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.5 5h13L22 12v6a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-6z"/>',
+  chart:'<path d="M3 3v18h18"/><path d="m7 15 4-4 3 3 5-6"/>', folder:'<path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>', users:'<circle cx="9" cy="8" r="4"/><path d="M2 21a7 7 0 0 1 14 0"/><path d="M16 4a4 4 0 0 1 0 8M22 21a7 7 0 0 0-4-6.3"/>',
+  gear:'<circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.2 4.2l2.9 2.9M16.9 16.9l2.9 2.9M1 12h4M19 12h4"/>', help:'<circle cx="12" cy="12" r="10"/><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3M12 17h.01"/>',
+  out:'<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/>', menu:'<path d="M4 6h16M4 12h16M4 18h16"/>', x:'<path d="M18 6 6 18M6 6l12 12"/>', chev:'<path d="m7 15 5-5 5 5"/>', star:'<path d="m12 2 3 7h7l-5.5 4.5L18.5 21 12 16.5 5.5 21l2-7.5L2 9h7z"/>' };
+const NAV = [['home','Home'],['inbox','Inbox','12'],['chart','Analytics'],['folder','Projects'],['users','Team'],['gear','Settings'],['help','Help']];
+
+let state = { variant:'drawer-01', style:'vega', scheme:'light', open:true, active:0, lastAction:'-' };
+
+const item = (S, c, k, opts={}) => { const [i, l, badge] = NAV[k]; const on = k===state.active; const it = S.item;
+  if (opts.iconOnly) return `<div class="press" data-go="${k}" role="button" aria-label="${l}" aria-selected="${on}" title="${l}" style="width:${it.h}px;height:${it.h}px;border-radius:${it.r}px;display:flex;align-items:center;justify-content:center;position:relative;${on?`background:${c.primary};color:${c.primaryForeground};`:`color:${c.mutedForeground};`}">${I(ic[i],22)}${badge?`<span style="position:absolute;top:6px;right:6px;width:8px;height:8px;border-radius:50%;background:${c.destructive}"></span>`:''}</div>`;
+  return `<div class="press" data-go="${k}" role="button" aria-selected="${on}" style="height:${it.h}px;border-radius:${it.r}px;padding:0 ${it.padX}px;display:flex;align-items:center;gap:${it.gap}px;font:500 15px/20px Inter;${on?`background:${opts.strong?c.primary:c.accent};color:${opts.strong?c.primaryForeground:c.foreground};`:`color:${c.foreground};`}">${I(ic[i],20)}<span style="flex:1">${l}</span>${badge?`<span style="height:${S.badge.h}px;border-radius:${S.badge.r}px;padding:0 7px;font:500 12px/16px Inter;display:inline-flex;align-items:center;background:${on&&opts.strong?c.primaryForeground:c.muted};color:${on&&opts.strong?c.primary:c.foreground}">${badge}</span>`:''}</div>`; };
+const sectionLabel = (c, l) => `<div style="font:600 11px/16px Inter;letter-spacing:.06em;text-transform:uppercase;color:${c.mutedForeground};padding:0 4px 6px">${l}</div>`;
+const avatar = (S, c, size=S.avatar) => `<span style="width:${size}px;height:${size}px;border-radius:50%;background:linear-gradient(135deg,#a78bfa,#60a5fa);display:inline-flex;align-items:center;justify-content:center;color:#fff;font:600 ${Math.round(size*.38)}px Inter">JD</span>`;
+
+const VARIANTS = {
+  'drawer-01': { name:'Profile header + grouped sections', width:300,
+    why:['Full-height panel from the left edge, 300 wide', 'DrawerHeader: avatar, name, email and a plan badge', 'Grouped DrawerSections with labels (Main, Workspace, Support)', 'DrawerFooter pinned: Log out', 'The safe, familiar Gmail/Slack pattern'],
+    panel:(S,c)=>`<div style="height:100%;display:flex;flex-direction:column;background:${c.background};padding:${S.pad+44}px ${S.pad}px ${S.pad+20}px">
+      <div style="display:flex;gap:12px;align-items:center;padding:0 4px 16px;border-bottom:1px solid ${c.border};margin-bottom:${S.sectionGap}px">${avatar(S,c)}<div style="flex:1;min-width:0"><div style="font:600 16px/22px Inter;color:${c.foreground}">Jane Doe</div><div style="font:400 13px/18px Inter;color:${c.mutedForeground}">jane@example.com</div></div><span style="font:500 11px Inter;padding:3px 8px;border-radius:999px;background:${c.primary};color:${c.primaryForeground}">PRO</span></div>
+      <div style="flex:1;overflow:auto;display:grid;gap:${S.sectionGap}px;align-content:start">
+        <div>${sectionLabel(c,'Main')}${item(S,c,0)}${item(S,c,1)}${item(S,c,2)}</div>
+        <div>${sectionLabel(c,'Workspace')}${item(S,c,3)}${item(S,c,4)}</div>
+        <div>${sectionLabel(c,'Support')}${item(S,c,5)}${item(S,c,6)}</div></div>
+      <div style="border-top:1px solid ${c.border};padding-top:12px"><div class="press" data-act="logout" role="button" style="height:${S.item.h}px;border-radius:${S.item.r}px;padding:0 ${S.item.padX}px;display:flex;align-items:center;gap:${S.item.gap}px;font:500 15px Inter;color:${c.destructive}">${I(ic.out,20)}Log out</div></div></div>` },
+  'drawer-02': { name:'Compact, icon-forward', width:88,
+    why:['A narrow rail (88 wide) of icon-only DrawerItems with accessible labels', 'Active item uses a filled primary background; unread shows as a dot', 'Avatar on top, settings and log out at the bottom', 'For power apps with many switches between few destinations; the content stays visible'],
+    panel:(S,c)=>`<div style="height:100%;display:flex;flex-direction:column;align-items:center;gap:8px;background:${c.background};border-right:1px solid ${c.border};padding:${S.pad+44}px 0 ${S.pad+20}px">
+      ${avatar(S,c,S.avatar)}<div style="width:40px;height:1px;background:${c.border};margin:8px 0"></div>
+      ${[0,1,2,3,4].map(k=>item(S,c,k,{iconOnly:true})).join('')}<div style="flex:1"></div>
+      ${item(S,c,5,{iconOnly:true})}${item(S,c,6,{iconOnly:true})}
+      <div class="press" data-act="logout" role="button" aria-label="Log out" style="width:${S.item.h}px;height:${S.item.h}px;display:flex;align-items:center;justify-content:center;color:${c.destructive}">${I(ic.out,22)}</div></div>` },
+  'drawer-03': { name:'Floating card panel', width:316, floating:true,
+    why:['The panel floats inset from the edges (12px) with large rounded corners and a shadow, over a dimmed screen', 'A compact header with app name and close (×) button', 'Active item strongly filled (primary)', 'Footer card with an upgrade prompt and the user row', 'A modern, softer feel (Linear/Arc-like)'],
+    panel:(S,c)=>`<div style="height:100%;display:flex;flex-direction:column;background:${c.card};border-radius:${S.cardR+6}px;box-shadow:0 12px 40px rgba(0,0,0,.25);border:1px solid ${c.border};padding:${S.pad}px">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:4px 4px 14px"><div style="display:flex;gap:10px;align-items:center"><span style="width:30px;height:30px;border-radius:9px;background:${c.primary};color:${c.primaryForeground};display:inline-flex;align-items:center;justify-content:center;font:700 14px Inter">N</span><span style="font:600 16px Inter;color:${c.foreground}">nativecn</span></div>
+        <span class="press" data-act="close" role="button" aria-label="Close menu" style="width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;color:${c.mutedForeground}">${I(ic.x,20)}</span></div>
+      <div style="flex:1;overflow:auto;display:grid;gap:2px;align-content:start">${[0,1,2,3,4,5,6].map(k=>item(S,c,k,{strong:true})).join('')}</div>
+      <div style="border-radius:${S.cardR}px;background:${c.muted};padding:14px;display:grid;gap:10px">
+        <div style="display:flex;gap:8px;align-items:center;font:600 14px Inter;color:${c.foreground}">${I(ic.star,18)}Upgrade to Pro</div>
+        <div style="font:400 13px/18px Inter;color:${c.mutedForeground}">Unlock team workspaces and analytics.</div>
+        <div style="display:flex;gap:10px;align-items:center;padding-top:6px;border-top:1px solid ${c.border}">${avatar(S,c,32)}<div style="flex:1"><div style="font:500 14px Inter;color:${c.foreground}">Jane Doe</div><div style="font:400 12px Inter;color:${c.mutedForeground}">jane@example.com</div></div><span style="color:${c.mutedForeground}">${I(ic.chev,18)}</span></div></div></div>` },
+};
+const KEYS = Object.keys(VARIANTS);
+
+function draw() {
+  const c = COLORS[state.scheme], S = STYLES[state.style], v = VARIANTS[state.variant];
+  const [icon, label] = NAV[state.active];
+  const screen = `<div style="position:absolute;inset:0;background:${c.background};color:${c.foreground}">
+      <div style="height:${44+56}px;padding:44px 12px 0;display:flex;align-items:center;gap:8px;border-bottom:1px solid ${c.border}">
+        <span class="press" data-act="open" role="button" aria-label="Open menu" style="width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center">${I(ic.menu,22)}</span>
+        <span style="font:600 17px Inter">${label}</span></div>
+      <div style="padding:16px;display:grid;gap:12px">${[1,2,3,4].map(n=>`<div style="height:72px;border-radius:12px;background:${c.muted};display:flex;align-items:center;padding:0 16px;gap:12px;color:${c.mutedForeground};font:400 14px Inter">${I(ic[icon],20)}${label} item ${n}</div>`).join('')}</div></div>`;
+  const inset = v.floating ? 12 : 0;
+  const panel = `<div class="anim" style="position:absolute;top:${inset}px;bottom:${inset}px;left:${inset}px;width:${v.width}px;transform:translateX(${state.open?0:-(v.width+inset+20)}px)">${v.panel(S,c)}</div>`;
+  const backdrop = `<div class="anim" data-act="close" style="position:absolute;inset:0;background:${c.overlay};opacity:${state.open?1:0};pointer-events:${state.open?'auto':'none'}"></div>`;
+  document.getElementById('phone').innerHTML = screen + backdrop + panel;
+  document.querySelectorAll('[data-go]').forEach(el => el.onclick = e => { e.stopPropagation(); state.active = +el.dataset.go; state.lastAction = 'navigate:' + NAV[state.active][1]; state.open = state.variant === 'drawer-02'; draw(); });
+  document.querySelectorAll('[data-act]').forEach(el => el.onclick = e => { e.stopPropagation(); const a = el.dataset.act; state.lastAction = a; if (a === 'open') state.open = true; if (a === 'close') state.open = false; if (a === 'logout') state.open = false; draw(); });
+  document.getElementById('title').textContent = `${state.variant}: ${v.name}`;
+  document.getElementById('why').innerHTML = `<ul>${v.why.map(w=>`<li>${w}</li>`).join('')}</ul>`;
+  document.getElementById('label').textContent = `${state.variant} (${state.style})`;
+  document.getElementById('style').textContent = `Style: ${state.style === 'vega' ? 'Vega' : 'Nova'}`;
+  document.getElementById('open').textContent = state.open ? 'Close drawer' : 'Open drawer';
+  document.getElementById('state').textContent = JSON.stringify({ ...state, drawerItemSlot: S.item }, null, 1);
+  const u = new URL(location); u.searchParams.set('variant', state.variant); history.replaceState(null, '', u);
+}
+const cycle = d => { state.variant = KEYS[(KEYS.indexOf(state.variant) + d + KEYS.length) % KEYS.length]; state.open = true; draw(); };
+document.getElementById('prev').onclick = () => cycle(-1);
+document.getElementById('next').onclick = () => cycle(1);
+document.getElementById('style').onclick = () => { state.style = state.style === 'vega' ? 'nova' : 'vega'; draw(); };
+document.getElementById('dark').onclick = () => { state.scheme = state.scheme === 'light' ? 'dark' : 'light'; draw(); };
+document.getElementById('open').onclick = () => { state.open = !state.open; draw(); };
+addEventListener('keydown', e => { if (e.key === 'ArrowLeft') cycle(-1); if (e.key === 'ArrowRight') cycle(1); if (e.key === 'Escape') { state.open = false; draw(); } });
+const q = new URLSearchParams(location.search).get('variant'); if (KEYS.includes(q)) state.variant = q;
+draw();
+</script>
+</body>
+</html>
