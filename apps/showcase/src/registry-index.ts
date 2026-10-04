@@ -63,6 +63,29 @@ export const registryIndex: Record<string, RegistryIndexEntry> = {
     description: "A Card with header, content and footer, and a pressable Card.",
     load: () => import("@/registry/examples/card-demo"),
   },
+  checkbox: {
+    type: "registry:ui",
+    description:
+      "Checkbox with an optional label, controlled or uncontrolled, an indeterminate (mixed) state and a haptic tick.",
+    load: () => import("@/registry/components/checkbox"),
+  },
+  "checkbox-demo": {
+    type: "registry:example",
+    description:
+      "A labelled Checkbox, a 'select all' with an indeterminate state, and a disabled one.",
+    load: () => import("@/registry/examples/checkbox-demo"),
+  },
+  chip: {
+    type: "registry:ui",
+    description:
+      "Chip (plain, toggle or removable, with an optional icon) and ChipGroup (single or multiple choice on the SelectionGroup Primitive), with a haptic tick.",
+    load: () => import("@/registry/components/chip"),
+  },
+  "chip-demo": {
+    type: "registry:example",
+    description: "Single and multiple ChipGroups, a toggle Chip with an icon and removable Chips.",
+    load: () => import("@/registry/examples/chip-demo"),
+  },
   container: {
     type: "registry:ui",
     description:
@@ -171,6 +194,17 @@ export const registryIndex: Record<string, RegistryIndexEntry> = {
     description: "A determinate bar that fills up, and an indeterminate one.",
     load: () => import("@/registry/examples/progress-demo"),
   },
+  "radio-group": {
+    type: "registry:ui",
+    description:
+      "RadioGroup and RadioGroupItem: a single choice from a list on the SelectionGroup Primitive, vertical or horizontal, with a haptic tick.",
+    load: () => import("@/registry/components/radio-group"),
+  },
+  "radio-group-demo": {
+    type: "registry:example",
+    description: "A vertical and a horizontal RadioGroup, with a disabled item.",
+    load: () => import("@/registry/examples/radio-group-demo"),
+  },
   "search-field": {
     type: "registry:ui",
     description:
@@ -219,6 +253,17 @@ export const registryIndex: Record<string, RegistryIndexEntry> = {
     type: "registry:example",
     description: "Spinners in each size, a Colour Role and a specific name.",
     load: () => import("@/registry/examples/spinner-demo"),
+  },
+  switch: {
+    type: "registry:ui",
+    description:
+      "A themed on/off Switch, identical on iOS and Android, with an optional label, a thumb that slides (instant under Reduce Motion) and a haptic tick.",
+    load: () => import("@/registry/components/switch"),
+  },
+  "switch-demo": {
+    type: "registry:example",
+    description: "A controlled Switch with a label, an uncontrolled one and a disabled one.",
+    load: () => import("@/registry/examples/switch-demo"),
   },
   text: {
     type: "registry:ui",

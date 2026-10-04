@@ -45,6 +45,10 @@ export const vega = defineStyle({
   }),
   "radio.dot": (t) => ({ width: t.scaleValue(20), height: t.scaleValue(20) }),
   "switch.track": (t) => ({ width: t.scaleValue(52), height: t.scaleValue(32) }),
+  // Pressed look of the Checkbox, RadioGroupItem and Switch rows (the whole row, label included).
+  "checkbox.pressed": () => ({ opacity: 0.7 }),
+  "radio.pressed": () => ({ opacity: 0.7 }),
+  "switch.pressed": () => ({ opacity: 0.7 }),
   "slider.track": (t) => ({ height: t.scaleValue(6) }),
   "slider.thumb": (t) => ({ width: t.scaleValue(24), height: t.scaleValue(24) }),
   "chip.root": (t) => ({
@@ -53,6 +57,7 @@ export const vega = defineStyle({
     paddingHorizontal: t.spacing[3],
     ...t.type.label,
   }),
+  "chip.pressed": () => ({ filter: [{ brightness: 0.88 }] }),
   "input-otp.cell": (t) => ({
     width: t.scaleValue(48),
     height: t.scaleValue(56),
