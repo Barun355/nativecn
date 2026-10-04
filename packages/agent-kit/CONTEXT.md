@@ -22,8 +22,13 @@ An agent-host package (Claude Code, Cursor, and others) that bundles the Agent K
 _Avoid_: Extension
 
 **Visual QA Loop**:
-The agent-driven cycle of running the app on a device, capturing screenshots, comparing them with the Reference Design, and fixing differences. nativecn provides only the Skill and Rules for it; the agent reaches devices through existing platform command-line tools (adb for Android, `xcrun simctl` for the iOS Simulator).
+The agent-driven review of a running app: it navigates screens and User Flows on a device, captures screenshots, judges them against the Reference Design (or the user's stated expectations) at the design-system level, and traces each problem to its root in the code. Small, safe problems are fixed directly; anything risky is explained with recommended fixes and changed only on request. nativecn provides only the Skill and Rules; the agent drives devices with raw platform tools (adb, and `xcrun simctl` for the iOS Simulator) within an allowlist.
 _Avoid_: AI testing, screenshot testing
 
 **Reference Design**:
-An image of the intended appearance of a screen, kept in the app's `design/` folder, that the Visual QA Loop compares against.
+What a screen is meant to look like: an exported image in `design/screens/` when one exists, otherwise the user's description recorded in `design/expectations.md`. The Visual QA Loop judges against its design system (spacing, typography, layout, Components), not pixel by pixel.
+_Avoid_: Mockup, golden image
+
+**User Flow**:
+A confirmed sequence of screens and actions (e.g. sign up → verify code → home), derived by the agent from code and docs and approved by the user, kept in `design/flows.md`.
+_Avoid_: Journey, scenario, test case
