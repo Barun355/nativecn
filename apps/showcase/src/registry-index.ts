@@ -142,6 +142,17 @@ export const registryIndex: Record<string, RegistryIndexEntry> = {
     description: "Inputs with an icon, Sizes, a status and a password toggle.",
     load: () => import("@/registry/examples/input-demo"),
   },
+  "input-otp": {
+    type: "registry:ui",
+    description:
+      "One-time code field: one hidden input drives N cells; numeric keyboard, SMS/Keychain autofill, paste, onComplete, error/success status and secure.",
+    load: () => import("@/registry/components/input-otp"),
+  },
+  "input-otp-demo": {
+    type: "registry:example",
+    description: "A 6-digit verification code, checked when complete, with error and success.",
+    load: () => import("@/registry/examples/input-otp-demo"),
+  },
   keyboard: {
     type: "registry:ui",
     description:
@@ -264,6 +275,17 @@ export const registryIndex: Record<string, RegistryIndexEntry> = {
     type: "registry:example",
     description: "A list row while it loads: an avatar circle and two lines.",
     load: () => import("@/registry/examples/skeleton-demo"),
+  },
+  slider: {
+    type: "registry:ui",
+    description:
+      "Pick a number in a range by dragging or tapping (Gesture Handler + Reanimated), snapped to steps with a haptic tick; adjustable for screen readers.",
+    load: () => import("@/registry/components/slider"),
+  },
+  "slider-demo": {
+    type: "registry:example",
+    description: "A controlled volume Slider with its value shown, and a stepped rating.",
+    load: () => import("@/registry/examples/slider-demo"),
   },
   spinner: {
     type: "registry:ui",
