@@ -19,11 +19,23 @@ export const registryIndex: Record<string, RegistryIndexEntry> = {
       "Links a field to its label, description and error for screen readers; passes status, disabled and required down.",
     load: () => import("@/registry/components/primitives/form-field-context"),
   },
+  keyboard: {
+    type: "registry:ui",
+    description:
+      "KeyboardProvider setup, a scroll view that keeps the focused field above the keyboard, and a footer that keeps a form's main button above it.",
+    load: () => import("@/registry/components/primitives/keyboard"),
+  },
   portal: {
     type: "registry:ui",
     description:
       "Renders content above every Screen (above native modals on iOS), layered and safe-area aware.",
     load: () => import("@/registry/components/primitives/portal"),
+  },
+  pressable: {
+    type: "registry:ui",
+    description:
+      "Pressed look from a Style Slot, tap area extended to 48, no handlers while disabled or loading, optional haptics, role and aria-* states.",
+    load: () => import("@/registry/components/primitives/pressable"),
   },
   "selection-group": {
     type: "registry:ui",
