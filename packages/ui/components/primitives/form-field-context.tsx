@@ -1,5 +1,6 @@
 import { createContext, use, useEffect, useMemo, useRef, type ReactNode } from "react";
-import { AccessibilityInfo } from "react-native";
+
+import { announce } from "@/registry/utils/announce";
 
 export type FormFieldStatus = "error" | "success";
 
@@ -40,11 +41,6 @@ export type FormFieldState = {
 };
 
 export const FormFieldContext = createContext<FormFieldState | null>(null);
-
-// TODO(#46): switch to the shared announce() helper once it lands.
-function announce(message: string) {
-  AccessibilityInfo.announceForAccessibility(message);
-}
 
 /**
  * Behaviour-only provider behind FormField: passes the label, description, error, status,

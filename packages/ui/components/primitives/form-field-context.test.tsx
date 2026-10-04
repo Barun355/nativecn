@@ -1,11 +1,14 @@
 import { render, screen } from "@testing-library/react-native";
-import { AccessibilityInfo, TextInput } from "react-native";
+import { TextInput } from "react-native";
 
 import {
   FormFieldProvider,
   useFormField,
   type FormFieldProps,
 } from "@/registry/components/primitives/form-field-context";
+import { announce } from "@/registry/utils/announce";
+
+jest.mock("@/registry/utils/announce", () => ({ announce: jest.fn() }));
 
 function Control() {
   const field = useFormField();
@@ -28,13 +31,7 @@ function Field(props: Omit<FormFieldProps, "children">) {
 }
 
 describe("FormFieldContext", () => {
-  let announce: jest.SpyInstance;
-  beforeEach(() => {
-    announce = jest
-      .spyOn(AccessibilityInfo, "announceForAccessibility")
-      .mockImplementation(() => {});
-  });
-  afterEach(() => announce.mockRestore());
+  afterEach(() => jest.mocked(announce).mockClear());
 
   test('reads "Email, text field, Enter a valid email": label is the name, error the description', async () => {
     await render(<Field label="Email" error="Enter a valid email" />);
