@@ -31,6 +31,17 @@ export default [
     "Automatic Next/Done between fields in on-screen order; Done submits the form.",
   ),
   primitive(
+    "keyboard",
+    "KeyboardProvider setup, a scroll view that keeps the focused field above the keyboard, and a footer that keeps a form's main button above it.",
+    [
+      "react-native-keyboard-controller",
+      "react-native-reanimated",
+      "react-native-worklets",
+      "react-native-safe-area-context",
+    ],
+    ["theme"],
+  ),
+  primitive(
     "portal",
     "Renders content above every Screen (above native modals on iOS), layered and safe-area aware.",
     ["react-native-safe-area-context", "react-native-screens"],

@@ -5,3 +5,8 @@ require("react-native-reanimated").setUpTests();
 jest.mock("@react-native-async-storage/async-storage", () =>
   require("@react-native-async-storage/async-storage/jest/async-storage-mock"),
 );
+
+// react-native-keyboard-controller ships its own Jest mock (native views become plain Views).
+jest.mock("react-native-keyboard-controller", () =>
+  require("react-native-keyboard-controller/jest"),
+);
