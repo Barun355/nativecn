@@ -25,11 +25,43 @@ export const registryIndex: Record<string, RegistryIndexEntry> = {
       "Reliable screen-reader announcements on iOS and Android (Button and Input status, Toast).",
     load: () => import("@/registry/utils/announce"),
   },
+  avatar: {
+    type: "registry:ui",
+    description: "Round user image (expo-image) with fallback initials, in sizes sm, md and lg.",
+    load: () => import("@/registry/components/avatar"),
+  },
+  "avatar-demo": {
+    type: "registry:example",
+    description: "Avatars in every size, with an image and with initials only.",
+    load: () => import("@/registry/examples/avatar-demo"),
+  },
+  badge: {
+    type: "registry:ui",
+    description:
+      "Small status label with Variants default, secondary, outline, destructive, success and warning.",
+    load: () => import("@/registry/components/badge"),
+  },
+  "badge-demo": {
+    type: "registry:example",
+    description: "A Badge in every Variant.",
+    load: () => import("@/registry/examples/badge-demo"),
+  },
   button: {
     type: "registry:ui",
     description:
       "Button with Variants (primary, secondary, outline, ghost, destructive, link), Sizes, an icon slot, loading and status; icon-only requires aria-label.",
     load: () => import("@/registry/components/button"),
+  },
+  card: {
+    type: "registry:ui",
+    description:
+      "Card surface with CardHeader, CardTitle, CardDescription, CardContent and CardFooter; onPress makes the whole card pressable.",
+    load: () => import("@/registry/components/card"),
+  },
+  "card-demo": {
+    type: "registry:example",
+    description: "A Card with header, content and footer, and a pressable Card.",
+    load: () => import("@/registry/examples/card-demo"),
   },
   container: {
     type: "registry:ui",
@@ -104,6 +136,18 @@ export const registryIndex: Record<string, RegistryIndexEntry> = {
     description: "A Label and a required Label.",
     load: () => import("@/registry/examples/label-demo"),
   },
+  list: {
+    type: "registry:ui",
+    description:
+      "Settings-style rows: ListSection, ListSectionHeader, ListSectionFooter and ListItem (title, description, icon, trailing, chevron, destructive, onPress); FlashList-safe.",
+    load: () => import("@/registry/components/list"),
+  },
+  "list-demo": {
+    type: "registry:example",
+    description:
+      "A settings list: header, footer, icons, trailing values, chevrons and a destructive row.",
+    load: () => import("@/registry/examples/list-demo"),
+  },
   portal: {
     type: "registry:ui",
     description:
@@ -143,6 +187,16 @@ export const registryIndex: Record<string, RegistryIndexEntry> = {
     description:
       "Single or multiple choice within a group, with radio, tab or checkbox roles and selected states.",
     load: () => import("@/registry/components/primitives/selection-group"),
+  },
+  separator: {
+    type: "registry:ui",
+    description: "A hairline divider, horizontal or vertical, decorative by default.",
+    load: () => import("@/registry/components/separator"),
+  },
+  "separator-demo": {
+    type: "registry:example",
+    description: "Horizontal and vertical Separators.",
+    load: () => import("@/registry/examples/separator-demo"),
   },
   skeleton: {
     type: "registry:ui",

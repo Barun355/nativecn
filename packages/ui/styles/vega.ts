@@ -66,19 +66,27 @@ export const vega = defineStyle({
     borderWidth: t.borderWidth.default,
     boxShadow: t.elevation.sm,
   }),
+  "card.header": (t) => ({ gap: t.scaleValue(6) }),
+  "card.title": (t) => ({ ...t.type.h4 }),
+  "card.pressed": () => ({ filter: [{ brightness: 0.96 }] }),
   "badge.root": (t) => ({
     height: t.scaleValue(22),
     borderRadius: t.radius.sm,
     paddingHorizontal: t.spacing[2],
   }),
   "badge.label": (t) => ({ ...t.type.caption, fontFamily: t.type.label.fontFamily }),
+  // Sizes: `avatar.root` is the md size; sm and lg override it.
   "avatar.root": (t) => ({ width: t.scaleValue(40), height: t.scaleValue(40) }),
+  "avatar.sm": (t) => ({ width: t.scaleValue(32), height: t.scaleValue(32) }),
+  "avatar.lg": (t) => ({ width: t.scaleValue(64), height: t.scaleValue(64) }),
   "list.section": (t) => ({ borderRadius: t.radius.xl, marginHorizontal: t.spacing[4] }),
   "list.item": (t) => ({
     minHeight: t.scaleValue(52),
     paddingHorizontal: t.spacing[4],
     gap: t.spacing[3],
   }),
+  "list.title": (t) => ({ ...t.type.body }),
+  "list.pressed": (t) => ({ backgroundColor: t.colors.muted }),
   "skeleton.root": (t) => ({ borderRadius: t.radius.md }),
   "progress.track": (t) => ({ height: t.scaleValue(8), borderRadius: t.radius.full }),
   "alert.root": (t) => ({

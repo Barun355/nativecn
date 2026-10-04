@@ -74,6 +74,13 @@ export const nova = defineStyle({
     gap: t.spacing[3],
     borderWidth: t.borderWidth.default,
   }),
+  "card.header": (t) => ({ gap: t.spacing[1] }),
+  "card.title": (t) => ({
+    ...t.type.h4,
+    fontSize: t.scaleValue(15),
+    lineHeight: t.scaleValue(20),
+  }),
+  "card.pressed": () => ({ filter: [{ brightness: 0.96 }], transform: [{ scale: 0.98 }] }),
   "badge.root": (t) => ({
     height: t.scaleValue(20),
     borderRadius: t.scaleValue(4),
@@ -85,13 +92,22 @@ export const nova = defineStyle({
     fontSize: t.scaleValue(11),
     lineHeight: t.scaleValue(14),
   }),
+  // Sizes: `avatar.root` is the md size; sm and lg override it.
   "avatar.root": (t) => ({ width: t.scaleValue(32), height: t.scaleValue(32) }),
+  "avatar.sm": (t) => ({ width: t.scaleValue(24), height: t.scaleValue(24) }),
+  "avatar.lg": (t) => ({ width: t.scaleValue(48), height: t.scaleValue(48) }),
   "list.section": (t) => ({ borderRadius: t.radius.lg, marginHorizontal: t.spacing[3] }),
   "list.item": (t) => ({
     minHeight: t.scaleValue(44),
     paddingHorizontal: t.spacing[3],
     gap: t.scaleValue(10),
   }),
+  "list.title": (t) => ({
+    ...t.type.body,
+    fontSize: t.scaleValue(15),
+    lineHeight: t.scaleValue(20),
+  }),
+  "list.pressed": (t) => ({ backgroundColor: t.colors.muted }),
   "skeleton.root": (t) => ({ borderRadius: t.radius.sm }),
   "progress.track": (t) => ({ height: t.scaleValue(4), borderRadius: t.radius.full }),
   "alert.root": (t) => ({
