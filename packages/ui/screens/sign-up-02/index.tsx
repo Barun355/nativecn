@@ -23,6 +23,8 @@ import { Text } from "@/registry/components/text";
 import { toast } from "@/registry/components/toast";
 import { createStyles, useTheme } from "@/registry/theme";
 
+import { useStepFocus } from "./hooks/use-step-focus";
+
 // sign-up-02, a step-by-step wizard: one question per step under a Progress bar, in the order
 // email, name, password, then the 6-digit code you emailed. The step is kept inside the Block.
 // Edit the copy, the steps and the rules below; they are yours.
@@ -70,6 +72,9 @@ export function SignUp02({ onSendCode, onSubmit }: SignUp02Props) {
   const { controlHeight, spacing } = useTheme();
   const [step, setStep] = useState<Step>("email");
   const [resending, setResending] = useState(false);
+  // Each step change moves the screen reader to the new title (or, without one, the keyboard to
+  // the new field).
+  const { headingRef, autoFocus } = useStepFocus(step);
   const {
     control,
     handleSubmit,
@@ -172,7 +177,9 @@ export function SignUp02({ onSendCode, onSubmit }: SignUp02Props) {
         </View>
 
         <View style={styles.heading}>
-          <Text variant="h1">{copy.title}</Text>
+          <Text variant="h1" ref={headingRef}>
+            {copy.title}
+          </Text>
           <Text variant="body" color="mutedForeground">
             {copy.subtitle}
           </Text>
@@ -210,7 +217,7 @@ export function SignUp02({ onSendCode, onSubmit }: SignUp02Props) {
                     value={field.value}
                     onChangeText={field.onChange}
                     onBlur={field.onBlur}
-                    autoFocus
+                    autoFocus={autoFocus}
                     placeholder="Jane Doe"
                     autoCapitalize="words"
                     autoComplete="name"
@@ -230,7 +237,7 @@ export function SignUp02({ onSendCode, onSubmit }: SignUp02Props) {
                     value={field.value}
                     onChangeText={field.onChange}
                     onBlur={field.onBlur}
-                    autoFocus
+                    autoFocus={autoFocus}
                     secureTextEntry
                     autoComplete="new-password"
                     textContentType="newPassword"
@@ -250,7 +257,7 @@ export function SignUp02({ onSendCode, onSubmit }: SignUp02Props) {
                     onChangeText={field.onChange}
                     onBlur={field.onBlur}
                     aria-label="Verification code"
-                    autoFocus
+                    autoFocus={autoFocus}
                     autoComplete="one-time-code"
                     textContentType="oneTimeCode"
                   />

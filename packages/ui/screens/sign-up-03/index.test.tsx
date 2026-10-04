@@ -1,5 +1,5 @@
 import { act, fireEvent, render, screen, waitFor } from "@testing-library/react-native";
-import { BackHandler } from "react-native";
+import { AccessibilityInfo, BackHandler } from "react-native";
 
 import { useToastStore } from "@/registry/components/toast";
 import { setActiveStyle } from "@/registry/styles";
@@ -30,6 +30,28 @@ const toasts = () =>
 const heading = (name: string) => screen.findByRole("heading", { name });
 const press = (name: string) => fireEvent.press(screen.getByRole("button", { name }));
 
+/** Every screen-reader focus move (`AccessibilityInfo.sendAccessibilityEvent`, mocked by jest). */
+const focusMoves = jest.mocked(AccessibilityInfo.sendAccessibilityEvent);
+/** Where the last focus move landed: the event, and the element's role and text. */
+function lastFocus() {
+  const [target, event] = focusMoves.mock.calls.at(-1) ?? [];
+  const { role, children } =
+    (target as { props?: { role?: string; children?: unknown } })?.props ?? {};
+  return { event, role, name: children };
+}
+const expectFocusOn = (name: string) =>
+  waitFor(() => expect(lastFocus()).toEqual({ event: "focus", role: "heading", name }));
+const screenReader = (on: boolean) =>
+  jest.mocked(AccessibilityInfo.isScreenReaderEnabled).mockResolvedValue(on);
+
+/** Presses Android's back button through the listener the Block registered last. */
+async function androidBack(listen: jest.SpyInstance) {
+  const handler = listen.mock.calls.at(-1)![1] as () => boolean | null | undefined;
+  await act(async () => {
+    handler();
+  });
+}
+
 /** Opens the email field, fills it in and sends the code. */
 async function toCode() {
   await press("Sign up with email");
@@ -42,6 +64,8 @@ beforeEach(() => {
   useSchemeStore.setState({ scheme: "system", hydrated: true });
   useToastStore.setState({ toasts: [] });
   jest.mocked(announce).mockClear();
+  focusMoves.mockClear();
+  screenReader(false);
 });
 
 afterEach(() => setActiveStyle("vega"));
@@ -187,5 +211,52 @@ describe("sign-up-03", () => {
     await renderBlock({}, scheme);
     await toCode();
     expect(screen.getByRole("button", { name: "Create account" })).toBeTruthy();
+  });
+});
+
+describe("sign-up-03: screen-reader focus on step change", () => {
+  test("moves to the code step's heading, and back to the first heading with Back", async () => {
+    await renderBlock();
+    await press("Sign up with email");
+    expect(focusMoves).not.toHaveBeenCalled();
+    await fireEvent.changeText(screen.getByLabelText("Email"), "jane@example.com");
+    await press("Send code");
+    await expectFocusOn("Check your inbox");
+    await press("Back");
+    await expectFocusOn("Get started");
+  });
+
+  test("moves back to the first heading on Android's back button", async () => {
+    const listen = jest.spyOn(BackHandler, "addEventListener");
+    await renderBlock();
+    await toCode();
+    await expectFocusOn("Check your inbox");
+    await androidBack(listen);
+    await expectFocusOn("Get started");
+    listen.mockRestore();
+  });
+
+  test("without a screen reader, the new step's field takes the keyboard", async () => {
+    await renderBlock();
+    await toCode();
+    expect(screen.getByLabelText("Verification code, 6 digits").props.autoFocus).toBe(true);
+    await press("Back");
+    await heading("Get started");
+    expect(screen.getByLabelText("Email").props.autoFocus).toBe(true);
+  });
+
+  test("with a screen reader on, a step change leaves focus on the heading", async () => {
+    screenReader(true);
+    await renderBlock();
+    // "Sign up with email" is not a step change: the field it reveals still takes focus.
+    await press("Sign up with email");
+    expect(screen.getByLabelText("Email").props.autoFocus).toBe(true);
+    await fireEvent.changeText(screen.getByLabelText("Email"), "jane@example.com");
+    await press("Send code");
+    await heading("Check your inbox");
+    expect(screen.getByLabelText("Verification code, 6 digits").props.autoFocus).toBe(false);
+    await press("Back");
+    await heading("Get started");
+    expect(screen.getByLabelText("Email").props.autoFocus).toBe(false);
   });
 });

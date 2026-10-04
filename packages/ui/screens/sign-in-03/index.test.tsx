@@ -1,5 +1,5 @@
 import { act, fireEvent, render, screen, waitFor } from "@testing-library/react-native";
-import { BackHandler } from "react-native";
+import { AccessibilityInfo, BackHandler } from "react-native";
 
 import { useToastStore } from "@/registry/components/toast";
 import { setActiveStyle } from "@/registry/styles";
@@ -30,6 +30,28 @@ const toasts = () =>
 const heading = (name: string) => screen.findByRole("heading", { name });
 const press = (name: string) => fireEvent.press(screen.getByRole("button", { name }));
 
+/** Every screen-reader focus move (`AccessibilityInfo.sendAccessibilityEvent`, mocked by jest). */
+const focusMoves = jest.mocked(AccessibilityInfo.sendAccessibilityEvent);
+/** Where the last focus move landed: the event, and the element's role and text. */
+function lastFocus() {
+  const [target, event] = focusMoves.mock.calls.at(-1) ?? [];
+  const { role, children } =
+    (target as { props?: { role?: string; children?: unknown } })?.props ?? {};
+  return { event, role, name: children };
+}
+const expectFocusOn = (name: string) =>
+  waitFor(() => expect(lastFocus()).toEqual({ event: "focus", role: "heading", name }));
+const screenReader = (on: boolean) =>
+  jest.mocked(AccessibilityInfo.isScreenReaderEnabled).mockResolvedValue(on);
+
+/** Presses Android's back button through the listener the Block registered last. */
+async function androidBack(listen: jest.SpyInstance) {
+  const handler = listen.mock.calls.at(-1)![1] as () => boolean | null | undefined;
+  await act(async () => {
+    handler();
+  });
+}
+
 /** Fills in the email and moves on to the password step. */
 async function toPassword() {
   await fireEvent.changeText(screen.getByLabelText("Email"), " jane@example.com ");
@@ -41,6 +63,8 @@ beforeEach(() => {
   useSchemeStore.setState({ scheme: "system", hydrated: true });
   useToastStore.setState({ toasts: [] });
   jest.mocked(announce).mockClear();
+  focusMoves.mockClear();
+  screenReader(false);
 });
 
 afterEach(() => setActiveStyle("vega"));
@@ -177,5 +201,46 @@ describe("sign-in-03", () => {
     await renderBlock({}, scheme);
     await toPassword();
     expect(screen.getByRole("button", { name: "Sign in" })).toBeTruthy();
+  });
+});
+
+describe("sign-in-03: screen-reader focus on step change", () => {
+  test("moves to the new step's heading going forward and with Back, not on first render", async () => {
+    await renderBlock();
+    expect(focusMoves).not.toHaveBeenCalled();
+    await toPassword();
+    await expectFocusOn("Enter your password");
+    await press("Email me a code instead");
+    await expectFocusOn("Check your email");
+    await press("Back");
+    await expectFocusOn("Enter your password");
+    await press("Back");
+    await expectFocusOn("What's your email?");
+  });
+
+  test("moves to the previous step's heading on Android's back button", async () => {
+    const listen = jest.spyOn(BackHandler, "addEventListener");
+    await renderBlock();
+    await toPassword();
+    await expectFocusOn("Enter your password");
+    await androidBack(listen);
+    await expectFocusOn("What's your email?");
+    listen.mockRestore();
+  });
+
+  test("without a screen reader, the new step's field takes the keyboard", async () => {
+    await renderBlock();
+    await toPassword();
+    expect(screen.getByLabelText("Password").props.autoFocus).toBe(true);
+  });
+
+  test("with a screen reader on, the new step's field leaves focus on the heading", async () => {
+    screenReader(true);
+    await renderBlock();
+    await toPassword();
+    expect(screen.getByLabelText("Password").props.autoFocus).toBe(false);
+    await press("Email me a code instead");
+    await heading("Check your email");
+    expect(screen.getByLabelText("Verification code, 6 digits").props.autoFocus).toBe(false);
   });
 });

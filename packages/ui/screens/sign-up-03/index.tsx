@@ -1,5 +1,5 @@
 import { ChevronLeft, Hexagon } from "lucide-react-native";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState, type RefObject } from "react";
 import {
   Controller,
   useForm,
@@ -9,7 +9,7 @@ import {
   type Resolver,
   type UseFormReturn,
 } from "react-hook-form";
-import { BackHandler, View } from "react-native";
+import { BackHandler, View, type Text as RNText } from "react-native";
 import { z } from "zod";
 
 import { Button } from "@/registry/components/button";
@@ -25,6 +25,7 @@ import { toast } from "@/registry/components/toast";
 import { createStyles, useTheme } from "@/registry/theme";
 
 import { SocialButtons, type SocialProvider } from "./components/social-buttons";
+import { useStepFocus } from "./hooks/use-step-focus";
 
 export type { SocialProvider } from "./components/social-buttons";
 
@@ -66,6 +67,9 @@ export function SignUp03({ onSocialSignIn, onSendCode, onSubmit }: SignUp03Props
   const [step, setStep] = useState<Step>("social");
   const [emailOpen, setEmailOpen] = useState(false);
   const [sending, setSending] = useState(false);
+  // Each step change moves the screen reader to the new heading (or, without one, the keyboard to
+  // the new field).
+  const { headingRef, autoFocus } = useStepFocus(step);
   const form = useForm<SignUp03Values>({
     resolver: zodResolver(schemas[step]),
     defaultValues: { email: "", code: "" },
@@ -127,6 +131,8 @@ export function SignUp03({ onSocialSignIn, onSendCode, onSubmit }: SignUp03Props
   return step === "social" ? (
     <SocialStep
       form={form}
+      headingRef={headingRef}
+      autoFocus={autoFocus}
       emailOpen={emailOpen}
       onOpenEmail={() => setEmailOpen(true)}
       onSocialSignIn={socialSignIn}
@@ -135,6 +141,8 @@ export function SignUp03({ onSocialSignIn, onSendCode, onSubmit }: SignUp03Props
   ) : (
     <CodeStep
       form={form}
+      headingRef={headingRef}
+      autoFocus={autoFocus}
       email={getValues("email").trim()}
       sending={sending}
       onBack={() => goTo("social")}
@@ -146,6 +154,10 @@ export function SignUp03({ onSocialSignIn, onSendCode, onSubmit }: SignUp03Props
 
 type StepProps = {
   form: UseFormReturn<SignUp03Values>;
+  /** On the step's heading, so a step change can move the screen reader to it. */
+  headingRef: RefObject<RNText | null>;
+  /** Whether the step's field takes the keyboard when it appears (off while a screen reader runs). */
+  autoFocus: boolean;
   onNext: () => void;
 };
 
@@ -155,6 +167,8 @@ function SocialStep({
     control,
     formState: { isSubmitting },
   },
+  headingRef,
+  autoFocus,
   emailOpen,
   onOpenEmail,
   onSocialSignIn,
@@ -165,6 +179,10 @@ function SocialStep({
   onSocialSignIn: (provider: SocialProvider) => void;
 }) {
   const styles = useStyles();
+  // Opened here by "Sign up with email": the field takes focus. Already open when this step
+  // appears (Back from the code): the heading gets the screen reader, so only take the keyboard
+  // without one.
+  const openedOnArrival = useRef(emailOpen).current;
   return (
     <Container contentContainerStyle={styles.socialContent}>
       <View style={styles.brand}>
@@ -172,7 +190,7 @@ function SocialStep({
         <View style={styles.logo}>
           <Icon icon={Hexagon} size="lg" color="primaryForeground" />
         </View>
-        <Text variant="h1" align="center">
+        <Text variant="h1" align="center" ref={headingRef}>
           Get started
         </Text>
         <Text variant="body" color="mutedForeground" align="center">
@@ -195,7 +213,7 @@ function SocialStep({
                     value={field.value}
                     onChangeText={field.onChange}
                     onBlur={field.onBlur}
-                    autoFocus
+                    autoFocus={autoFocus || !openedOnArrival}
                     placeholder="you@example.com"
                     keyboardType="email-address"
                     autoCapitalize="none"
@@ -225,6 +243,8 @@ function CodeStep({
     control,
     formState: { isSubmitting },
   },
+  headingRef,
+  autoFocus,
   email,
   sending,
   onBack,
@@ -250,7 +270,9 @@ function CodeStep({
         />
 
         <View style={styles.heading}>
-          <Text variant="h1">Check your inbox</Text>
+          <Text variant="h1" ref={headingRef}>
+            Check your inbox
+          </Text>
           <Text variant="body" color="mutedForeground">
             {`Enter the 6-digit code sent to ${email}`}
           </Text>
@@ -268,7 +290,7 @@ function CodeStep({
                   onChangeText={field.onChange}
                   onBlur={field.onBlur}
                   aria-label="Verification code"
-                  autoFocus
+                  autoFocus={autoFocus}
                   autoComplete="one-time-code"
                   textContentType="oneTimeCode"
                 />
