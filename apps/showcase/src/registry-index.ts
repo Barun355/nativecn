@@ -205,6 +205,17 @@ export const registryIndex: Record<string, RegistryIndexEntry> = {
     description: "A vertical and a horizontal RadioGroup, with a disabled item.",
     load: () => import("@/registry/examples/radio-group-demo"),
   },
+  "scheme-switcher": {
+    type: "registry:ui",
+    description:
+      "Theme switcher / dark mode toggle: System, Light and Dark as SegmentedTabs, or one icon button cycling through them. Calls setScheme, which persists the choice.",
+    load: () => import("@/registry/components/scheme-switcher"),
+  },
+  "scheme-switcher-demo": {
+    type: "registry:example",
+    description: "The segmented and icon Variants, sharing the persisted Scheme.",
+    load: () => import("@/registry/examples/scheme-switcher-demo"),
+  },
   "search-field": {
     type: "registry:ui",
     description:
@@ -215,6 +226,17 @@ export const registryIndex: Record<string, RegistryIndexEntry> = {
     type: "registry:example",
     description: "A controlled SearchField with loading and onSubmit.",
     load: () => import("@/registry/examples/search-field-demo"),
+  },
+  "segmented-tabs": {
+    type: "registry:ui",
+    description:
+      "In-screen tabs (not navigation): segmented or underline Variants, an animated indicator, and only the selected tab's content rendered.",
+    load: () => import("@/registry/components/segmented-tabs"),
+  },
+  "segmented-tabs-demo": {
+    type: "registry:example",
+    description: "Uncontrolled segmented tabs with icons, and controlled underline tabs.",
+    load: () => import("@/registry/examples/segmented-tabs-demo"),
   },
   "selection-group": {
     type: "registry:ui",

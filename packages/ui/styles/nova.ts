@@ -134,6 +134,7 @@ export const nova = defineStyle({
     padding: t.scaleValue(2),
   }),
   "segmented-tabs.trigger": (t) => ({ borderRadius: t.radius.sm }),
+  "segmented-tabs.pressed": () => ({ opacity: 0.7, transform: [{ scale: 0.98 }] }),
   "tab-navigation.bar": (t) => ({ height: t.scaleValue(52) }),
   "tab-navigation.icon": (t) => ({ width: t.iconSize.md, height: t.iconSize.md }),
   "tab-navigation.label": (t) => ({

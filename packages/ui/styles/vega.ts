@@ -113,6 +113,7 @@ export const vega = defineStyle({
     padding: t.scaleValue(3),
   }),
   "segmented-tabs.trigger": (t) => ({ borderRadius: t.radius.md }),
+  "segmented-tabs.pressed": () => ({ opacity: 0.7 }),
   "tab-navigation.bar": (t) => ({ height: t.scaleValue(64) }),
   "tab-navigation.icon": (t) => ({ width: t.iconSize.lg, height: t.iconSize.lg }),
   "tab-navigation.label": (t) => ({
