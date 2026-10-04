@@ -1,3 +1,4 @@
+import { colors as runtimeDefaultColors } from "../theme/colors";
 import { oklchToHex, parseOklch } from "./color-math.ts";
 import { generatePresetColors } from "./generate.ts";
 import {
@@ -81,4 +82,8 @@ describe.each(BASE_COLORS)("base %s", (base) => {
     }
     expect(failures).toEqual([]);
   });
+});
+
+test("the Theme runtime's default colors.ts is the neutral / neutral Preset", () => {
+  expect(runtimeDefaultColors).toEqual(composeColors("neutral", "neutral"));
 });

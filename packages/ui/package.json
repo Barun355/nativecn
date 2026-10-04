@@ -25,6 +25,7 @@
     "expo-splash-screen": "~57.0.9",
     "jest": "catalog:",
     "jest-expo": "catalog:",
+    "preset": "workspace:*",
     "react": "catalog:",
     "react-native": "catalog:",
     "test-renderer": "catalog:",

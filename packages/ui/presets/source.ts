@@ -9,33 +9,12 @@
  *   shadcn's own `destructive` is Tailwind red-600 (light) / red-400 (dark) in every base.
  */
 
-/** Base Colour options. APPEND-ONLY: the Preset short code (#50) encodes the index. */
-export const BASE_COLORS = ["neutral", "stone", "zinc", "mauve", "olive", "mist", "taupe"] as const;
+// The option lists are canonical and append-only in the `preset` package (#50), which encodes
+// each option by its index in the Preset short code.
+import { ACCENT_COLORS, BASE_COLORS, type AccentColor, type BaseColor } from "preset";
 
-/** Accent Colour options. APPEND-ONLY: the Preset short code (#50) encodes the index. */
-export const ACCENT_COLORS = [
-  ...BASE_COLORS,
-  "amber",
-  "blue",
-  "cyan",
-  "emerald",
-  "fuchsia",
-  "green",
-  "indigo",
-  "lime",
-  "orange",
-  "pink",
-  "purple",
-  "red",
-  "rose",
-  "sky",
-  "teal",
-  "violet",
-  "yellow",
-] as const;
+export { ACCENT_COLORS, BASE_COLORS, type AccentColor, type BaseColor };
 
-export type BaseColor = (typeof BASE_COLORS)[number];
-export type AccentColor = (typeof ACCENT_COLORS)[number];
 export type ChromaticAccentColor = Exclude<AccentColor, BaseColor>;
 export type SchemeName = "light" | "dark";
 
