@@ -33,6 +33,7 @@ import {
 } from "../registry.ts";
 import { planAddCommands } from "./add-command.ts";
 import {
+  a11yOf,
   blockPurposes,
   blockVariants,
   findExamples,
@@ -214,7 +215,7 @@ export function createServer(options: CreateServerOptions = {}): McpServer {
     {
       title: "View nativecn items",
       description:
-        "Show items' files, props, Variants, dependencies and docs, rendered in this project's Style (vega when there is no project). For usage examples use get_item_examples.",
+        "Show items' files, props, Variants, dependencies, docs and accessibility notes, rendered in this project's Style (vega when there is no project). For usage examples use get_item_examples.",
       inputSchema: {
         items: z
           .array(z.string())
@@ -272,6 +273,10 @@ export function createServer(options: CreateServerOptions = {}): McpServer {
       );
       delete meta[key];
     }
+    // meta.a11y (#138): the accessibility facts, one bullet each.
+    const a11y = a11yOf(item);
+    delete meta.a11y;
+    if (a11y) lines.push("", "## Accessibility", ...a11y.map((s) => `- ${s}`));
     if (Object.keys(meta).length) lines.push("", "## Meta", JSON.stringify(meta, null, 2));
     for (const file of item.files ?? []) {
       let where = file.target;

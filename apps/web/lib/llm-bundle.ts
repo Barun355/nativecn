@@ -3,7 +3,7 @@
 // built from the same Registry item JSON the CLI installs and the MCP serves, with its imports
 // rewritten by the CLI's own rewriteImports.
 import { planAddCommands } from "../../../packages/cli/src/mcp/add-command.ts";
-import { isScreenBlock, kindOf } from "../../../packages/cli/src/mcp/catalog.ts";
+import { a11yOf, isScreenBlock, kindOf } from "../../../packages/cli/src/mcp/catalog.ts";
 import { rewriteItemImports } from "../../../packages/cli/src/imports.ts";
 import type { RegistryIndexItem, RegistryItem } from "../../../packages/cli/src/registry.ts";
 
@@ -94,6 +94,9 @@ export function itemBundle({
   }
   if (typeof meta.difference === "string")
     out.push("", "## What makes it different", "", meta.difference);
+  // meta.a11y (#138); without it, the accessibility notes stay inside meta.docs below.
+  const a11y = a11yOf(item);
+  if (a11y) out.push("", "## Accessibility", "", a11y.map((s) => `- ${s}`).join("\n"));
   if (typeof meta.docs === "string") out.push("", "## Notes", "", meta.docs);
 
   if (examples.length) {

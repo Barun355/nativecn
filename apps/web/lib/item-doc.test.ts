@@ -143,6 +143,29 @@ test("a Screen Block page: route in the add command, difference, Block Variants,
   assert.ok(!md.includes("## Screenshots"), "no screenshots until meta.screenshots exists");
 });
 
+test("meta.a11y replaces the keyword extraction; meta.docs then stays whole in Notes", () => {
+  const item: RegistryItem = {
+    ...screen("sign-in-01", "Everything on one screen."),
+  };
+  item.meta = { ...item.meta, a11y: ["The heading has role heading."] };
+  const doc = itemDoc({ item, index: [item], style: "vega" });
+  assert.deepEqual(doc.accessibility, ["The heading has role heading."]);
+  assert.deepEqual(doc.notes, [
+    "Render it from a route.",
+    "Every field has a label read by screen readers.",
+  ]);
+  assert.ok(itemMarkdown(doc).includes("## Accessibility\n\n- The heading has role heading."));
+});
+
+test("every Component and Block has meta.a11y (#138)", () => {
+  const missing = sourceItems
+    .filter((i) => i.type === "registry:ui" || i.type === "registry:block")
+    .filter((i) => ["Component", "Block"].includes(String(i.meta?.kind)))
+    .filter((i) => !Array.isArray(i.meta?.a11y) || i.meta.a11y.length === 0)
+    .map((i) => i.name);
+  assert.deepEqual(missing, []);
+});
+
 test("a Component page lists its examples and Screenshots only when they exist", () => {
   const index: RegistryIndexItem[] = [
     { name: "badge", type: "registry:ui", meta: { kind: "Component", examples: ["badge-demo"] } },

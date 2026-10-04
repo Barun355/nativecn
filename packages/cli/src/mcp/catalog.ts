@@ -206,3 +206,16 @@ export function screenshotsOf(item: RegistryIndexItem): Record<string, string> |
   if (typeof meta.screenshot === "string") out.default = meta.screenshot;
   return Object.keys(out).length ? out : undefined;
 }
+
+/**
+ * An item's accessibility facts (`meta.a11y`, #138): one short sentence each. A single string
+ * counts as one sentence. `undefined` when the item has none, so callers can fall back.
+ */
+export function a11yOf(item: RegistryIndexItem): string[] | undefined {
+  const a11y = item.meta?.a11y;
+  const list = (typeof a11y === "string" ? [a11y] : Array.isArray(a11y) ? a11y : [])
+    .filter((s): s is string => typeof s === "string")
+    .map((s) => s.trim())
+    .filter(Boolean);
+  return list.length ? list : undefined;
+}

@@ -19,6 +19,8 @@ const screenBlock = ({
     difference: string;
     props: Record<string, string>;
     docs: string;
+    /** Accessibility facts, one short sentence each (#138). */
+    a11y: string[];
     keywords: string[];
   };
 }): RegistryItem => ({
@@ -54,6 +56,17 @@ const SIGN_UP_KEYWORDS = [
 
 const FEEDBACK =
   "Validation errors appear under each field. Errors thrown by your callbacks, and the success message, appear only as toast()s: render <Toaster /> in the root Layout (init and create already do).";
+/** Accessibility facts shared by every form Block. */
+const FORM_A11Y = [
+  "Each field is in a FormField: its label is the field's accessible name, and a validation error becomes its hint and is announced once.",
+  "Errors from your callbacks and the success message are toast()s, which screen readers announce.",
+  "The submit Button is announced busy while your callback runs.",
+];
+const SOCIAL_A11Y =
+  'Apple and Google are labelled Buttons ("Continue with Apple", "Continue with Google"); their logos are decorative.';
+const BACK_A11Y =
+  'Back is an icon-only Button named "Back"; Android\'s back button steps back too.';
+const CODE_A11Y = 'The code is one InputOTP field, read as "Verification code, 6 digits".';
 const BACKEND =
   "The Block never talks to a server: wire your auth backend in the route file through the props, and keep any session or token in expo-secure-store, never AsyncStorage.";
 
@@ -80,6 +93,11 @@ export default [
         onSignUp: "() => void: the Sign up link",
       },
       docs: `Render it from a route: \`export default function Screen() { return <SignIn01 onSubmit={signIn} />; }\`. The email and password are validated with zod through react-hook-form (the email is trimmed), and the fields are in a FocusChain (Next, then Done submits). ${FEEDBACK} The Apple and Google logos are bundled SVGs in components/social-buttons.tsx; the buttons only call onSocialSignIn. ${BACKEND}`,
+      a11y: [
+        '"Welcome back" has role heading; the logo icon and the lines around "or" are decorative.',
+        ...FORM_A11Y,
+        SOCIAL_A11Y,
+      ],
       keywords: [...SIGN_IN_KEYWORDS, "social login", "apple", "google", "classic"],
     },
   }),
@@ -104,6 +122,11 @@ export default [
           '(provider: "apple" | "google") => void | Promise<void>: run that provider\'s sign-in; a thrown error becomes a toast',
       },
       docs: `Render it from a route: \`export default function Screen() { return <SignIn02 onSocialSignIn={signInWith} onSubmit={signIn} />; }\`. The hero is drawn with the dark Scheme's Colour Roles in both Schemes (a nested ThemeProvider scheme="dark") and runs under a light status bar. The email form appears only after "Continue with email"; it is validated with zod through react-hook-form, in a FocusChain. ${FEEDBACK} ${BACKEND}`,
+      a11y: [
+        'The headline has role heading; the logo icon and the lines around "or" are decorative.',
+        ...FORM_A11Y,
+        SOCIAL_A11Y,
+      ],
       keywords: [...SIGN_IN_KEYWORDS, "social login", "apple", "google", "hero", "welcome"],
     },
   }),
@@ -127,7 +150,8 @@ export default [
         onSendCode:
           "(email: string) => void | Promise<void>: email a 6-digit code (Email me a code instead, Resend); a thrown error becomes a toast and the step stays",
       },
-      docs: `Render it from a route: \`export default function Screen() { return <SignIn03 onSubmit={signIn} onSendCode={sendCode} />; }\`. The step (email, password, code) lives inside the Block; Back (an icon-only Button with a Lucide chevron-left, aria-label "Back") and Android's back button step back, keeping what was typed. Each step validates only its own field with zod through react-hook-form; the main button sits in a KeyboardStickyFooter above the keyboard. ${FEEDBACK} ${BACKEND}`,
+      docs: `Render it from a route: \`export default function Screen() { return <SignIn03 onSubmit={signIn} onSendCode={sendCode} />; }\`. The step (email, password, code) lives inside the Block; Back (an icon-only Button with a Lucide chevron-left) and Android's back button step back, keeping what was typed. Each step validates only its own field with zod through react-hook-form; the main button sits in a KeyboardStickyFooter above the keyboard. ${FEEDBACK} ${BACKEND}`,
+      a11y: ["Each step's title has role heading.", ...FORM_A11Y, BACK_A11Y, CODE_A11Y],
       keywords: [
         ...SIGN_IN_KEYWORDS,
         "email first",
@@ -162,6 +186,13 @@ export default [
         onSignIn: "() => void: the Sign in link",
       },
       docs: `Render it from a route: \`export default function Screen() { return <SignUp01 onSubmit={signUp} />; }\`. The name, email and password (at least 8 characters) are validated with zod through react-hook-form (name and email trimmed), and the terms Checkbox must be ticked; its error appears under it. The three fields are in a FocusChain (Next, Next, then Done submits). ${FEEDBACK} The Apple and Google logos are bundled SVGs in components/social-buttons.tsx; the buttons only call onSocialSignIn. ${BACKEND}`,
+      a11y: [
+        '"Create an account" has role heading; the lines around "or" are decorative.',
+        ...FORM_A11Y,
+        'The password field\'s hint is "At least 8 characters." until it has an error.',
+        'The terms Checkbox is named "I agree to the Terms and Privacy Policy"; its error is its hint and is announced. The dot between the Terms and Privacy Policy links is hidden.',
+        SOCIAL_A11Y,
+      ],
       keywords: [...SIGN_UP_KEYWORDS, "social login", "apple", "google", "terms", "classic"],
     },
   }),
@@ -185,7 +216,14 @@ export default [
         onSubmit:
           '(values: { email, name, password, code }) => void | Promise<void>: check the code and finish the account; throw to show the error as a toast, resolve for an "Account created" toast',
       },
-      docs: `Render it from a route: \`export default function Screen() { return <SignUp02 onSendCode={register} onSubmit={verify} />; }\`. The step (email, name, password, code) lives inside the Block, and the Progress bar shows how far along it is ("Step 2 of 4" to screen readers). Back (an icon-only Button with a Lucide chevron-left, aria-label "Back") and Android's back button step back, keeping every answer. Each step validates its own field with zod through react-hook-form; the password needs at least 8 characters. The main button sits in a KeyboardStickyFooter above the keyboard. ${FEEDBACK} ${BACKEND}`,
+      docs: `Render it from a route: \`export default function Screen() { return <SignUp02 onSendCode={register} onSubmit={verify} />; }\`. The step (email, name, password, code) lives inside the Block, and the Progress bar shows how far along it is. Back (an icon-only Button with a Lucide chevron-left) and Android's back button step back, keeping every answer. Each step validates its own field with zod through react-hook-form; the password needs at least 8 characters. The main button sits in a KeyboardStickyFooter above the keyboard. ${FEEDBACK} ${BACKEND}`,
+      a11y: [
+        "Each step's title has role heading.",
+        'The Progress bar is named "Step 2 of 4" and carries its value; the visible "2/4" is hidden from screen readers.',
+        ...FORM_A11Y,
+        BACK_A11Y,
+        CODE_A11Y,
+      ],
       keywords: [
         ...SIGN_UP_KEYWORDS,
         "wizard",
@@ -220,7 +258,14 @@ export default [
         onSubmit:
           '(values: { email, code }) => void | Promise<void>: check the code and create the account; throw to show the error as a toast, resolve for an "Account created" toast',
       },
-      docs: `Render it from a route: \`export default function Screen() { return <SignUp03 onSocialSignIn={signUpWith} onSendCode={sendCode} onSubmit={verify} />; }\`. There is no password: the email path checks the address with zod through react-hook-form, calls onSendCode, then asks for the 6-digit code. The step lives inside the Block; Back (an icon-only Button with a Lucide chevron-left, aria-label "Back") and Android's back button return to the email field, keeping it. The Create account button sits in a KeyboardStickyFooter above the keyboard. ${FEEDBACK} The Apple and Google logos are bundled SVGs in components/social-buttons.tsx; the buttons only call onSocialSignIn. ${BACKEND}`,
+      docs: `Render it from a route: \`export default function Screen() { return <SignUp03 onSocialSignIn={signUpWith} onSendCode={sendCode} onSubmit={verify} />; }\`. There is no password: the email path checks the address with zod through react-hook-form, calls onSendCode, then asks for the 6-digit code. The step lives inside the Block; Back (an icon-only Button with a Lucide chevron-left) and Android's back button return to the email field, keeping it. The Create account button sits in a KeyboardStickyFooter above the keyboard. ${FEEDBACK} The Apple and Google logos are bundled SVGs in components/social-buttons.tsx; the buttons only call onSocialSignIn. ${BACKEND}`,
+      a11y: [
+        'The headline and "Check your inbox" have role heading; the logo icon is decorative.',
+        ...FORM_A11Y,
+        SOCIAL_A11Y,
+        BACK_A11Y,
+        CODE_A11Y,
+      ],
       keywords: [
         ...SIGN_UP_KEYWORDS,
         "social login",

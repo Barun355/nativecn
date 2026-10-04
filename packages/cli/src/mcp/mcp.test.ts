@@ -140,6 +140,9 @@ test("view_items renders the project's Style, with resolved paths", async () => 
   assert.match(r.text, /\{components\}\/button\.tsx → src\/components\/button\.tsx/);
   assert.match(r.text, /## Props/);
   assert.match(r.text, /## Variants/);
+  // meta.a11y (#138) is a bulleted Accessibility section, not part of the raw Meta JSON.
+  assert.match(r.text, /## Accessibility\n- role button; the label is the accessible name\./);
+  assert.doesNotMatch(r.text, /"a11y"/);
 
   const remote = await connect();
   const v = await call(remote, "view_items", { items: ["button", "nope"] });

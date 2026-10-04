@@ -8,6 +8,7 @@ import { itemSlug } from "./item-pages.ts";
 
 import { planAddCommands } from "../../../packages/cli/src/mcp/add-command.ts";
 import {
+  a11yOf,
   blockVariants,
   isScreenBlock,
   kindOf,
@@ -49,7 +50,10 @@ export type ItemDoc = {
   source: CodeFile[];
 };
 
-/** Words that mark a sentence of an item's notes as accessibility guidance. */
+/**
+ * Words that mark a sentence of an item's notes as accessibility guidance: the fallback for an
+ * item without `meta.a11y`.
+ */
 const A11Y =
   /\baria-|\brole\b|\broles\b|screen reader|announc|accessib|VoiceOver|TalkBack|Reduce Motion|touch target|tap area|minTouchTarget|font scal|hitSlop/i;
 
@@ -139,6 +143,8 @@ export function itemDoc({
 
   const plan = planAddCommands([item], null, { hasProject: false });
   const docs = typeof meta.docs === "string" ? sentences(meta.docs) : [];
+  // meta.a11y (#138) when the item has it, else the accessibility sentences of meta.docs.
+  const a11y = a11yOf(item);
 
   const variants =
     kind === "Block"
@@ -164,8 +170,8 @@ export function itemDoc({
     screenshots: screenshotsOf(item),
     props: propTables(meta.props, typeof meta.component === "string" ? meta.component : item.title),
     variants: variantLists(meta.variants),
-    accessibility: docs.filter((s) => A11Y.test(s)),
-    notes: docs.filter((s) => !A11Y.test(s)),
+    accessibility: a11y ?? docs.filter((s) => A11Y.test(s)),
+    notes: a11y ? docs : docs.filter((s) => !A11Y.test(s)),
     // Code is shown with the imports `add` writes into a fresh `create` app (#137).
     examples: examples
       .map((ex) => rewriteItemImports(ex))

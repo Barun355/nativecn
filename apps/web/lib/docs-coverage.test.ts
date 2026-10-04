@@ -19,7 +19,7 @@ const ui = (name: string, meta?: Record<string, unknown>): RegistryIndexItem => 
   ],
 });
 
-test("every Component has a docs page, examples and a props table; every Block a page", async (t) => {
+test("every Component has a docs page, examples, a props table and a11y; every Block a page", async (t) => {
   if (!hasItemPages(allDocs)) {
     // Vacuous until the component and Block docs pages land (#76).
     t.skip(
@@ -36,7 +36,7 @@ test("every Component has a docs page, examples and a props table; every Block a
 
 test("a fully documented Component passes", () => {
   const items = [
-    ui("button", { props: { label: "text" } }),
+    ui("button", { props: { label: "text" }, a11y: ["role button."] }),
     { ...ui("button-demo"), type: "registry:example" },
   ];
   assert.deepEqual(docsCoverageProblems(items, [page("components/button")]), []);
@@ -47,6 +47,7 @@ test("flags a Component without a page, examples or props", () => {
     "badge: no docs page (components/badge)",
     'badge: no usage examples (a "badge-demo" item or meta.examples)',
     "badge: no props table (meta.props)",
+    "badge: no accessibility notes (meta.a11y)",
   ]);
 });
 
@@ -64,7 +65,7 @@ test("meta.examples counts as examples; Primitives and Blocks are judged by thei
   };
   const block: RegistryIndexItem = { name: "sign-in-01", type: "registry:block" };
   const items = [
-    ui("card", { props: { title: "text" }, examples: ["card-in-list"] }),
+    ui("card", { props: { title: "text" }, examples: ["card-in-list"], a11y: "role button." }),
     primitive,
     block,
   ];
