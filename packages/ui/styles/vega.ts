@@ -29,6 +29,9 @@ export const vega = defineStyle({
     borderWidth: t.borderWidth.default,
     ...t.type.body,
   }),
+  // Sizes: `input.root` is the md size; sm and lg override its dimensions.
+  "input.sm": (t) => ({ height: t.controlHeight.sm, paddingHorizontal: t.scaleValue(10) }),
+  "input.lg": (t) => ({ height: t.controlHeight.lg, paddingHorizontal: t.spacing[4] }),
   "search-field.root": (t) => ({
     height: t.controlHeight.md,
     borderRadius: t.radius.md,

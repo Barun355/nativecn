@@ -36,6 +36,9 @@ export const nova = defineStyle({
     fontSize: t.scaleValue(15),
     lineHeight: t.scaleValue(20),
   }),
+  // Sizes: `input.root` is the md size; sm and lg override its dimensions.
+  "input.sm": (t) => ({ height: t.scaleValue(32), paddingHorizontal: t.spacing[2] }),
+  "input.lg": (t) => ({ height: t.controlHeight.md, paddingHorizontal: t.spacing[3] }),
   "search-field.root": (t) => ({
     height: t.controlHeight.sm,
     borderRadius: t.radius.sm,

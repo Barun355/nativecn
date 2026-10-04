@@ -1,0 +1,124 @@
+import { fireEvent, render, screen } from "@testing-library/react-native";
+import { useState, type ReactElement } from "react";
+import { Dimensions, StyleSheet, TextInput } from "react-native";
+
+import { SearchField, type SearchFieldProps } from "@/registry/components/search-field";
+import { setActiveStyle } from "@/registry/styles";
+import {
+  ThemeProvider,
+  colors,
+  computeScale,
+  scaleTokens,
+  scaleValue,
+  useSchemeStore,
+} from "@/registry/theme";
+
+const { width, height } = Dimensions.get("window");
+const scale = computeScale(width, height);
+const t = scaleTokens(scale);
+
+async function renderUI(ui: ReactElement) {
+  await render(<ThemeProvider scheme="light">{ui}</ThemeProvider>);
+}
+
+async function renderSearch(props: Partial<SearchFieldProps> = {}) {
+  await renderUI(<SearchField testID="search" {...props} />);
+  return screen.getByTestId("search");
+}
+
+const flat = (style: unknown) => StyleSheet.flatten(style as never) as Record<string, unknown>;
+const clearButton = () => screen.queryByRole("button", { name: "Clear search" });
+
+beforeEach(() => {
+  useSchemeStore.setState({ scheme: "system", hydrated: true });
+});
+
+afterEach(() => setActiveStyle("vega"));
+
+describe("SearchField", () => {
+  test('a searchbox named by its placeholder (default "Search") with the Search return key', async () => {
+    const el = await renderSearch();
+    expect(screen.getByRole("searchbox", { name: "Search" })).toBe(el);
+    expect(el.props.placeholder).toBe("Search");
+    expect(el.props.returnKeyType).toBe("search");
+  });
+
+  test("uses the search-field.root Slot in each Style", async () => {
+    const el = await renderSearch();
+    expect(flat(el.parent!.props.style)).toMatchObject({
+      height: t.controlHeight.md,
+      borderRadius: t.radius.md,
+      paddingHorizontal: t.spacing[3],
+      backgroundColor: colors.light.muted,
+    });
+    setActiveStyle("nova");
+    const nova = await renderSearch();
+    expect(flat(nova.parent!.props.style)).toMatchObject({
+      height: t.controlHeight.sm,
+      paddingHorizontal: scaleValue(10, scale),
+    });
+  });
+
+  test("the clear button appears with text, clears it and keeps focus", async () => {
+    const onChangeText = jest.fn();
+    const ref = { current: null as TextInput | null };
+    const el = await renderSearch({ onChangeText, ref });
+    expect(clearButton()).toBeNull();
+
+    await fireEvent.changeText(el, "tacos");
+    expect(onChangeText).toHaveBeenLastCalledWith("tacos");
+    expect(screen.getByTestId("search").props.value).toBe("tacos");
+
+    const focus = jest.spyOn(ref.current!, "focus").mockImplementation(() => {});
+    await fireEvent.press(clearButton()!);
+    expect(onChangeText).toHaveBeenLastCalledWith("");
+    expect(screen.getByTestId("search").props.value).toBe("");
+    expect(focus).toHaveBeenCalled();
+    expect(clearButton()).toBeNull();
+  });
+
+  test("the clear button reaches the 48 tap target", async () => {
+    await renderSearch({ defaultValue: "a" });
+    const slop = clearButton()!.props.hitSlop;
+    expect(t.iconSize.sm + slop.top + slop.bottom).toBeCloseTo(48);
+  });
+
+  test("works controlled", async () => {
+    function Controlled() {
+      const [q, setQ] = useState("pizza");
+      return <SearchField testID="search" value={q} onChangeText={setQ} />;
+    }
+    await renderUI(<Controlled />);
+    await fireEvent.press(clearButton()!);
+    expect(screen.getByTestId("search").props.value).toBe("");
+  });
+
+  test("onSubmit receives the query from the Search key", async () => {
+    const onSubmit = jest.fn();
+    const el = await renderSearch({ onSubmit, defaultValue: "ramen" });
+    await fireEvent(el, "submitEditing");
+    expect(onSubmit).toHaveBeenCalledWith("ramen");
+  });
+
+  test("loading shows a spinner in place of the icon and is announced busy", async () => {
+    const el = await renderSearch({ loading: true });
+    expect(el.props["aria-busy"]).toBe(true);
+    const [first] = el.parent!.children as { type: string }[];
+    expect(first!.type).toBe("ActivityIndicator");
+  });
+
+  test("disabled: not editable, dimmed, no clear button", async () => {
+    const el = await renderSearch({ disabled: true, defaultValue: "a" });
+    expect(el.props.editable).toBe(false);
+    expect(el.props["aria-disabled"]).toBe(true);
+    expect(clearButton()).toBeNull();
+  });
+
+  test("focus draws the ring; aria-label and style pass through", async () => {
+    const el = await renderSearch({ "aria-label": "Search recipes", style: { marginTop: 4 } });
+    await fireEvent(el, "focus");
+    const root = flat(screen.getByTestId("search").parent!.props.style);
+    expect(root).toMatchObject({ outlineColor: colors.light.ring, marginTop: 4 });
+    expect(screen.getByRole("searchbox", { name: "Search recipes" })).toBeTruthy();
+  });
+});
