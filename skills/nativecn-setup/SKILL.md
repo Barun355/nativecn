@@ -1,6 +1,7 @@
 ---
 name: nativecn-setup
 description: Set up nativecn in an Expo app. Use when the user wants to start a new app with nativecn, add nativecn to an existing Expo app, pick a Preset (Style, colours, radius, fonts), or configure agents for nativecn. Triggers include "start a new app", "create an Expo app with nativecn", "add nativecn", "set up nativecn", "init nativecn", "use Nova with violet", "Lora headings", and any project where nativecn Skills are installed but there is no components.json or no AGENTS.md yet.
+license: MIT
 ---
 
 # nativecn setup

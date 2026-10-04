@@ -1,6 +1,7 @@
 ---
 name: nativecn-visual-qa
 description: Run the Visual QA Loop on a running nativecn Expo app - navigate Screens and User Flows on an Android device or iOS Simulator, screenshot them, judge them against the Reference Design at the design-system level, trace each problem to the code, fix small safe problems and report the rest. Use when the user says "match the design", "compare with Figma", "screenshot and fix", "check the screens", "visual QA", "does this look right", "test the flow on my phone", or "check dark mode on device".
+license: MIT
 ---
 
 # nativecn Visual QA Loop
