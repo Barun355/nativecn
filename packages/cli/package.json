@@ -9,23 +9,30 @@
     "url": "https://github.com/Barun355/nativecn",
     "directory": "packages/cli"
   },
+  "exports": {
+    ".": "./dist/index.js",
+    "./mcp": "./dist/mcp/index.js",
+    "./package.json": "./package.json"
+  },
   "files": [
     "dist",
     "starter"
   ],
   "scripts": {
-    "build": "tsup src/index.ts --format esm --target node20 --clean",
+    "build": "tsup src/index.ts src/mcp/index.ts --format esm --target node20 --clean",
     "lint": "eslint .",
     "typecheck": "tsc -p tsconfig.json",
     "test": "node --test --no-warnings \"src/**/*.test.ts\""
   },
   "devDependencies": {
     "@types/node": "catalog:",
+    "preset": "workspace:*",
     "tsup": "^8.5.1",
     "typescript": "catalog:"
   },
   "dependencies": {
     "@clack/prompts": "^1.8.1",
+    "@modelcontextprotocol/sdk": "^1.32.0",
     "commander": "^15.0.0",
     "diff": "^9.0.0",
     "jsonc-parser": "^3.3.1",

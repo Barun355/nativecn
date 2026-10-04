@@ -1,0 +1,210 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry.json",
+  "name": "nativecn",
+  "homepage": "https://nativecn.dev",
+  "items": [
+    {
+      "name": "theme",
+      "type": "registry:lib",
+      "description": "Theme runtime: Tokens, createStyles, ThemeProvider and useTheme.",
+      "dependencies": ["zustand@^5.0.15"],
+      "files": [
+        {
+          "path": "theme/index.ts",
+          "type": "registry:lib",
+          "target": "{theme}/index.ts"
+        }
+      ]
+    },
+    {
+      "name": "pressable",
+      "type": "registry:ui",
+      "description": "Pressed look, 48 tap area, no handlers while disabled.",
+      "registryDependencies": ["theme"],
+      "files": [
+        {
+          "path": "components/primitives/pressable.tsx",
+          "type": "registry:ui",
+          "target": "{components}/primitives/pressable.tsx"
+        }
+      ]
+    },
+    {
+      "name": "use-controllable-state",
+      "type": "registry:hook",
+      "description": "Controlled or uncontrolled state for a value.",
+      "files": [
+        {
+          "path": "hooks/use-controllable-state.ts",
+          "type": "registry:hook",
+          "target": "{hooks}/use-controllable-state.ts"
+        }
+      ]
+    },
+    {
+      "name": "text",
+      "type": "registry:ui",
+      "title": "Text",
+      "description": "Typography with Text Variants.",
+      "registryDependencies": ["theme"],
+      "categories": ["typography"],
+      "files": [
+        {
+          "path": "components/text.tsx",
+          "type": "registry:ui",
+          "target": "{components}/text.tsx"
+        }
+      ]
+    },
+    {
+      "name": "button",
+      "type": "registry:ui",
+      "title": "Button",
+      "description": "A pressable button with variants and sizes.",
+      "registryDependencies": ["pressable", "text"],
+      "categories": ["actions"],
+      "meta": {
+        "props": {
+          "variant": "default | secondary | outline | ghost | destructive",
+          "size": "sm | md | lg"
+        },
+        "variants": ["default", "secondary", "outline", "ghost", "destructive"],
+        "docs": "Icon-only Buttons need aria-label.",
+        "examples": ["button-demo"]
+      },
+      "files": [
+        {
+          "path": "components/button.tsx",
+          "type": "registry:ui",
+          "target": "{components}/button.tsx"
+        }
+      ]
+    },
+    {
+      "name": "scheme-switcher",
+      "type": "registry:ui",
+      "title": "SchemeSwitcher",
+      "description": "Switch between light, dark and system colour Schemes.",
+      "registryDependencies": ["theme"],
+      "categories": ["theme"],
+      "meta": {
+        "keywords": ["dark mode", "toggle", "appearance"]
+      },
+      "files": [
+        {
+          "path": "components/scheme-switcher.tsx",
+          "type": "registry:ui",
+          "target": "{components}/scheme-switcher.tsx"
+        }
+      ]
+    },
+    {
+      "name": "button-demo",
+      "type": "registry:example",
+      "title": "Button demo",
+      "description": "Buttons in every variant.",
+      "registryDependencies": ["button"],
+      "files": [
+        {
+          "path": "examples/button-demo.tsx",
+          "type": "registry:example",
+          "target": "{components}/examples/button-demo.tsx"
+        }
+      ]
+    },
+    {
+      "name": "sign-in-01",
+      "type": "registry:block",
+      "title": "Classic centred",
+      "description": "Classic centred sign-in Screen.",
+      "categories": ["auth"],
+      "registryDependencies": ["button", "text"],
+      "meta": {
+        "route": "(auth)/sign-in",
+        "component": "SignIn01",
+        "difference": "Logo, email and password, \"or\", then social; everything on one screen.",
+        "screenshots": {
+          "light": "https://nativecn.dev/screens/sign-in-01-light.png",
+          "dark": "https://nativecn.dev/screens/sign-in-01-dark.png"
+        }
+      },
+      "files": [
+        {
+          "path": "screens/sign-in-01/index.tsx",
+          "type": "registry:file",
+          "target": "{screens}/sign-in-01/index.tsx"
+        }
+      ]
+    },
+    {
+      "name": "sign-in-02",
+      "type": "registry:block",
+      "title": "Social-first hero",
+      "description": "Social-first hero sign-in Screen.",
+      "categories": ["auth"],
+      "registryDependencies": ["button", "text"],
+      "meta": {
+        "route": "(auth)/sign-in",
+        "component": "SignIn02",
+        "difference": "Dark brand hero; Apple/Google are the primary path; \"Continue with email\" reveals the fields."
+      },
+      "files": [
+        {
+          "path": "screens/sign-in-02/index.tsx",
+          "type": "registry:file",
+          "target": "{screens}/sign-in-02/index.tsx"
+        }
+      ]
+    },
+    {
+      "name": "sign-up-01",
+      "type": "registry:block",
+      "title": "Classic single form",
+      "description": "Classic single form sign-up Screen.",
+      "categories": ["auth"],
+      "registryDependencies": ["button", "text"],
+      "meta": {
+        "route": "(auth)/sign-up",
+        "component": "SignUp01",
+        "difference": "Social on top, then name, email, password and a terms Checkbox."
+      },
+      "files": [
+        {
+          "path": "screens/sign-up-01/index.tsx",
+          "type": "registry:file",
+          "target": "{screens}/sign-up-01/index.tsx"
+        }
+      ]
+    },
+    {
+      "name": "drawer-01",
+      "type": "registry:block",
+      "title": "Profile header + grouped sections",
+      "description": "Drawer with a profile header and labelled sections.",
+      "categories": ["navigation"],
+      "registryDependencies": ["text"],
+      "files": [
+        {
+          "path": "components/drawer-01/index.tsx",
+          "type": "registry:component",
+          "target": "{components}/drawer-01/index.tsx"
+        }
+      ]
+    },
+    {
+      "name": "profile-01",
+      "type": "registry:block",
+      "title": "Profile",
+      "description": "A profile Screen with no suggested route.",
+      "categories": [],
+      "registryDependencies": ["text"],
+      "files": [
+        {
+          "path": "screens/profile-01/index.tsx",
+          "type": "registry:file",
+          "target": "{screens}/profile-01/index.tsx"
+        }
+      ]
+    }
+  ]
+}

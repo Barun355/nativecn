@@ -1,0 +1,15 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "theme",
+  "type": "registry:lib",
+  "description": "Theme runtime: Tokens, createStyles, ThemeProvider and useTheme.",
+  "dependencies": ["zustand@^5.0.15"],
+  "files": [
+    {
+      "path": "theme/index.ts",
+      "type": "registry:lib",
+      "target": "{theme}/index.ts",
+      "content": "export const theme = {};\n"
+    }
+  ]
+}

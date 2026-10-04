@@ -1,0 +1,26 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "button",
+  "type": "registry:ui",
+  "title": "Button",
+  "description": "A pressable button with variants and sizes.",
+  "registryDependencies": ["pressable", "text"],
+  "categories": ["actions"],
+  "meta": {
+    "props": {
+      "variant": "default | secondary | outline | ghost | destructive",
+      "size": "sm | md | lg"
+    },
+    "variants": ["default", "secondary", "outline", "ghost", "destructive"],
+    "docs": "Icon-only Buttons need aria-label.",
+    "examples": ["button-demo"]
+  },
+  "files": [
+    {
+      "path": "components/button.tsx",
+      "type": "registry:ui",
+      "target": "{components}/button.tsx",
+      "content": "import { Pressable } from \"@/registry/components/primitives/pressable\";\nexport const padding = 8;\nexport const Button = Pressable;\n"
+    }
+  ]
+}

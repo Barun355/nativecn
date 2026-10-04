@@ -1,0 +1,20 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "scheme-switcher",
+  "type": "registry:ui",
+  "title": "SchemeSwitcher",
+  "description": "Switch between light, dark and system colour Schemes.",
+  "registryDependencies": ["theme"],
+  "categories": ["theme"],
+  "meta": {
+    "keywords": ["dark mode", "toggle", "appearance"]
+  },
+  "files": [
+    {
+      "path": "components/scheme-switcher.tsx",
+      "type": "registry:ui",
+      "target": "{components}/scheme-switcher.tsx",
+      "content": "export const SchemeSwitcher = () => null;\n"
+    }
+  ]
+}

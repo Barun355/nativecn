@@ -2,6 +2,7 @@
 import { Command } from "commander";
 
 import { add } from "./commands/add.ts";
+import { runStdio } from "./mcp/index.ts";
 
 export { configSchema, readConfig, writeConfig, type Config } from "./config.ts";
 export { resolveTarget, destinationAlias, DESTINATIONS } from "./destinations.ts";
@@ -10,6 +11,7 @@ export { aliasToDir, readTsconfigPaths } from "./paths.ts";
 export { fetchItem, fetchIndex, registryBase, type RegistryItem } from "./registry.ts";
 export { resolveTree, collectDependencies } from "./resolve.ts";
 export { add, type AddOptions, type AddResult } from "./commands/add.ts";
+export { createServer, runStdio, type CreateServerOptions } from "./mcp/index.ts";
 
 export const program = new Command()
   .name("nativecn-cli")
@@ -34,6 +36,19 @@ program
   .action(async (items: string[], opts) => {
     try {
       await add(items, { ...opts, yes: opts.yes || !process.stdin.isTTY });
+    } catch (err) {
+      console.error((err as Error).message);
+      process.exit(1);
+    }
+  });
+
+program
+  .command("mcp")
+  .description("run the read-only nativecn MCP server over stdio")
+  .option("-c, --cwd <cwd>", "the project folder", process.cwd())
+  .action(async (opts: { cwd: string }) => {
+    try {
+      await runStdio({ cwd: opts.cwd });
     } catch (err) {
       console.error((err as Error).message);
       process.exit(1);

@@ -1,0 +1,22 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "sign-up-01",
+  "type": "registry:block",
+  "title": "Classic single form",
+  "description": "Classic single form sign-up Screen.",
+  "categories": ["auth"],
+  "registryDependencies": ["button", "text"],
+  "meta": {
+    "route": "(auth)/sign-up",
+    "component": "SignUp01",
+    "difference": "Social on top, then name, email, password and a terms Checkbox."
+  },
+  "files": [
+    {
+      "path": "screens/sign-up-01/index.tsx",
+      "type": "registry:file",
+      "target": "{screens}/sign-up-01/index.tsx",
+      "content": "export function SignUp01() { return null; }\n"
+    }
+  ]
+}

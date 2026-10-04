@@ -1,0 +1,17 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "text",
+  "type": "registry:ui",
+  "title": "Text",
+  "description": "Typography with Text Variants.",
+  "registryDependencies": ["theme"],
+  "categories": ["typography"],
+  "files": [
+    {
+      "path": "components/text.tsx",
+      "type": "registry:ui",
+      "target": "{components}/text.tsx",
+      "content": "export const Text = () => null;\n"
+    }
+  ]
+}

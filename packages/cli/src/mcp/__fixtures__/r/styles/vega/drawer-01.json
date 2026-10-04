@@ -1,0 +1,17 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "drawer-01",
+  "type": "registry:block",
+  "title": "Profile header + grouped sections",
+  "description": "Drawer with a profile header and labelled sections.",
+  "categories": ["navigation"],
+  "registryDependencies": ["text"],
+  "files": [
+    {
+      "path": "components/drawer-01/index.tsx",
+      "type": "registry:component",
+      "target": "{components}/drawer-01/index.tsx",
+      "content": "export const Drawer01 = () => null;\n"
+    }
+  ]
+}

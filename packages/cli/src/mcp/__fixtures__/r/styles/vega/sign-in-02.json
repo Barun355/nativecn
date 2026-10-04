@@ -1,0 +1,22 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "sign-in-02",
+  "type": "registry:block",
+  "title": "Social-first hero",
+  "description": "Social-first hero sign-in Screen.",
+  "categories": ["auth"],
+  "registryDependencies": ["button", "text"],
+  "meta": {
+    "route": "(auth)/sign-in",
+    "component": "SignIn02",
+    "difference": "Dark brand hero; Apple/Google are the primary path; \"Continue with email\" reveals the fields."
+  },
+  "files": [
+    {
+      "path": "screens/sign-in-02/index.tsx",
+      "type": "registry:file",
+      "target": "{screens}/sign-in-02/index.tsx",
+      "content": "export function SignIn02() { return null; }\n"
+    }
+  ]
+}
