@@ -265,6 +265,57 @@ export default [
       },
     },
   ),
+  component(
+    "tab-navigation",
+    "The bottom tab bar: the custom tabBar of an Expo Router JS Tabs Layout, with classic and floating Variants, per-tab icons and badges from Tabs.Screen options.",
+    [...LUCIDE, "react-native-safe-area-context"],
+    ["theme", "pressable", "text", "icon", "badge"],
+    {
+      title: "TabNavigation",
+      categories: ["navigation"],
+      meta: {
+        kind: "Component",
+        props: {
+          "...BottomTabBarProps":
+            "state, descriptors, navigation, insets: what Expo Router's JS Tabs pass to tabBar; spread them in",
+          variant:
+            '"classic" (default): full-width bar with a top border | "floating": inset pill with the Style\'s radius and a large shadow, above the bottom safe area',
+          "options.title / options.tabBarLabel":
+            "Tabs.Screen option: the tab's label and accessible name (a string, or a render function)",
+          "options.tabBarIcon":
+            "Tabs.Screen option: ({ focused, color, size }) => ReactNode; use tabIcon(LucideIcon) to draw it with Icon",
+          "options.tabBarBadge":
+            'Tabs.Screen option: number | string shown as a destructive Badge on the icon and spoken ("Inbox, 3 new")',
+          "options.tabBarAccessibilityLabel": "Tabs.Screen option: replaces the spoken name",
+          "options.tabBarButtonTestID": "Tabs.Screen option: the tab's testID",
+          "options.tabBarShowLabel": "Tabs.Screen option: false hides the label (default true)",
+          "options.tabBarStyle":
+            "{ display: 'none' } on a Screen hides the bar while it is focused",
+          "tabIcon(icon)": "turns a Lucide icon into a tabBarIcon option, drawn with Icon",
+          style: "ViewStyle, layout only, merged last onto the root",
+        },
+        variants: { variant: ["classic", "floating"] },
+        docs: 'Use it only as the tabBar of Expo Router\'s JavaScript Tabs (`import { Tabs } from "expo-router/js-tabs"`), never with NativeTabs and never for in-screen tabs (that is SegmentedTabs): `<Tabs tabBar={(props) => <TabNavigation {...props} variant="floating" />}>`. Each Tabs.Screen gives its title, tabBarIcon and optional tabBarBadge; Screens with `href: null` are skipped. A press emits tabPress (call e.preventDefault() in a listener to stop it), then navigates; a long press emits tabLongPress. The active tab is drawn in primary, the others in mutedForeground; the bar uses the card and border Colour Roles. The row is a tablist of tabs with aria-selected; each tab is at least 48 high. Sizes come from the tab-navigation.bar, .icon, .label, .floating and .pressed Style Slots.',
+        keywords: [
+          "tab bar",
+          "bottom tabs",
+          "bottom navigation",
+          "tab navigation",
+          "navigation bar",
+          "floating tab bar",
+          "expo router tabs",
+          "badge",
+        ],
+        examples: ["tab-navigation-demo"],
+      },
+    },
+  ),
+  example(
+    "tab-navigation-demo",
+    "TabNavigation demo",
+    "A tabs Layout using TabNavigation (floating) as the tabBar of Expo Router's JS Tabs, with icons and a badge.",
+    ["tab-navigation"],
+  ),
   example("label-demo", "Label demo", "A Label and a required Label.", ["label"]),
   example(
     "form-field-demo",

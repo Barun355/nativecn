@@ -1,14 +1,19 @@
 import { Tabs } from "expo-router/js-tabs";
+import { Blocks, LayoutGrid, Palette, Sparkles } from "lucide-react-native";
 
-// The four-tab shell (#29). Expo Router's JS Tabs for now; nativecn's TabNavigation
-// Component replaces the tab bar once it exists.
+import { TabNavigation, tabIcon } from "@/registry/components/tab-navigation";
+
+// The four-tab shell (#29): Expo Router's JS Tabs with nativecn's TabNavigation as the tab bar.
 export default function TabsLayout() {
   return (
-    <Tabs screenOptions={{ tabBarIcon: () => null, tabBarIconStyle: { display: "none" } }}>
-      <Tabs.Screen name="index" options={{ title: "Components" }} />
-      <Tabs.Screen name="blocks" options={{ title: "Blocks" }} />
-      <Tabs.Screen name="theme" options={{ title: "Theme" }} />
-      <Tabs.Screen name="ai" options={{ title: "Built for AI" }} />
+    <Tabs tabBar={(props) => <TabNavigation {...props} />}>
+      <Tabs.Screen
+        name="index"
+        options={{ title: "Components", tabBarIcon: tabIcon(LayoutGrid) }}
+      />
+      <Tabs.Screen name="blocks" options={{ title: "Blocks", tabBarIcon: tabIcon(Blocks) }} />
+      <Tabs.Screen name="theme" options={{ title: "Theme", tabBarIcon: tabIcon(Palette) }} />
+      <Tabs.Screen name="ai" options={{ title: "Built for AI", tabBarIcon: tabIcon(Sparkles) }} />
     </Tabs>
   );
 }
