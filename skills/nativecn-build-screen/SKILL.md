@@ -64,7 +64,7 @@ The Block is the user's code now. Rename it to what it is in the app (e.g. `sign
 4. Build the Screen:
    - wrap the content in `Container` (safe area, scroll, keyboard, padding);
    - all text through `Text` with the right Variant (`h1`–`h4`, `body`, `label`, …); all glyphs through `Icon` with a Lucide component;
-   - styles via `createStyles((t) => ({ … }))` using Tokens only; `scale(n)` only for genuine one-offs;
+   - styles via `createStyles((t) => ({ … }))` using Tokens only; `t.scaleValue(n)` only for genuine one-offs;
    - feedback through `toast()` and the Alert Component, never `Alert.alert`;
    - lists of rows with `ListSection` / `ListItem`, empty data with `EmptyState`, loading with `Skeleton` or `Spinner`.
 

@@ -11,7 +11,7 @@ This project uses **nativecn**, a copy-into-your-project component system for Ex
 
 These 12 Rules are non-negotiable. Follow them in every file you write or edit in this app.
 
-1. **Styling.** Use Tokens only, through `createStyles`. Never hard-code colours or sizes; use `scale(n)` only for a genuine one-off. Never use Tailwind, NativeWind or `className`.
+1. **Styling.** Use Tokens only, through `createStyles`. Never hard-code colours or sizes; use `t.scaleValue(n)` (from `useTheme()`) only for a genuine one-off; `t.scale` is the zoom factor itself, not a function. Never use Tailwind, NativeWind or `className`.
 2. **Building blocks.** All text uses `Text`. All glyphs use `Icon` (pass in a Lucide component). Wrap every Screen's content in `Container`.
 3. **Feedback.** Never use `Alert.alert` or any other platform alert or dialog. Use nativecn's own `toast()` and Alert Components.
 4. **Navigation.**
