@@ -1,0 +1,5 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "nativecn",
+  "description": "Build Expo apps with nativecn: the five nativecn Skills and the local nativecn MCP server."
+}

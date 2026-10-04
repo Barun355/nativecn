@@ -1,0 +1,20 @@
+{
+  "name": "nativecn",
+  "description": "The nativecn Agent Kit: the five nativecn Skills and the local nativecn MCP server, for building Expo apps with nativecn.",
+  "owner": {
+    "name": "Barun355",
+    "url": "https://github.com/Barun355"
+  },
+  "plugins": [
+    {
+      "name": "nativecn",
+      "source": {
+        "source": "url",
+        "url": "https://github.com/Barun355/nativecn.git"
+      },
+      "description": "The five nativecn Skills (setup, build-screen, theme, component-authoring, visual-qa) and the local nativecn MCP server (npx nativecn-cli mcp).",
+      "category": "development",
+      "tags": ["expo", "react-native", "shadcn", "components", "mcp"]
+    }
+  ]
+}
