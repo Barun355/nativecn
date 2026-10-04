@@ -67,6 +67,19 @@ test("/mcp tools read the Registry", async () => {
   assert.equal(JSON.parse(text).items[0].name, "button");
 });
 
+test("/mcp shows code with the default aliases, never @/registry/ (#137)", async () => {
+  const calls = [
+    { name: "view_items", arguments: { items: ["button", "sign-in-01"] } },
+    { name: "get_item_examples", arguments: { query: "button" } },
+  ];
+  for (const call of calls) {
+    const { result } = (await (await POST(rpc("tools/call", call))).json()) as RpcResponse;
+    const text = (result!.content as { text: string }[]).map((c) => c.text).join("\n");
+    assert.doesNotMatch(text, /@\/registry\//, call.name);
+    assert.match(text, /from "@\/components\//, call.name);
+  }
+});
+
 test("/mcp has no GET stream or DELETE (stateless)", async () => {
   assert.equal(GET().status, 405);
   assert.equal(DELETE().status, 405);

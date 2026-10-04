@@ -18,8 +18,10 @@ import {
 import { z } from "zod";
 
 import pkg from "../../package.json" with { type: "json" };
+import { DEFAULT_ALIAS_CONFIG, type AliasConfig } from "../aliases.ts";
 import { CONFIG_FILE, readConfig, type Config } from "../config.ts";
 import { resolveTarget } from "../destinations.ts";
+import { rewriteImports, rewriteItemImports, screenBlockFeature } from "../imports.ts";
 import { aliasToDir } from "../paths.ts";
 import {
   createRegistryClient,
@@ -94,6 +96,27 @@ const fence = (file: string, content: string) => {
   const lang = /\.(tsx?|jsx?)$/.exec(file)?.[1] ?? "";
   return `\`\`\`${lang}\n${content.replace(/\n$/, "")}\n\`\`\``;
 };
+
+/**
+ * An item's code with the imports `add` would write (#137): the project's aliases, else those a
+ * fresh `create` writes. Never the Registry's own `@/registry/…` paths, which don't resolve in an
+ * app. In feature mode, an import of `{screens}` with no Feature to hand reads `<feature>`.
+ */
+function userCode<T extends RegistryItem>(item: T, cfg: AliasConfig | null): T {
+  const aliases = cfg ?? DEFAULT_ALIAS_CONFIG;
+  try {
+    return rewriteItemImports(item, aliases);
+  } catch {
+    const feature = screenBlockFeature(item) ?? "<feature>";
+    return {
+      ...item,
+      files: item.files?.map((f) => ({
+        ...f,
+        content: rewriteImports(f.content, aliases, feature),
+      })),
+    };
+  }
+}
 
 export function createServer(options: CreateServerOptions = {}): McpServer {
   const local = options.cwd !== undefined;
@@ -219,7 +242,7 @@ export function createServer(options: CreateServerOptions = {}): McpServer {
         throw new ToolError(
           `Not in the Registry (Style ${style}): ${missing.join(", ")}. Use search_items to find the right names.`,
         );
-      const sections = found.map((item) => renderItem(item, cfg, style));
+      const sections = found.map((item) => renderItem(userCode(item, cfg), cfg, style));
       if (missing.length)
         sections.push(`Not found in the Registry: ${missing.join(", ")} (use search_items).`);
       if (cfg && requested && requested !== cfg.preset.style)
@@ -286,7 +309,15 @@ export function createServer(options: CreateServerOptions = {}): McpServer {
         return text(
           `No examples found for "${query}". Use view_items for the item's docs, or search_items to find the item.`,
         );
-      const examples = await Promise.all(names.map((n) => registry.item(n, style)));
+      let cfg: Config | null = null;
+      try {
+        cfg = config();
+      } catch {
+        // An invalid components.json still gets examples, with the default aliases.
+      }
+      const examples = (await Promise.all(names.map((n) => registry.item(n, style)))).map((ex) =>
+        userCode(ex, cfg),
+      );
       return text(
         examples
           .map((ex) =>

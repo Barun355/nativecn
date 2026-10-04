@@ -9,7 +9,8 @@ import { cliVersion } from "./utils/starter.ts";
 
 export { configSchema, readConfig, writeConfig, type Config } from "./config.ts";
 export { resolveTarget, destinationAlias, DESTINATIONS } from "./destinations.ts";
-export { rewriteImports } from "./imports.ts";
+export { rewriteImports, rewriteItemImports, screenBlockFeature } from "./imports.ts";
+export { DEFAULT_ALIAS_CONFIG, defaultAliases, type AliasConfig } from "./aliases.ts";
 export { aliasToDir, readTsconfigPaths } from "./paths.ts";
 export { fetchItem, fetchIndex, registryBase, type RegistryItem } from "./registry.ts";
 export { resolveTree, collectDependencies } from "./resolve.ts";

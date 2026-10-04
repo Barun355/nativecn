@@ -169,6 +169,30 @@ test("get_item_examples returns example code", async () => {
   assert.match(none.text, /No examples found/);
 });
 
+test("view_items and get_item_examples show the user's import paths, never @/registry/ (#137)", async () => {
+  // Remote (no project): the aliases a fresh `create` writes.
+  const remote = await connect();
+  const view = await call(remote, "view_items", { items: ["button", "pressable", "sign-in-01"] });
+  const examples = await call(remote, "get_item_examples", { query: "button" });
+  for (const r of [view, examples]) assert.doesNotMatch(r.text, /@\/registry\//);
+  assert.match(view.text, /from "@\/components\/primitives\/pressable"/);
+  assert.match(view.text, /from "@\/theme"/);
+  assert.match(examples.text, /from "@\/components\/button"/);
+
+  // Local: this project's own aliases, as `add` would write them.
+  const cwd = project();
+  const file = path.join(cwd, "components.json");
+  const cfg = JSON.parse(fs.readFileSync(file, "utf8"));
+  cfg.aliases.components = "~/ui";
+  fs.writeFileSync(file, JSON.stringify(cfg));
+  const local = await connect({ cwd });
+  const localView = await call(local, "view_items", { items: ["button"] });
+  const localExamples = await call(local, "get_item_examples", { query: "button" });
+  for (const r of [localView, localExamples]) assert.doesNotMatch(r.text, /@\/registry\//);
+  assert.match(localView.text, /from "~\/ui\/primitives\/pressable"/);
+  assert.match(localExamples.text, /from "~\/ui\/button"/);
+});
+
 test("get_add_command, flat mode: one command for Components, one per Screen Block with --route", async () => {
   const c = await connect({ cwd: project("flat") });
   const r = (

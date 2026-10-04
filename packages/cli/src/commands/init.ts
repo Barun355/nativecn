@@ -12,6 +12,7 @@ import {
   type PresetField,
 } from "preset";
 
+import { defaultAliases } from "../aliases.ts";
 import { CONFIG_FILE, writeConfig, type Config } from "../config.ts";
 import { readTsconfigPaths } from "../paths.ts";
 import { fetchItem, RegistryError } from "../registry.ts";
@@ -184,14 +185,7 @@ export async function init(items: string[], opts: InitOptions): Promise<InitResu
     version: 1,
     preset: { code, ...preset },
     structure,
-    aliases: {
-      components: "@/components",
-      hooks: "@/hooks",
-      utils: "@/utils",
-      theme: "@/theme",
-      screens: "@/screens",
-      ...(structure === "feature" ? { features: "@/features" } : {}),
-    },
+    aliases: defaultAliases(structure),
     routes: srcMode ? "src/app" : "app",
     agents,
   };

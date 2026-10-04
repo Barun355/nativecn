@@ -6,7 +6,8 @@ import { test } from "node:test";
 
 import { readConfig, writeConfig, type Config } from "./config.ts";
 import { resolveTarget } from "./destinations.ts";
-import { rewriteImports } from "./imports.ts";
+import { DEFAULT_ALIAS_CONFIG, defaultAliases } from "./aliases.ts";
+import { rewriteImports, rewriteItemImports, screenBlockFeature } from "./imports.ts";
 import { aliasToDir } from "./paths.ts";
 import { clearRegistryCache, fetchItem, type RegistryItem } from "./registry.ts";
 import { collectDependencies, resolveTree } from "./resolve.ts";
@@ -96,6 +97,47 @@ test("registry imports are rewritten to the project's aliases", () => {
   assert.match(flat, /from "react-native"/);
   const feat = rewriteImports(src, config({ structure: "feature" }), "auth");
   assert.match(feat, /from "@\/features\/auth\/screens\/sign-in-01\/components\/form"/);
+});
+
+test("rewriteItemImports defaults to a fresh create's aliases and takes add's Feature", () => {
+  assert.deepEqual(DEFAULT_ALIAS_CONFIG, {
+    structure: "flat",
+    aliases: {
+      components: "@/components",
+      hooks: "@/hooks",
+      utils: "@/utils",
+      theme: "@/theme",
+      screens: "@/screens",
+    },
+  });
+  assert.equal(defaultAliases("feature").features, "@/features");
+
+  const block = {
+    name: "sign-in-01",
+    type: "registry:block",
+    categories: ["auth"],
+    files: [
+      {
+        path: "screens/sign-in-01/index.tsx",
+        type: "registry:file",
+        target: "{screens}/sign-in-01/index.tsx",
+        content: `import { Form } from "@/registry/screens/sign-in-01/components/form";\nimport { Button } from "@/registry/components/button";\n`,
+      },
+    ],
+  } satisfies RegistryItem & { categories: string[] };
+  assert.equal(screenBlockFeature(block), "auth");
+  assert.equal(screenBlockFeature(block, "account"), "account");
+  assert.equal(
+    screenBlockFeature({ files: [{ target: "{components}/x.tsx" }] }, "auth"),
+    undefined,
+  );
+
+  const flat = rewriteItemImports(block).files[0]!.content;
+  assert.match(flat, /from "@\/screens\/sign-in-01\/components\/form"/);
+  assert.match(flat, /from "@\/components\/button"/);
+  const feat = rewriteItemImports(block, config({ structure: "feature" })).files[0]!.content;
+  assert.match(feat, /from "@\/features\/auth\/screens\/sign-in-01\/components\/form"/);
+  assert.equal(block.files[0]!.content.includes("@/registry/"), true, "the item is not mutated");
 });
 
 test("the dependency tree is de-duplicated, dependencies first, and cycles fail", async () => {

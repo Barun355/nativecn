@@ -15,6 +15,7 @@ import {
   screenshotsOf,
   type Kind,
 } from "../../../packages/cli/src/mcp/catalog.ts";
+import { rewriteItemImports } from "../../../packages/cli/src/imports.ts";
 import type { RegistryIndexItem, RegistryItem } from "../../../packages/cli/src/registry.ts";
 
 export type PropRow = { name: string; description: string };
@@ -165,13 +166,20 @@ export function itemDoc({
     variants: variantLists(meta.variants),
     accessibility: docs.filter((s) => A11Y.test(s)),
     notes: docs.filter((s) => !A11Y.test(s)),
-    examples: examples.map((ex) => ({
-      name: ex.name,
-      title: ex.title ?? ex.name,
-      description: ex.description,
-      files: (ex.files ?? []).map(({ target, path, content }) => ({ target, path, content })),
+    // Code is shown with the imports `add` writes into a fresh `create` app (#137).
+    examples: examples
+      .map((ex) => rewriteItemImports(ex))
+      .map((ex) => ({
+        name: ex.name,
+        title: ex.title ?? ex.name,
+        description: ex.description,
+        files: (ex.files ?? []).map(({ target, path, content }) => ({ target, path, content })),
+      })),
+    source: (rewriteItemImports(item).files ?? []).map(({ target, path, content }) => ({
+      target,
+      path,
+      content,
     })),
-    source: (item.files ?? []).map(({ target, path, content }) => ({ target, path, content })),
   };
 }
 
