@@ -88,6 +88,23 @@ For example, `.mcp.json`:
 
 Codex loads `.codex/config.toml` only in a trusted project.
 
+To browse without a project, point an agent at the remote server instead. In Claude Code:
+
+```sh
+claude mcp add --transport http nativecn https://nativecn.dev/mcp
+```
+
+## AI-friendly docs
+
+Everything on nativecn.dev is also available as plain text for agents, generated from the same sources as the pages:
+
+- **Copy for AI**, at the top of every docs page, copies the page as clean markdown.
+- **`.md` twins:** append `.md` to any docs URL, e.g. [`/docs/installation.md`](/docs/installation.md).
+- **[`/llms.txt`](/llms.txt)** indexes every page and Registry item; **[`/llms-full.txt`](/llms-full.txt)** has every page in one file.
+- **Copy to LLM**, on every Component and Block page, copies one item's description, `add` command, props, usage examples and source as a single prompt-ready block. For example, the Pressable Primitive:
+
+<CopyToLlm item="pressable" />
+
 ## Plugin
 
 A **Plugin** is an agent-host package that bundles the Agent Kit for one-step installation. The nativecn Plugin contains the five Skills and the local MCP server, packaged as a Claude-format marketplace (for Claude Code and Codex) plus Cursor and Antigravity manifests.

@@ -1,17 +1,22 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 
+import { CopyForAi } from "@/components/copy-for-ai";
 import { docHref, neighbours, type DocPage } from "@/lib/docs-config";
+import { mdPath } from "@/lib/llms";
 import type { Heading } from "@/lib/markdown";
 
-/** The frame around every docs page: title, body, pager and "On this page". */
+/** The frame around every docs page: title, "Copy for AI", body, pager and "On this page". */
 export function DocShell({
   page,
   headings,
+  markdown,
   children,
 }: {
   page: DocPage;
   headings: Heading[];
+  /** The page as clean markdown (its `.md` twin), for "Copy for AI". */
+  markdown: string;
   children: ReactNode;
 }) {
   const { prev, next } = neighbours(page.slug);
@@ -21,6 +26,9 @@ export function DocShell({
         <div className="mx-auto max-w-3xl">
           <h1 className="text-3xl font-bold tracking-tight">{page.title}</h1>
           <p className="mt-2 text-lg text-muted-foreground">{page.description}</p>
+          <div className="mt-4">
+            <CopyForAi markdown={markdown} mdHref={mdPath(page.slug)} />
+          </div>
           <div className="docs-prose prose prose-neutral mt-8 max-w-none dark:prose-invert">
             {children}
           </div>

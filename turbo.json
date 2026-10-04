@@ -7,12 +7,17 @@
       "outputs": ["dist/**"]
     },
     "web#build": {
-      "dependsOn": ["^build"],
-      "outputs": [".next/**", "!.next/cache/**"],
+      "dependsOn": ["^build", "ui#build"],
+      "outputs": [".next/**", "!.next/cache/**", "public/r/styles/**", "public/r/presets/**"],
       "inputs": [
         "$TURBO_DEFAULT$",
+        "$TURBO_ROOT$/packages/ui/**",
+        "!$TURBO_ROOT$/packages/ui/node_modules/**",
+        "!$TURBO_ROOT$/packages/ui/.registry-build/**",
+        "$TURBO_ROOT$/packages/cli/src/**",
+        "$TURBO_ROOT$/packages/cli/package.json",
         "$TURBO_ROOT$/packages/cli/CHANGELOG.md",
-        "$TURBO_ROOT$/packages/ui/CHANGELOG.md"
+        "$TURBO_ROOT$/packages/preset/src/**"
       ]
     },
     "web#dev": {
