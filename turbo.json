@@ -40,6 +40,14 @@
     "ui#test": {
       "outputs": [],
       "inputs": ["$TURBO_DEFAULT$", "$TURBO_ROOT$/apps/web/public/fonts/**"]
+    },
+    "web#test": {
+      "outputs": [],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "$TURBO_ROOT$/packages/ui/presets/**",
+        "$TURBO_ROOT$/packages/preset/src/**"
+      ]
     }
   }
 }
