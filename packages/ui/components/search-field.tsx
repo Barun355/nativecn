@@ -1,16 +1,10 @@
 import { Search, X } from "lucide-react-native";
 import { useCallback, useRef, useState, type Ref } from "react";
-import {
-  ActivityIndicator,
-  TextInput,
-  View,
-  type StyleProp,
-  type TextInputProps,
-  type ViewStyle,
-} from "react-native";
+import { TextInput, View, type StyleProp, type TextInputProps, type ViewStyle } from "react-native";
 
 import { Icon } from "@/registry/components/icon";
 import { Pressable } from "@/registry/components/primitives/pressable";
+import { Spinner } from "@/registry/components/spinner";
 import { useControllableState } from "@/registry/hooks/use-controllable-state";
 import { slot } from "@/registry/styles";
 import { createStyles, useTheme } from "@/registry/theme";
@@ -132,12 +126,8 @@ export function SearchField({
       ]}
     >
       {loading && !disabled ? (
-        <ActivityIndicator
-          size="small"
-          color={colors.mutedForeground}
-          aria-hidden
-          importantForAccessibility="no-hide-descendants"
-        />
+        // The field itself is announced busy, so the Spinner stays silent.
+        <Spinner size="md" color="mutedForeground" aria-hidden />
       ) : (
         <Icon icon={Search} size="md" color="mutedForeground" />
       )}

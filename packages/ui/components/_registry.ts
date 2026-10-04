@@ -56,25 +56,192 @@ export default [
     "All text: the type ramp as Variants, text Colour Roles, alignment and the font-scaling switch.",
     [],
     ["theme"],
+    {
+      title: "Text",
+      categories: ["core"],
+      meta: {
+        kind: "Component",
+        props: {
+          Text: {
+            "...TextProps": "React Native Text props pass through (numberOfLines, onPress, ...)",
+            variant:
+              '"display" | "h1" | "h2" | "h3" | "h4" | "lead" | "body" (default) | "label" | "small" | "caption" | "button"',
+            color:
+              'a text Colour Role: "foreground" (default), any "…Foreground" role, "primary", "destructive", "success", "warning", "info"',
+            align: '"auto" | "left" | "right" | "center" | "justify"',
+            selectable: "boolean (default true for body and small, false otherwise)",
+            allowFontScaling: "boolean (default: config.fontScaling in theme/config.ts)",
+            ref: "Ref<Text>",
+            style: "TextStyle, merged last",
+          },
+        },
+        variants: [
+          "display",
+          "h1",
+          "h2",
+          "h3",
+          "h4",
+          "lead",
+          "body",
+          "label",
+          "small",
+          "caption",
+          "button",
+        ],
+        docs: "The single typographic Component: use it for all text, never React Native's Text or a separate Heading. display and h1–h4 get role heading and the Heading Font; the rest use the Body Font. Font scaling follows the switch in theme/config.ts (off by default); when on, the chrome Variants (label, caption, button) cap the OS font scale at 1.5×.",
+        keywords: [
+          "text",
+          "typography",
+          "heading",
+          "title",
+          "paragraph",
+          "label",
+          "caption",
+          "font",
+        ],
+        examples: ["text-demo"],
+      },
+    },
   ),
   component(
     "icon",
     "Every glyph: a Lucide icon at a Token size in a Colour Role, decorative unless labelled.",
     LUCIDE,
     ["theme"],
+    {
+      title: "Icon",
+      categories: ["core"],
+      meta: {
+        kind: "Component",
+        props: {
+          Icon: {
+            icon: 'LucideIcon (required), e.g. import { Camera } from "lucide-react-native"',
+            size: '"sm" | "md" (default) | "lg": 16 · 20 · 24 from the iconSize Tokens, scaled',
+            color: "a Colour Role (default foreground)",
+            strokeWidth: "number (default 2)",
+            "aria-label":
+              "string: makes the icon meaningful (role img); without it the icon is decorative and hidden",
+            style: "ViewStyle, merged last",
+          },
+        },
+        variants: { size: ["sm", "md", "lg"] },
+        docs: "Every glyph goes through Icon, so iOS and Android draw the same Lucide glyphs; never use @expo/vector-icons or SF Symbols directly. lucide-react-native is a recorded dependency exception and react-native-svg is SDK-pinned. Icons inside a labelled control (a Button, a ListItem) stay decorative: the control carries the name.",
+        keywords: ["icon", "glyph", "lucide", "symbol", "svg", "pictogram"],
+        examples: ["icon-demo"],
+      },
+    },
   ),
   component(
     "button",
     "Button with Variants (primary, secondary, outline, ghost, destructive, link), Sizes, an icon slot, loading and status; icon-only requires aria-label.",
     [...LUCIDE, ...REANIMATED],
     ["theme", "pressable", "text", "icon", "spinner", "announce"],
+    {
+      title: "Button",
+      categories: ["core"],
+      meta: {
+        kind: "Component",
+        props: {
+          Button: {
+            "...PressableProps":
+              "Pressable Primitive props pass through (onPress, onLongPress, haptic, testID, ...)",
+            label: "string: the visible text and accessible name (required unless icon-only)",
+            icon: "LucideIcon: shown in the icon slot",
+            iconPosition: '"start" (default) | "end": where the icon slot sits',
+            variant:
+              '"primary" (default) | "secondary" | "outline" | "ghost" | "destructive" | "link"',
+            size: '"sm" | "md" (default) | "lg"',
+            loading:
+              "boolean: a Spinner takes the icon slot, the label stays, presses are blocked, announced busy",
+            status:
+              '"error" | "success": a status icon in the icon slot, announced once; the screen clears it',
+            disabled: "boolean: dimmed, presses blocked, announced disabled",
+            "aria-label": "string: required for icon-only Buttons (icon and no label)",
+            style: "ViewStyle, layout only (e.g. full width), merged last",
+          },
+        },
+        variants: {
+          variant: ["primary", "secondary", "outline", "ghost", "destructive", "link"],
+          size: ["sm", "md", "lg"],
+          status: ["error", "success"],
+        },
+        docs: "Built on the Pressable Primitive: the pressed look comes from the button.pressed Style Slot and the tap area is extended to 48. Icon-only Buttons are typed to require aria-label. Precedence: disabled > loading > status. Make a Button full width with style={{ alignSelf: 'stretch' }}; there is no fullWidth prop. Buttons give no haptic tick by default.",
+        keywords: [
+          "button",
+          "cta",
+          "action",
+          "submit",
+          "icon button",
+          "link button",
+          "loading button",
+        ],
+        examples: ["button-demo"],
+      },
+    },
   ),
   component(
     "container",
     "Wraps a Screen: safe-area edges, scrolling, keyboard avoidance, Token padding and a max content width.",
     ["react-native-safe-area-context"],
     ["theme", "keyboard"],
+    {
+      title: "Container",
+      categories: ["core"],
+      meta: {
+        kind: "Component",
+        props: {
+          Container: {
+            "...ViewProps": "React Native View props pass through onto the root",
+            children: "the Screen's content",
+            scroll: "boolean (default true): scroll the content",
+            keyboard:
+              "boolean (default true): keep the focused field above the keyboard; needs scroll",
+            padded: "boolean (default true): pad the content by the spacing Tokens",
+            edges:
+              "('top' | 'bottom' | 'left' | 'right')[] (default ['top', 'bottom']): safe-area edges to keep clear of",
+            maxWidth: "number (default 640): caps the content width and centres it",
+            extraKeyboardSpace: "number: extra room below the content while the keyboard is open",
+            contentContainerStyle: "ViewStyle: merged after the content's own padding and gap",
+            ref: "Ref<View>",
+            style: "ViewStyle, merged last onto the root",
+          },
+        },
+        docs: "Wrap every Screen's content in Container. Scrolling uses the keyboard Primitive's KeyboardAwareScroll, so KeyboardProvider must wrap the root Layout. With a KeyboardStickyFooter below the Container, drop 'bottom' from edges (the footer pads the bottom safe area) and pass its height as extraKeyboardSpace.",
+        keywords: [
+          "container",
+          "screen",
+          "page",
+          "layout",
+          "safe area",
+          "scroll view",
+          "keyboard avoiding",
+          "wrapper",
+        ],
+        examples: ["container-demo"],
+      },
+    },
   ),
+  example("text-demo", "Text demo", "Headings, body, small and caption text in Colour Roles.", [
+    "text",
+    "theme",
+  ]),
+  example(
+    "icon-demo",
+    "Icon demo",
+    "Icons in each size, a Colour Role, a stroke width and a labelled icon.",
+    ["icon", "theme"],
+  ),
+  example(
+    "button-demo",
+    "Button demo",
+    "Every Variant and Size, an icon, icon-only, loading, status and disabled.",
+    ["button", "theme"],
+  ),
+  example("container-demo", "Container demo", "A Screen wrapped in Container.", [
+    "container",
+    "text",
+    "button",
+  ]),
   {
     // `init`/`create` write `<Toaster />` from `{components}/toast` into the root Layout: keep the name.
     ...component(
@@ -242,7 +409,7 @@ export default [
     "search-field",
     "Search box with a search icon, an automatic clear (×) button, a loading spinner and onSubmit from the keyboard's Search key.",
     LUCIDE,
-    ["theme", "pressable", "icon", "use-controllable-state"],
+    ["theme", "pressable", "icon", "spinner", "use-controllable-state"],
     {
       title: "SearchField",
       categories: ["forms"],
@@ -254,7 +421,7 @@ export default [
           onChangeText: "(text: string) => void",
           onSubmit: "(value: string) => void: the keyboard's Search key",
           placeholder: 'string (default "Search"); also the accessible name',
-          loading: "boolean: a spinner replaces the search icon; announced busy",
+          loading: "boolean: the Spinner replaces the search icon; the field is announced busy",
           disabled: "boolean",
           ref: "Ref<TextInput>",
           style: "ViewStyle, layout only, merged last",

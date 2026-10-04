@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from "@testing-library/react-native";
+import { fireEvent, render, screen, within } from "@testing-library/react-native";
 import { useState, type ReactElement } from "react";
 import { Dimensions, StyleSheet, TextInput } from "react-native";
 
@@ -12,6 +12,13 @@ import {
   scaleValue,
   useSchemeStore,
 } from "@/registry/theme";
+
+// The Spinner's glyph becomes a marked View, so the icon slot's content can be found.
+jest.mock("lucide-react-native", () => {
+  const actual = jest.requireActual("lucide-react-native");
+  const { View: RNView } = jest.requireActual("react-native");
+  return { ...actual, LoaderCircle: () => <RNView testID="spinner" /> };
+});
 
 const { width, height } = Dimensions.get("window");
 const scale = computeScale(width, height);
@@ -100,11 +107,18 @@ describe("SearchField", () => {
     expect(onSubmit).toHaveBeenCalledWith("ramen");
   });
 
-  test("loading shows a spinner in place of the icon and is announced busy", async () => {
+  test("loading shows the Spinner in place of the icon, silent, and the field is announced busy", async () => {
     const el = await renderSearch({ loading: true });
     expect(el.props["aria-busy"]).toBe(true);
-    const [first] = el.parent!.children as { type: string }[];
-    expect(first!.type).toBe("ActivityIndicator");
+    // The Spinner sits in the icon slot, before the field, and is not read twice.
+    const [first] = el.parent!.children as never[];
+    expect(within(first!).getByTestId("spinner", { includeHiddenElements: true })).toBeTruthy();
+    expect(screen.queryByRole("progressbar")).toBeNull();
+  });
+
+  test("disabled hides the loading Spinner", async () => {
+    await renderSearch({ loading: true, disabled: true });
+    expect(screen.queryByTestId("spinner", { includeHiddenElements: true })).toBeNull();
   });
 
   test("disabled: not editable, dimmed, no clear button", async () => {
