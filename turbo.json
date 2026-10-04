@@ -12,6 +12,10 @@
     },
     "test": {
       "outputs": []
+    },
+    "ui#test": {
+      "outputs": [],
+      "inputs": ["$TURBO_DEFAULT$", "$TURBO_ROOT$/apps/web/public/fonts/**"]
     }
   }
 }
