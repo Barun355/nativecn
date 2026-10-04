@@ -1,0 +1,131 @@
+<!doctype html>
+<!--
+  PROTOTYPE, throwaway. Not production code.
+  Question: what is on the Starter's promo Screen, and therefore which Registry Items does the Starter install?
+  Three structurally different layouts of the same content (hero, live Preset summary, component sampler,
+  Next steps, SchemeSwitcher). ?variant=A|B|C, bottom bar or ←/→. The SchemeSwitcher on the screen works.
+  The side panel lists the Registry Items each layout would make the Starter install.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Starter promo Screen (prototype)</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing:border-box; }
+  body { margin:0; font-family:Inter, system-ui, sans-serif; background:#e9e9ec; padding:24px 16px 110px; display:flex; gap:32px; justify-content:center; align-items:flex-start; }
+  .phone { width:390px; height:844px; border-radius:44px; box-shadow:0 0 0 10px #111, 0 20px 50px rgba(0,0,0,.25); overflow:hidden; position:relative; display:flex; flex-direction:column; }
+  .scr { flex:1; overflow:auto; }
+  .side { width:300px; font-size:13px; } .side ul { padding-left:18px; }
+  .side .tag { display:inline-block; background:#171717; color:#fff; border-radius:999px; padding:2px 10px; font-size:12px; }
+  .side code { background:#fff; padding:1px 5px; border-radius:4px; }
+  .side button { margin:4px 4px 4px 0; padding:6px 12px; border-radius:8px; border:1px solid #ccc; background:#fff; cursor:pointer; }
+  .switcher { position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:#ff3d7f; color:#fff; border-radius:999px; display:flex; align-items:center; gap:4px; padding:6px; box-shadow:0 6px 20px rgba(0,0,0,.3); font:600 14px ui-monospace, monospace; z-index:10; }
+  .switcher button { background:rgba(255,255,255,.2); color:#fff; border:0; border-radius:999px; width:36px; height:36px; font-size:18px; cursor:pointer; }
+  .switcher span { padding:0 14px; min-width:260px; text-align:center; }
+  .press { cursor:pointer; user-select:none; } .press:active { filter:brightness(.9); }
+</style>
+</head>
+<body>
+  <div class="phone" id="phone"><div style="height:44px;flex:none" id="bar"></div><div class="scr" id="scr"></div></div>
+  <div class="side"><span class="tag">PROTOTYPE</span><h3 id="title" style="margin:8px 0 2px"></h3><div id="why"></div>
+    <b>Registry Items this layout installs</b><div id="items" style="margin-top:6px"></div>
+    <div style="margin-top:10px"><button id="style">Style: Vega</button></div><p style="color:#666">The SchemeSwitcher on the phone works: System follows this computer's setting.</p></div>
+  <div class="switcher"><button id="prev">←</button><span id="label"></span><button id="next">→</button></div>
+<script>
+const COLORS = {
+  light:{ background:'#ffffff', foreground:'#0a0a0a', card:'#ffffff', muted:'#f5f5f5', mutedForeground:'#737373', primary:'#171717', primaryForeground:'#fafafa', border:'#e5e5e5', success:'#16a34a', ring:'#a3a3a3' },
+  dark: { background:'#0a0a0a', foreground:'#fafafa', card:'#171717', muted:'#262626', mutedForeground:'#a3a3a3', primary:'#fafafa', primaryForeground:'#171717', border:'#2e2e2e', success:'#22c55e', ring:'#737373' } };
+const STY = { vega:{ h:44, r:8, card:14, pad:24, gap:16, badgeH:22 }, nova:{ h:36, r:6, card:10, pad:16, gap:12, badgeH:20 } };
+const PRESET = { code:'a7Kx2Q', style:'Vega', baseColor:'neutral', accentColor:'neutral', radius:'default', bodyFont:'Inter', headingFont:'same as body' };
+const I = (d, s=20) => `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
+const ic = { term:'<path d="m4 17 6-6-6-6M12 19h8"/>', book:'<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V3H6.5A2.5 2.5 0 0 0 4 5.5z"/>', bot:'<rect x="3" y="8" width="18" height="12" rx="2"/><path d="M12 8V4M8 14h.01M16 14h.01"/>',
+  arrow:'<path d="M5 12h14m-7-7 7 7-7 7"/>', check:'<path d="M20 6 9 17l-5-5"/>', copy:'<rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>', palette:'<circle cx="13.5" cy="6.5" r="1"/><circle cx="17.5" cy="10.5" r="1"/><circle cx="8.5" cy="7.5" r="1"/><circle cx="6.5" cy="12.5" r="1"/><path d="M12 2a10 10 0 0 0 0 20c1 0 1.6-.8 1.6-1.7 0-.4-.2-.8-.4-1.1-.3-.3-.4-.7-.4-1.1a1.6 1.6 0 0 1 1.6-1.7H16a6 6 0 0 0 6-6c0-4.9-4.5-8.4-10-8.4"/>',
+  sun:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2"/>', moon:'<path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9"/>', phone:'<rect x="5" y="2" width="14" height="20" rx="2"/><path d="M12 18h.01"/>' };
+
+let state = { variant:'A', scheme:'system', style:'vega', step:0, copied:null };
+const sysDark = () => matchMedia('(prefers-color-scheme: dark)').matches;
+const resolved = () => state.scheme === 'system' ? (sysDark() ? 'dark' : 'light') : state.scheme;
+
+/* ---------- pieces (each maps to a Registry Item) ---------- */
+const P = (c, S) => ({
+  text: (v, t, extra='') => { const f = { display:'700 36px/40px Inter', h1:'700 30px/36px Inter', h2:'600 24px/32px Inter', h3:'600 20px/28px Inter', h4:'600 17px/24px Inter', lead:'400 18px/28px Inter', body:'400 16px/24px Inter', small:'400 14px/20px Inter', caption:'400 12px/16px Inter', label:'500 14px/20px Inter' }[v];
+    const ls = { display:'-.8px', h1:'-.6px', h2:'-.4px', h3:'-.2px' }[v] || '0'; return `<div style="font:${f};letter-spacing:${ls};${extra}">${t}</div>`; },
+  button: (label, variant='primary', icon) => `<div class="press" role="button" style="height:${S.h}px;border-radius:${S.r}px;padding:0 16px;display:inline-flex;align-items:center;justify-content:center;gap:8px;font:600 15px Inter;${variant==='primary'?`background:${c.primary};color:${c.primaryForeground};`:`border:1px solid ${c.border};color:${c.foreground};`}">${label}${icon?I(ic[icon],18):''}</div>`,
+  badge: (t, tone) => `<span style="height:${S.badgeH}px;border-radius:6px;padding:0 8px;display:inline-flex;align-items:center;font:500 12px Inter;${tone==='outline'?`border:1px solid ${c.border};color:${c.foreground};`:`background:${c.muted};color:${c.foreground};`}">${t}</span>`,
+  card: (inner, extra='') => `<div style="border-radius:${S.card}px;border:1px solid ${c.border};background:${c.card};padding:${S.pad}px;display:flex;flex-direction:column;gap:${S.gap}px;${extra}">${inner}</div>`,
+  separator: () => `<div style="height:1px;background:${c.border}"></div>`,
+  scheme: () => `<div role="tablist" aria-label="Appearance" style="height:40px;border-radius:10px;background:${c.muted};padding:3px;display:flex">${[['system','phone','System'],['light','sun','Light'],['dark','moon','Dark']].map(([k,i,l])=>`<span class="press" data-scheme="${k}" role="tab" aria-selected="${state.scheme===k}" style="flex:1;border-radius:8px;display:flex;align-items:center;justify-content:center;gap:6px;font:500 13px Inter;${state.scheme===k?`background:${c.background};color:${c.foreground};box-shadow:0 1px 2px rgba(0,0,0,.1);`:`color:${c.mutedForeground};`}">${I(ic[i],15)}${l}</span>`).join('')}</div>`,
+  swatches: () => `<div style="display:flex;gap:6px">${[c.background,c.muted,c.border,c.mutedForeground,c.primary].map(x=>`<span style="width:22px;height:22px;border-radius:6px;background:${x};border:1px solid ${c.border}"></span>`).join('')}</div>`,
+  presetRows: () => [['Style',PRESET.style],['Base colour',PRESET.baseColor],['Accent',PRESET.accentColor],['Radius',PRESET.radius],['Font',PRESET.bodyFont]].map(([k,v])=>`<div style="display:flex;justify-content:space-between;font:400 14px Inter"><span style="color:${c.mutedForeground}">${k}</span><span style="font-weight:500">${v}</span></div>`).join(''),
+  cmd: (id, text) => `<div class="press" data-copy="${id}" role="button" aria-label="Copy command" style="display:flex;align-items:center;gap:8px;border-radius:${S.r}px;background:${c.muted};padding:10px 12px;font:500 13px ui-monospace,monospace"><span style="color:${c.mutedForeground}">$</span><span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${text}</span><span style="color:${state.copied===id?c.success:c.mutedForeground}">${I(state.copied===id?ic.check:ic.copy,16)}</span></div>`,
+  sampler: () => `<div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center">${P(c,S).button('Button')}${P(c,S).button('Outline','outline')}${P(c,S).badge('Badge')}${P(c,S).badge('New','outline')}</div>
+    <div style="height:${S.h}px;border-radius:${S.r}px;border:1px solid ${c.border};padding:0 12px;display:flex;align-items:center;color:${c.mutedForeground};font:400 16px Inter">you@example.com</div>`,
+  logo: (size=44) => `<span style="width:${size}px;height:${size}px;border-radius:${size*.28}px;background:${c.primary};color:${c.primaryForeground};display:inline-flex;align-items:center;justify-content:center;font:700 ${size*.42}px Inter">n</span>`,
+});
+const NEXT = [['term','Add a component','npx nativecn-cli add sign-in-01'],['bot','Ask your AI agent','"Build a settings screen with nativecn"'],['book','Read the docs','nativecn.dev/docs']];
+
+const VARIANTS = {
+  A: { name:'Landing scroll', items:['text','icon','button','badge','card','separator','container','segmented-tabs','scheme-switcher'],
+    why:['One vertical scroll that reads like a mini landing page', 'Hero (logo, headline, lead, two CTAs) → Your Preset card → component sampler → Next steps with copyable commands → SchemeSwitcher at the bottom', 'Simplest to build; clearest for first-time users'],
+    render:(c,S,p)=>`<div style="padding:24px 20px 40px;display:flex;flex-direction:column;gap:24px">
+      <div style="display:flex;flex-direction:column;gap:14px;padding-top:8px">${p.logo()}${p.text('h1','Your app is ready.')}${p.text('lead','Built with nativecn: components you own, styled by your Preset.',`color:${c.mutedForeground}`)}
+        <div style="display:flex;gap:10px">${p.button('Get started','primary','arrow')}${p.button('Docs','outline')}</div></div>
+      ${p.card(`<div style="display:flex;justify-content:space-between;align-items:center">${p.text('h4','Your Preset')}${p.badge(PRESET.code,'outline')}</div>${p.presetRows()}${p.swatches()}`)}
+      ${p.card(`${p.text('h4','Components')}${p.sampler()}`)}
+      <div style="display:flex;flex-direction:column;gap:10px">${p.text('h4','Next steps')}${NEXT.map(([i,t,cmd],k)=>`<div style="display:flex;flex-direction:column;gap:6px"><div style="display:flex;gap:8px;align-items:center;font:500 14px Inter">${I(ic[i],18)}${t}</div>${p.cmd('a'+k,cmd)}</div>`).join('')}</div>
+      ${p.separator()}<div style="display:flex;flex-direction:column;gap:8px">${p.text('label','Appearance')}${p.scheme()}</div></div>` },
+  B: { name:'Bento dashboard', items:['text','icon','button','badge','card','container','segmented-tabs','scheme-switcher'],
+    why:['A compact header, then a grid of tiles (bento) that fit one screen with almost no scroll', 'Tiles: the Preset (with swatches), live Components, Appearance (SchemeSwitcher), and three Next-step tiles', 'Shows off density; good with Nova, busier for beginners'],
+    render:(c,S,p)=>{ const tile=(inner,span=1,extra='')=>`<div style="grid-column:span ${span};border-radius:${S.card}px;border:1px solid ${c.border};background:${c.card};padding:14px;display:flex;flex-direction:column;gap:10px;${extra}">${inner}</div>`;
+      return `<div style="padding:16px 16px 32px;display:flex;flex-direction:column;gap:14px">
+        <div style="display:flex;align-items:center;gap:10px">${p.logo(36)}<div style="flex:1">${p.text('h4','nativecn')}${p.text('caption','Starter · SDK 57',`color:${c.mutedForeground}`)}</div>${p.badge(PRESET.code,'outline')}</div>
+        ${p.text('h2','Everything here is yours to edit.')}
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          ${tile(`<div style="display:flex;gap:8px;align-items:center">${I(ic.palette,18)}${p.text('label','Preset')}</div>${p.text('h3',PRESET.style)}${p.text('caption',`${PRESET.baseColor} · ${PRESET.accentColor} · ${PRESET.bodyFont}`,`color:${c.mutedForeground}`)}${p.swatches()}`)}
+          ${tile(`${p.text('label','Appearance')}${p.scheme()}${p.text('caption','Saved on this device',`color:${c.mutedForeground}`)}`)}
+          ${tile(`${p.text('label','Components')}${p.sampler()}`,2)}
+          ${NEXT.map(([i,t,cmd],k)=>tile(`<div style="display:flex;gap:8px;align-items:center">${I(ic[i],18)}${p.text('label',t)}</div>${p.cmd('b'+k,cmd)}`, k===0?2:1)).join('')}
+        </div></div>`; } },
+  C: { name:'Guided checklist', items:['text','icon','button','badge','card','progress','checkbox','container','segmented-tabs','scheme-switcher'],
+    why:['Teaches by doing: a short checklist with a Progress bar', 'Steps: 1 · Pick your appearance (SchemeSwitcher) → 2 · Meet your components (sampler) → 3 · Add your first screen (command) → 4 · Bring your AI agent (prompt)', 'The Preset summary sits as a compact strip on top', 'Most engaging; adds Progress + Checkbox to the Starter'],
+    render:(c,S,p)=>{ const steps=[['Pick your appearance', p.scheme()],['Meet your components', p.sampler()],['Add your first screen', p.cmd('c0',NEXT[0][2])],['Bring your AI agent', p.cmd('c1',NEXT[1][2])]];
+      return `<div style="padding:20px 20px 40px;display:flex;flex-direction:column;gap:18px">
+        <div style="display:flex;align-items:center;gap:10px;border-radius:${S.card}px;background:${c.muted};padding:10px 12px">${I(ic.palette,18)}<span style="flex:1;font:500 13px Inter">${PRESET.style} · ${PRESET.baseColor} · ${PRESET.accentColor} · ${PRESET.bodyFont}</span>${p.badge(PRESET.code,'outline')}</div>
+        ${p.text('h1','Welcome to nativecn')}${p.text('body','Four quick steps to make this app yours.',`color:${c.mutedForeground}`)}
+        <div style="display:flex;align-items:center;gap:10px"><div style="flex:1;height:8px;border-radius:8px;background:${c.muted}"><div style="width:${state.step*25}%;height:100%;border-radius:8px;background:${c.primary};transition:width .25s"></div></div><span style="font:500 12px Inter;color:${c.mutedForeground}">${state.step}/4</span></div>
+        ${steps.map(([t,body],k)=>{ const done=k<state.step, cur=k===state.step;
+          return `<div style="border-radius:${S.card}px;border:1px solid ${cur?c.ring:c.border};padding:14px;display:flex;flex-direction:column;gap:12px;opacity:${k>state.step?.55:1}">
+            <div class="press" data-step="${k}" role="checkbox" aria-checked="${done}" style="display:flex;gap:10px;align-items:center"><span style="width:22px;height:22px;border-radius:6px;border:1.5px solid ${done?c.primary:c.border};background:${done?c.primary:'transparent'};color:${c.primaryForeground};display:inline-flex;align-items:center;justify-content:center">${done?I(ic.check,14):''}</span>${p.text('h4',`${k+1} · ${t}`)}</div>
+            ${cur?body:''}${cur?`<div>${p.button(k<3?'Done, next step':'Finish','primary')}</div>`.replace('class="press"','class="press" data-next="1"'):''}</div>`; }).join('')}
+        ${state.step>=4?p.card(`${p.text('h4','You are all set 🎉')}${p.text('small','Delete this Screen whenever you like; it is yours.',`color:${c.mutedForeground}`)}`):''}</div>`; } },
+};
+const KEYS = Object.keys(VARIANTS);
+
+function draw() {
+  const sc = resolved(), c = COLORS[sc], S = STY[state.style], v = VARIANTS[state.variant], p = P(c, S);
+  const phone = document.getElementById('phone'); phone.style.background = c.background; phone.style.color = c.foreground;
+  document.getElementById('scr').innerHTML = v.render(c, S, p);
+  document.querySelectorAll('[data-scheme]').forEach(el => el.onclick = () => { state.scheme = el.dataset.scheme; draw(); });
+  document.querySelectorAll('[data-copy]').forEach(el => el.onclick = () => { state.copied = el.dataset.copy; draw(); setTimeout(() => { state.copied = null; draw(); }, 1200); });
+  document.querySelectorAll('[data-next]').forEach(el => el.onclick = () => { state.step = Math.min(4, state.step + 1); draw(); });
+  document.querySelectorAll('[data-step]').forEach(el => el.onclick = () => { state.step = +el.dataset.step; draw(); });
+  document.getElementById('title').textContent = `${state.variant}: ${v.name}`;
+  document.getElementById('why').innerHTML = `<ul>${v.why.map(w => `<li>${w}</li>`).join('')}</ul>`;
+  document.getElementById('items').innerHTML = v.items.map(i => `<code>${i}</code>`).join(' ') + `<p style="color:#666">plus the Theme runtime, fonts and Primitives these pull in automatically.</p>`;
+  document.getElementById('label').textContent = `${state.variant} (${v.name}) · ${sc}`;
+  document.getElementById('style').textContent = `Style: ${state.style === 'vega' ? 'Vega' : 'Nova'}`;
+  const u = new URL(location); u.searchParams.set('variant', state.variant); history.replaceState(null, '', u);
+}
+const cycle = d => { state.variant = KEYS[(KEYS.indexOf(state.variant) + d + KEYS.length) % KEYS.length]; draw(); };
+document.getElementById('prev').onclick = () => cycle(-1);
+document.getElementById('next').onclick = () => cycle(1);
+document.getElementById('style').onclick = () => { state.style = state.style === 'vega' ? 'nova' : 'vega'; draw(); };
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change', draw);
+addEventListener('keydown', e => { if (e.key === 'ArrowLeft') cycle(-1); if (e.key === 'ArrowRight') cycle(1); });
+const q = new URLSearchParams(location.search).get('variant'); if (KEYS.includes(q)) state.variant = q;
+draw();
+</script>
+</body>
+</html>
