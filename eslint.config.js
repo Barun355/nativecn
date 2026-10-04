@@ -16,9 +16,9 @@ export default [
     ...c,
     files: ["packages/ui/**/*.{ts,tsx}", "apps/showcase/**/*.{ts,tsx}"],
   })),
-  // Node / TypeScript code: the CLI and the agent kit
+  // Node / TypeScript code: the CLI, the agent kit and the Preset encoder
   ...tseslint.configs.recommended.map((c) => ({
     ...c,
-    files: ["packages/cli/**/*.ts", "packages/agent-kit/**/*.ts"],
+    files: ["packages/cli/**/*.ts", "packages/agent-kit/**/*.ts", "packages/preset/**/*.ts"],
   })),
 ];

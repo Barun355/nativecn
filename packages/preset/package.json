@@ -1,0 +1,20 @@
+{
+  "name": "preset",
+  "version": "0.0.0",
+  "private": true,
+  "license": "MIT",
+  "type": "module",
+  "description": "Preset short-code encoder and decoder shared by the CLI, the MCP and the builder (bundled, never published)",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "lint": "eslint .",
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "node --test --disable-warning=ExperimentalWarning \"src/**/*.test.ts\""
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.4",
+    "typescript": "catalog:"
+  }
+}

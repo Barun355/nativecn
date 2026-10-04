@@ -7,6 +7,6 @@
   "access": "public",
   "baseBranch": "main",
   "updateInternalDependencies": "patch",
-  "ignore": ["web", "showcase", "agent-kit"],
+  "ignore": ["web", "showcase", "agent-kit", "preset"],
   "privatePackages": { "version": true, "tag": false }
 }
