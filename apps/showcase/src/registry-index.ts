@@ -52,6 +52,11 @@ export const registryIndex: Record<string, RegistryIndexEntry> = {
       "Button with Variants (primary, secondary, outline, ghost, destructive, link), Sizes, an icon slot, loading and status; icon-only requires aria-label.",
     load: () => import("@/registry/components/button"),
   },
+  "button-demo": {
+    type: "registry:example",
+    description: "Every Variant and Size, an icon, icon-only, loading, status and disabled.",
+    load: () => import("@/registry/examples/button-demo"),
+  },
   card: {
     type: "registry:ui",
     description:
@@ -91,6 +96,11 @@ export const registryIndex: Record<string, RegistryIndexEntry> = {
     description:
       "Wraps a Screen: safe-area edges, scrolling, keyboard avoidance, Token padding and a max content width.",
     load: () => import("@/registry/components/container"),
+  },
+  "container-demo": {
+    type: "registry:example",
+    description: "A Screen wrapped in Container.",
+    load: () => import("@/registry/examples/container-demo"),
   },
   drawer: {
     type: "registry:ui",
@@ -142,6 +152,11 @@ export const registryIndex: Record<string, RegistryIndexEntry> = {
     description:
       "Every glyph: a Lucide icon at a Token size in a Colour Role, decorative unless labelled.",
     load: () => import("@/registry/components/icon"),
+  },
+  "icon-demo": {
+    type: "registry:example",
+    description: "Icons in each size, a Colour Role, a stroke width and a labelled icon.",
+    load: () => import("@/registry/examples/icon-demo"),
   },
   input: {
     type: "registry:ui",
@@ -338,6 +353,11 @@ export const registryIndex: Record<string, RegistryIndexEntry> = {
     description:
       "All text: the type ramp as Variants, text Colour Roles, alignment and the font-scaling switch.",
     load: () => import("@/registry/components/text"),
+  },
+  "text-demo": {
+    type: "registry:example",
+    description: "Headings, body, small and caption text in Colour Roles.",
+    load: () => import("@/registry/examples/text-demo"),
   },
   textarea: {
     type: "registry:ui",
