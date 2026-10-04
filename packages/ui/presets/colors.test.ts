@@ -12,6 +12,7 @@ import {
   SHARED_COLOR_VALUES,
   WCAG_AA,
   composeColors,
+  contrastFailures,
   contrastRatio,
 } from "./index.ts";
 
@@ -82,6 +83,10 @@ describe.each(BASE_COLORS)("base %s", (base) => {
     }
     expect(failures).toEqual([]);
   });
+});
+
+test("contrastFailures(), which the Registry build runs, finds none", () => {
+  expect(contrastFailures()).toEqual([]);
 });
 
 test("the Theme runtime's default colors.ts is the neutral / neutral Preset", () => {

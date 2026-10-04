@@ -5,7 +5,7 @@ import path from "node:path";
 import { test } from "node:test";
 
 import { build } from "./build.ts";
-import { inlineSlots, readSlotFills } from "./inline-slots.ts";
+import { hasSlotCall, inlineSlots, readSlotFills } from "./inline-slots.ts";
 
 const FIXTURES = path.join(import.meta.dirname, "__fixtures__");
 const read = (p: string) => JSON.parse(fs.readFileSync(p, "utf8"));
@@ -45,6 +45,30 @@ test("fails on an unknown Slot", () => {
   assert.throws(
     () => inlineSlots('const s = slot("nope.root", t);', fills, "x.tsx"),
     /unknown Slot "nope.root"/,
+  );
+});
+
+test("the leftover slot() check reads code, not comments or strings", () => {
+  const fills = readSlotFills(fs.readFileSync(path.join(FIXTURES, "styles/vega.ts"), "utf8"));
+  const source = [
+    "// Each Style fills slot(name, theme) at build time.",
+    'const note = "slot( is inlined";',
+    'const s = slot("sample.root", t);',
+  ].join("\n");
+  const out = inlineSlots(source, fills, "x.tsx");
+  assert.match(out, /slot\(name, theme\)/);
+  assert.match(out, /"slot\( is inlined"/);
+  assert.equal(hasSlotCall(out), false);
+  assert.equal(hasSlotCall('const s = slot("a", t);'), true);
+});
+
+test("fails when a Slot fill itself calls slot()", () => {
+  const fills = readSlotFills(
+    'export const vega = defineStyle({ "a.root": (t) => ({ ...slot("b.root", t) }), "b.root": (t) => ({ height: 1 }) });',
+  );
+  assert.throws(
+    () => inlineSlots('const s = slot("a.root", t);', fills, "x.tsx"),
+    /slot\(\) left after inlining/,
   );
 });
 

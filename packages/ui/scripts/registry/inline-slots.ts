@@ -82,6 +82,26 @@ function renameParam(body: ts.Node, param: string | null, to: string, sf: ts.Sou
   return out;
 }
 
+/** Whether the source still calls `slot(...)` (comments and strings that mention it don't count). */
+export function hasSlotCall(source: string, fileName = "file.tsx"): boolean {
+  const sf = ts.createSourceFile(fileName, source, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
+  let found = false;
+  const visit = (node: ts.Node): void => {
+    if (found) return;
+    if (
+      ts.isCallExpression(node) &&
+      ts.isIdentifier(node.expression) &&
+      node.expression.text === "slot"
+    ) {
+      found = true;
+      return;
+    }
+    ts.forEachChild(node, visit);
+  };
+  visit(sf);
+  return found;
+}
+
 /**
  * Replace every `slot("name", arg)` call in a Component source with the active Style's literal
  * object, and drop the `slot` import. Throws on unknown Slots or a remaining slot() call.
@@ -136,7 +156,7 @@ export function inlineSlots(source: string, fills: SlotFills, fileName: string):
   let out = source;
   for (const e of edits.sort((a, b) => b.pos - a.pos))
     out = out.slice(0, e.pos) + e.text + out.slice(e.end);
-  if (/\bslot\(/.test(out)) throw new Error(`${fileName}: slot() left after inlining`);
+  if (hasSlotCall(out, fileName)) throw new Error(`${fileName}: slot() left after inlining`);
   if (out.includes("@/registry/styles") || out.includes("@/registry/presets")) {
     throw new Error(
       `${fileName}: imports repo-only code (@/registry/styles or @/registry/presets)`,

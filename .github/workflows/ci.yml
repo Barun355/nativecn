@@ -1,5 +1,17 @@
 name: CI
 
+# The CI checks (decision #31). Branch protection on main requires the job named `checks`; it
+# passes only when every blocking job below passed (or was not needed for this change).
+#
+# Blocking (every PR):
+#   verify     lint, format, type-check; Jest + RNTL; Registry validation, Style Slot completeness,
+#              the contrast check and the dependency rule (Registry build); dependency coverage;
+#              the Preset code guard; Agent Kit limits; docs coverage
+#   changeset  a changeset for every changed package Changesets versions (nativecn-cli, ui)
+# Blocking (PRs touching the CLI, packages/ui, the Starter or the Preset code):
+#   starter-smoke  create/add end to end on SDK 57 and the latest SDK
+# Not blocking: the nightly Starter smoke test on main (.github/workflows/starter-smoke.yml).
+
 on:
   pull_request:
   push:
@@ -10,7 +22,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  checks:
+  verify:
+    name: Lint, types, tests and Registry build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -20,5 +33,83 @@ jobs:
           node-version: 24
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - run: pnpm format:check
-      - run: pnpm turbo run lint typecheck test
+      - name: Format (Prettier)
+        run: pnpm format:check
+      # lint + type-check every package; tests: Jest + RNTL (Components, a11y), contrast, Style
+      # Slots, the dependency rule, dependency coverage (showcase), the Preset code guard (preset),
+      # Agent Kit limits (agent-kit) and docs coverage (web).
+      - name: Lint, type-check and tests
+        run: pnpm turbo run lint typecheck test
+      # Registry validation, Style Slot completeness, the contrast check and the dependency rule.
+      - name: Registry build
+        run: pnpm --filter ui build
+
+  changeset:
+    name: Changeset present
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      # The "Version Packages" PR consumes the changesets, so it has none by design.
+      - name: Changeset present
+        if: ${{ !startsWith(github.head_ref, 'changeset-release/') }}
+        run: pnpm changeset status --since=origin/${{ github.base_ref }}
+
+  changes:
+    name: Detect Starter smoke scope
+    runs-on: ubuntu-latest
+    outputs:
+      smoke: ${{ steps.diff.outputs.smoke }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - id: diff
+        name: Does this PR touch the CLI, packages/ui, the Starter or the Preset code?
+        run: |
+          if [ "${{ github.event_name }}" != "pull_request" ]; then
+            echo "Not a PR: the Starter smoke test runs nightly on main instead."
+            echo "smoke=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          changed=$(git diff --name-only "origin/${{ github.base_ref }}...HEAD")
+          echo "$changed"
+          if echo "$changed" | grep -qE '^(packages/(cli|ui|preset)/|pnpm-lock\.yaml$|\.github/workflows/(ci|starter-smoke)\.yml$)'; then
+            echo "smoke=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "No CLI, packages/ui, Starter or Preset changes: the Starter smoke test is not needed."
+            echo "smoke=false" >> "$GITHUB_OUTPUT"
+          fi
+
+  starter-smoke:
+    name: Starter smoke test
+    needs: changes
+    if: needs.changes.outputs.smoke == 'true'
+    uses: ./.github/workflows/starter-smoke.yml
+
+  checks:
+    name: checks
+    if: always()
+    needs: [verify, changeset, changes, starter-smoke]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Every blocking check passed
+        env:
+          RESULTS: ${{ toJSON(needs) }}
+        run: |
+          echo "$RESULTS" | jq -r 'to_entries[] | "\(.key): \(.value.result)"'
+          if [ "${{ needs.verify.result }}" != "success" ]; then
+            echo "verify did not pass"; exit 1
+          fi
+          failed=$(echo "$RESULTS" | jq -r 'to_entries[] | select(.value.result != "success" and .value.result != "skipped") | .key')
+          if [ -n "$failed" ]; then
+            echo "Blocking checks that did not pass: $failed"; exit 1
+          fi

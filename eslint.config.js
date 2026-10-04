@@ -8,6 +8,8 @@ export default [
       "**/dist/**",
       "**/.expo/**",
       "**/.next/**",
+      // Temporary per-Style copies written by `ui:build`; linting them races the build
+      "**/.registry-build/**",
       // nativecn.dev (Next.js) lints with its own apps/web/eslint.config.mjs
       "apps/web/**",
       // The Starter is a standalone Expo app copied by `create`; its deps are not installed here

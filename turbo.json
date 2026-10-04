@@ -44,15 +44,36 @@
     },
     "ui#test": {
       "outputs": [],
-      "inputs": ["$TURBO_DEFAULT$", "$TURBO_ROOT$/apps/web/public/fonts/**"]
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "$TURBO_ROOT$/apps/web/public/fonts/**",
+        "$TURBO_ROOT$/docs/adr/**",
+        "$TURBO_ROOT$/packages/preset/src/**"
+      ]
     },
     "web#test": {
       "outputs": [],
       "inputs": [
         "$TURBO_DEFAULT$",
-        "$TURBO_ROOT$/packages/ui/presets/**",
+        "$TURBO_ROOT$/packages/ui/**",
+        "!$TURBO_ROOT$/packages/ui/node_modules/**",
+        "!$TURBO_ROOT$/packages/ui/.registry-build/**",
+        "$TURBO_ROOT$/packages/cli/src/**",
         "$TURBO_ROOT$/packages/preset/src/**"
       ]
+    },
+    "showcase#test": {
+      "outputs": [],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "$TURBO_ROOT$/packages/ui/**",
+        "!$TURBO_ROOT$/packages/ui/node_modules/**",
+        "!$TURBO_ROOT$/packages/ui/.registry-build/**"
+      ]
+    },
+    "agent-kit#test": {
+      "outputs": [],
+      "inputs": ["$TURBO_DEFAULT$", "$TURBO_ROOT$/skills/**"]
     }
   }
 }
