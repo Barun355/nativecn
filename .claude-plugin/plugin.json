@@ -1,0 +1,14 @@
+{
+  "name": "nativecn",
+  "displayName": "nativecn",
+  "description": "Build Expo apps with nativecn: the five nativecn Skills and the local nativecn MCP server.",
+  "author": {
+    "name": "Barun355",
+    "url": "https://github.com/Barun355"
+  },
+  "homepage": "https://nativecn.dev",
+  "repository": "https://github.com/Barun355/nativecn",
+  "license": "MIT",
+  "keywords": ["expo", "react-native", "shadcn", "components", "mcp"],
+  "mcpServers": "./mcp.json"
+}

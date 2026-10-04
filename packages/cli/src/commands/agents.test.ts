@@ -14,9 +14,12 @@ import {
   codexMcpBlock,
   fetchAgentKit,
   linkOrCopy,
+  MCP_COMMAND,
+  MCP_SERVER_NAME,
   mcpServerEntry,
   packagedSkills,
   parseAgents,
+  PLUGIN_HINTS,
   qaCommands,
   sameTree,
   SECTION_END,
@@ -382,6 +385,43 @@ test("the Agent Kit is fetched at the CLI's release tag, else main", () => {
   assert.equal(repoRef("0.0.0"), "main");
   assert.equal(repoRef("0.1.0-beta.1"), "main");
   assert.equal(repoRef("0.1.0"), "nativecn-cli@0.1.0");
+});
+
+test("Plugin hints are the real install commands, one per agent", () => {
+  assert.deepEqual(PLUGIN_HINTS, {
+    claude:
+      "Claude Code plugin: claude plugin marketplace add Barun355/nativecn && claude plugin install nativecn@nativecn",
+    codex:
+      "Codex plugin: codex plugin marketplace add Barun355/nativecn && codex plugin add nativecn@nativecn",
+    cursor:
+      "Cursor plugin: git clone --depth 1 https://github.com/Barun355/nativecn ~/.cursor/plugins/local/nativecn, then reload Cursor",
+    antigravity: "Antigravity plugin: agy plugin install https://github.com/Barun355/nativecn",
+  });
+});
+
+test("Plugin manifests at the repo root: the one skills/ folder and the CLI's MCP server", () => {
+  const root = (f: string) => parse(fs.readFileSync(path.join(REPO, f), "utf8"));
+  const server = { command: MCP_COMMAND.command, args: MCP_COMMAND.args };
+
+  // Claude Code and Codex share one marketplace whose one plugin is the repo root.
+  const market = root(".claude-plugin/marketplace.json");
+  assert.equal(market.name, "nativecn");
+  assert.deepEqual(
+    market.plugins.map((x: { name: string; source: unknown }) => [x.name, x.source]),
+    [["nativecn", { source: "url", url: "https://github.com/Barun355/nativecn.git" }]],
+  );
+  for (const f of [".claude-plugin/plugin.json", ".cursor-plugin/plugin.json", "plugin.json"])
+    assert.equal(root(f).name, "nativecn", f);
+  assert.equal(root(".claude-plugin/plugin.json").mcpServers, "./mcp.json");
+  assert.equal(root(".cursor-plugin/plugin.json").mcpServers, "./mcp.json");
+  assert.equal(root(".cursor-plugin/plugin.json").skills, "./skills/");
+  assert.ok(SKILLS.every((s) => fs.existsSync(path.join(REPO, "skills", s, "SKILL.md"))));
+
+  // The Plugin's MCP server is the one `agents` writes into projects.
+  assert.deepEqual(root("mcp.json").mcpServers, {
+    [MCP_SERVER_NAME]: { type: "stdio", ...server },
+  });
+  assert.deepEqual(root("mcp_config.json").mcpServers, { [MCP_SERVER_NAME]: server });
 });
 
 test("a failed Agent Kit fetch doesn't throw: Rules and Skills are skipped, the rest is written", async () => {

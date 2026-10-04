@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "nativecn-cli": {
+      "command": "npx",
+      "args": ["-y", "nativecn-cli@latest", "mcp"]
+    }
+  }
+}

@@ -70,13 +70,17 @@ export const MCP_REMOTE_URL = "https://nativecn.dev/mcp";
 /** Phone-side screenshot file for Android's save → pull → delete (#34). */
 export const QA_PHONE_FILE = "/sdcard/nativecn-qa.png";
 
-const PLUGIN_HINTS: Record<AgentName, string> = {
-  claude:
-    "Claude Code plugin: /plugin marketplace add Barun355/nativecn, then /plugin install nativecn@nativecn",
-  codex:
-    "Codex plugin: codex plugin marketplace add Barun355/nativecn, then install nativecn from /plugins",
-  cursor: "Cursor plugin: install nativecn from cursor.com/marketplace (Customize panel)",
-  antigravity: "Antigravity plugin: agy plugin install https://github.com/Barun355/nativecn",
+/**
+ * The Plugin is the nativecn repo root itself (#58): `.claude-plugin/marketplace.json` serves Claude
+ * Code and Codex, `.cursor-plugin/plugin.json` serves Cursor, and the root `plugin.json` +
+ * `mcp_config.json` serve Antigravity. All of them load the one `skills/` folder.
+ */
+export const PLUGIN_REPO = "Barun355/nativecn";
+export const PLUGIN_HINTS: Record<AgentName, string> = {
+  claude: `Claude Code plugin: claude plugin marketplace add ${PLUGIN_REPO} && claude plugin install nativecn@nativecn`,
+  codex: `Codex plugin: codex plugin marketplace add ${PLUGIN_REPO} && codex plugin add nativecn@nativecn`,
+  cursor: `Cursor plugin: git clone --depth 1 https://github.com/${PLUGIN_REPO} ~/.cursor/plugins/local/nativecn, then reload Cursor`,
+  antigravity: `Antigravity plugin: agy plugin install https://github.com/${PLUGIN_REPO}`,
 };
 
 // ---------------------------------------------------------------------------------------------
