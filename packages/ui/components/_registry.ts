@@ -45,6 +45,42 @@ const example = (
   ],
 });
 
+// Drawer Blocks: the panel of a drawer Layout (a Block that is navigation, not a Screen). One
+// `index.tsx` in `components/<block>/`, installed into `{components}/<block>/` as a
+// registry:component file (Registry layout, #13; ADR 0008). Style Slots are inlined as in a
+// Component.
+const drawerBlock = (
+  name: string,
+  component: string,
+  title: string,
+  description: string,
+  difference: string,
+  dependencies: string[],
+  registryDependencies: string[],
+): RegistryItem => ({
+  name,
+  type: "registry:block",
+  title,
+  description,
+  categories: ["navigation"],
+  meta: {
+    kind: "Block",
+    component,
+    difference,
+    docs: `In app/(drawer)/_layout.tsx, with Expo Router's drawer from expo-router/drawer (never @react-navigation/drawer or the npm package expo-drawer): <Drawer drawerContent={(props) => <${component} {...props} />} />. Spread every drawerContent prop in, so items can close the drawer. Tapping an item navigates and closes the drawer; the backdrop and the system back gesture also close it. Names, avatars, counts, items and routes are placeholders: rename them and point each href at a route in your drawer Layout. Every item has a role and aria-selected; icon-only actions carry an aria-label. Item heights follow the drawer.item Style Slot (Vega 48, Nova 40), and the panel keeps clear of the status bar and home indicator.`,
+    keywords: ["drawer", "side menu", "sidebar", "navigation drawer", "hamburger menu", "nav menu"],
+  },
+  dependencies,
+  registryDependencies,
+  files: [
+    {
+      path: `components/${name}/index.tsx`,
+      type: "registry:component",
+      target: `{components}/${name}/index.tsx`,
+    },
+  ],
+});
+
 /** lucide-react-native is the recorded ADR 0007 exception (Lucide decision); react-native-svg is SDK-pinned. */
 const LUCIDE = ["lucide-react-native@^1.51.0", "react-native-svg"];
 /** Reanimated and its Worklets runtime are SDK-pinned. */
@@ -1218,5 +1254,33 @@ export default [
     "Drawer demo",
     "An app/(drawer)/_layout.tsx: a profile header, titled sections, an accent item, a bottom group and a Log out footer.",
     ["drawer", "avatar", "badge", "separator", "text", "theme"],
+  ),
+  // Drawer Blocks (designs: #24)
+  drawerBlock(
+    "drawer-01",
+    "Drawer01",
+    "Profile header + grouped sections",
+    "Drawer panel with a profile header (avatar, name, email, plan Badge), labelled sections (Main, Workspace, Support) and Log out pinned in the footer.",
+    "The familiar Gmail/Slack drawer: who is signed in on top, items grouped under small headings, Log out at the bottom; the active item sits on a muted background.",
+    LUCIDE,
+    ["drawer", "avatar", "badge", "separator", "text", "theme"],
+  ),
+  drawerBlock(
+    "drawer-02",
+    "Drawer02",
+    "SaaS workspace",
+    "Drawer panel for a SaaS workspace: logo and name with a close button, an Accent Colour onboarding item with a 5 Steps Badge, main items, a bottom group (Notifications with a count, Settings, Docs, Help) and a footer with a team switcher and the user's avatar.",
+    "A product workspace: an Accent-tinted onboarding Checklist on top, a second group pushed to the bottom, and a team switcher and account button in the footer instead of a profile header.",
+    LUCIDE,
+    ["drawer", "avatar", "badge", "button", "icon", "pressable", "text", "theme"],
+  ),
+  drawerBlock(
+    "drawer-03",
+    "Drawer03",
+    "Cover header",
+    "Drawer panel with a dark cover (large avatar, name, View profile, a bell with a count, an overflow button and a round + action), icon items active in Accent Colour text, a divider and text-only secondary items.",
+    "A consumer or commerce app drawer: a dark profile cover that stays dark in both Schemes, and items that show the current route by Accent Colour text and icon, with no background.",
+    ["expo-router", ...LUCIDE],
+    ["drawer", "avatar", "badge", "button", "pressable", "separator", "text", "theme"],
   ),
 ] satisfies RegistryItem[];
