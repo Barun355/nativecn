@@ -1,0 +1,7 @@
+pnpm-lock.yaml
+**/dist
+**/.expo
+**/.next
+apps/web/public/r
+.changeset/*.md
+**/*.md
