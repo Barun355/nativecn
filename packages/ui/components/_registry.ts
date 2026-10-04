@@ -428,4 +428,181 @@ export default [
     "empty-state",
     "button",
   ]),
+
+  // Display
+  component(
+    "card",
+    "Card surface with CardHeader, CardTitle, CardDescription, CardContent and CardFooter; onPress makes the whole card pressable.",
+    [],
+    ["theme", "pressable", "text"],
+    {
+      title: "Card",
+      categories: ["display"],
+      meta: {
+        kind: "Component",
+        props: {
+          Card: {
+            children: "CardHeader, CardContent, CardFooter or anything else",
+            onPress: "(event) => void: makes the whole card one pressable target (role button)",
+            onLongPress: "(event) => void",
+            disabled: "boolean (default false): pressable cards only; dims and blocks presses",
+            haptic: '"selection" | "light": pressable cards only',
+            style: "layout only, merged last onto the root",
+          },
+          CardHeader: { children: "CardTitle and CardDescription" },
+          CardTitle: { children: "the title text (role heading); Text props except variant" },
+          CardDescription: { children: "muted supporting text; Text props except variant" },
+          CardContent: { children: "the main content" },
+          CardFooter: { children: "actions, laid out in a row" },
+        },
+        docs: "Compose shadcn-style from named exports (no dot syntax): <Card><CardHeader><CardTitle>…</CardTitle><CardDescription>…</CardDescription></CardHeader><CardContent>…</CardContent><CardFooter>…</CardFooter></Card>. With onPress the whole card is a single button whose accessible name is its text, so don't nest other pressables inside a pressable Card. Padding, gap, radius, border and shadow come from the card.root Style Slot; the pressed look from card.pressed.",
+        keywords: ["card", "panel", "surface", "tile", "box", "pressable card", "tappable card"],
+        examples: ["card-demo"],
+      },
+    },
+  ),
+  component(
+    "separator",
+    "A hairline divider, horizontal or vertical, decorative by default.",
+    [],
+    ["theme"],
+    {
+      title: "Separator",
+      categories: ["display"],
+      meta: {
+        kind: "Component",
+        props: {
+          Separator: {
+            orientation: '"horizontal" (default) | "vertical"',
+            decorative:
+              "boolean (default true): hidden from screen readers; false exposes it with role separator",
+            style: "merged last",
+          },
+        },
+        docs: "A vertical Separator stretches to its row's height, so put it in a row with alignItems center. Between virtualized ListItems, pass it as FlashList's ItemSeparatorComponent.",
+        keywords: ["separator", "divider", "line", "rule", "hr", "hairline"],
+        examples: ["separator-demo"],
+      },
+    },
+  ),
+  component(
+    "badge",
+    "Small status label with Variants default, secondary, outline, destructive, success and warning.",
+    [],
+    ["theme", "text"],
+    {
+      title: "Badge",
+      categories: ["display"],
+      meta: {
+        kind: "Component",
+        props: {
+          Badge: {
+            label: "string (required): the visible text and accessible name",
+            variant:
+              '"default" (default) | "secondary" | "outline" | "destructive" | "success" | "warning"',
+            style: "merged last",
+          },
+        },
+        variants: ["default", "secondary", "outline", "destructive", "success", "warning"],
+        docs: "Not pressable: for a selectable or removable pill use Chip. A Badge sizes to its label (alignSelf flex-start). Its size comes from the badge.root and badge.label Style Slots.",
+        keywords: ["badge", "tag", "label", "pill", "status", "count", "counter"],
+        examples: ["badge-demo"],
+      },
+    },
+  ),
+  component(
+    "avatar",
+    "Round user image (expo-image) with fallback initials, in sizes sm, md and lg.",
+    ["expo-image"],
+    ["theme", "text"],
+    {
+      title: "Avatar",
+      categories: ["display"],
+      meta: {
+        kind: "Component",
+        props: {
+          Avatar: {
+            src: "string: the image URI",
+            fallback: 'string: initials shown while loading, on error or without src (e.g. "JD")',
+            size: '"sm" | "md" (default) | "lg": Vega 32 / 40 / 64, Nova 24 / 32 / 48',
+            alt: "string: who it shows; without it the avatar is decorative (hidden from screen readers)",
+            style: "merged last",
+          },
+        },
+        docs: "expo-image is SDK-pinned (`npx expo install expo-image`). The fallback sits behind the image, so it shows while the image loads and stays when it fails. Pass alt unless the person's name is already next to the avatar.",
+        keywords: ["avatar", "profile picture", "profile photo", "user image", "initials"],
+        examples: ["avatar-demo"],
+      },
+    },
+  ),
+  component(
+    "list",
+    "Settings-style rows: ListSection, ListSectionHeader, ListSectionFooter and ListItem (title, description, icon, trailing, chevron, destructive, onPress); FlashList-safe.",
+    LUCIDE,
+    ["theme", "pressable", "text", "icon", "separator"],
+    {
+      title: "List",
+      categories: ["display"],
+      meta: {
+        kind: "Component",
+        props: {
+          ListSection: {
+            children:
+              "ListSectionHeader, rows and ListSectionFooter; header and footer are drawn outside the rounded group",
+          },
+          ListSectionHeader: { children: "the section title (role heading)" },
+          ListSectionFooter: { children: "a note under the rows" },
+          ListItem: {
+            title: "string (required unless children)",
+            description: "string: muted text under the title",
+            icon: "a Lucide icon component, at the start of the row",
+            trailing:
+              "ReactNode at the end of the row (strings render as muted text): a value, Badge, Switch…",
+            chevron: "boolean (default false): a trailing chevron for rows that navigate",
+            destructive: "boolean (default false): title and icon in the destructive colour",
+            onPress: "(event) => void: makes the row pressable (role button)",
+            disabled: "boolean (default false): pressable rows only",
+            children: "escape hatch replacing the title and description column",
+            style: "layout only, merged last onto the root",
+          },
+        },
+        docs: "Props-based rows are a deliberate exception to 'children over content props'; use children only for custom rows. ListSection draws an inset, rounded group with hairline Separators between rows. For long lists, render ListItem directly as a FlashList/FlatList row (no ListSection) with Separator as ItemSeparatorComponent: ListItem has no state, no layout measuring and no parent context, so recycling is safe.",
+        keywords: [
+          "list",
+          "list item",
+          "row",
+          "settings",
+          "table view",
+          "cell",
+          "menu",
+          "flashlist",
+        ],
+        examples: ["list-demo"],
+      },
+    },
+  ),
+  example(
+    "card-demo",
+    "Card demo",
+    "A Card with header, content and footer, and a pressable Card.",
+    ["card", "badge", "button", "text", "theme"],
+  ),
+  example("separator-demo", "Separator demo", "Horizontal and vertical Separators.", [
+    "separator",
+    "text",
+    "theme",
+  ]),
+  example("badge-demo", "Badge demo", "A Badge in every Variant.", ["badge", "theme"]),
+  example(
+    "avatar-demo",
+    "Avatar demo",
+    "Avatars in every size, with an image and with initials only.",
+    ["avatar", "theme"],
+  ),
+  example(
+    "list-demo",
+    "List demo",
+    "A settings list: header, footer, icons, trailing values, chevrons and a destructive row.",
+    ["list", "badge", "theme"],
+  ),
 ] satisfies RegistryItem[];
