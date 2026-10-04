@@ -1,16 +1,22 @@
 // The docs navigation: one list drives the sidebar, the pager, the search index and the routes.
-// Browser-safe (no Node.js imports), so client components can use it too.
+// The hand-written pages are listed here; every Registry item adds its own page (item-pages.ts).
+// No Node.js imports, but it carries every item's metadata: client components get the
+// navigation as props from a server component rather than importing this module.
+import { itemDocSections } from "./item-pages.ts";
 
 export type DocPage = {
   /** URL segment under /docs; "" is the Introduction at /docs. */
   slug: string;
   title: string;
   description: string;
+  /** The Registry item this page documents (generated pages only). */
+  item?: string;
 };
 
 export type DocSection = { title: string; pages: DocPage[] };
 
-export const docsNav: DocSection[] = [
+/** The hand-written pages (MDX in content/docs, plus the generated changelog). */
+export const guideNav: DocSection[] = [
   {
     title: "Getting Started",
     pages: [
@@ -69,6 +75,11 @@ export const docsNav: DocSection[] = [
     ],
   },
 ];
+
+export const docsNav: DocSection[] = [...guideNav, ...itemDocSections];
+
+/** The hand-written pages only. */
+export const guideDocs: DocPage[] = guideNav.flatMap((section) => section.pages);
 
 export const allDocs: DocPage[] = docsNav.flatMap((section) => section.pages);
 

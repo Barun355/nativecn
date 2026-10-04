@@ -1,15 +1,38 @@
 // The "Copy to LLM" bundle for a Component or Block page (decision #27): description, add command,
 // props, usage examples and source, as one prompt-ready markdown block. Pure and browser-safe;
 // built from the same Registry item JSON the CLI installs and the MCP serves.
-import type { RegistryItem } from "../../../packages/cli/src/registry.ts";
+import { planAddCommands } from "../../../packages/cli/src/mcp/add-command.ts";
+import { isScreenBlock, kindOf } from "../../../packages/cli/src/mcp/catalog.ts";
+import type { RegistryIndexItem, RegistryItem } from "../../../packages/cli/src/registry.ts";
+
+/**
+ * An item's own example items: its `meta.examples` and `<item>-…` examples (`<item>-demo`).
+ * Unlike the MCP's findExamples there is no fuzzy fallback, which would put the drawer
+ * Component's demo on the drawer-01 Block's page.
+ */
+export function exampleNames(index: RegistryIndexItem[], name: string): string[] {
+  const item = index.find((i) => i.name === name);
+  if (!item || kindOf(item) === "Example") return [];
+  const isExample = (n: string) => {
+    const ex = index.find((i) => i.name === n);
+    return ex !== undefined && kindOf(ex) === "Example";
+  };
+  const listed = Array.isArray(item.meta?.examples) ? item.meta.examples.map(String) : [];
+  const named = index.filter((i) => i.name.startsWith(`${name}-`)).map((i) => i.name);
+  return [...new Set([...listed, ...named])].filter(isExample);
+}
 
 const fence = (file: string, content: string) => {
-  const lang = /\.(tsx?|jsx?|json)$/.exec(file)?.[1] ?? "";
+  const lang = /\.(tsx?|jsx?|json)$/.exec(file)?.[1] ?? (/^\w+$/.test(file) ? file : "");
   return `\`\`\`${lang}\n${content.replace(/\n$/, "")}\n\`\`\``;
 };
 
 function propsSection(props: unknown): string {
   if (props && typeof props === "object" && !Array.isArray(props)) {
+    const entries = Object.entries(props as Record<string, unknown>);
+    // { Export: { prop: description } }: one table per export.
+    if (entries.length && entries.every(([, v]) => v && typeof v === "object" && !Array.isArray(v)))
+      return entries.map(([name, rows]) => `### ${name}\n\n${propsSection(rows)}`).join("\n\n");
     const rows = Object.entries(props as Record<string, unknown>).map(
       ([name, type]) =>
         `| \`${name}\` | ${(typeof type === "string" ? type : JSON.stringify(type)).replace(/\|/g, "\\|")} |`,
@@ -35,7 +58,14 @@ export function itemBundle({
     `nativecn Registry item, Style ${style}. Source: https://nativecn.dev/r/styles/${style}/${item.name}.json`,
   );
 
-  out.push("", "## Add", "", fence("sh", `npx nativecn-cli@latest add ${item.name}`));
+  // The same command the MCP's get_add_command gives (a Screen Block gets its suggested --route).
+  const plan = planAddCommands([item], null, { hasProject: false });
+  out.push("", "## Add", "", fence("sh", plan.commands.map((c) => c.command).join("\n")));
+  if (isScreenBlock(item))
+    out.push(
+      "",
+      "In a project with the feature Structure, also pass `--feature <name>`. `add` never overwrites an existing route file.",
+    );
   const deps = [
     item.registryDependencies?.length
       ? `Also installs: ${item.registryDependencies.join(", ")}.`
@@ -48,6 +78,17 @@ export function itemBundle({
   if (meta.props !== undefined) out.push("", "## Props", "", propsSection(meta.props));
   if (Array.isArray(meta.variants) && meta.variants.length)
     out.push("", "## Variants", "", meta.variants.map((v) => `- \`${String(v)}\``).join("\n"));
+  else if (meta.variants && typeof meta.variants === "object") {
+    const lines = Object.entries(meta.variants as Record<string, unknown>)
+      .filter(([, v]) => Array.isArray(v) && v.length)
+      .map(
+        ([prop, v]) =>
+          `- \`${prop}\`: ${(v as unknown[]).map((x) => `\`${String(x)}\``).join(", ")}`,
+      );
+    if (lines.length) out.push("", "## Variants", "", lines.join("\n"));
+  }
+  if (typeof meta.difference === "string")
+    out.push("", "## What makes it different", "", meta.difference);
   if (typeof meta.docs === "string") out.push("", "## Notes", "", meta.docs);
 
   if (examples.length) {

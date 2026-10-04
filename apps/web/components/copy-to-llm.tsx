@@ -1,9 +1,8 @@
 "use client";
 
 import { CopyButton } from "@/components/copy-button";
-import { itemBundle } from "@/lib/llm-bundle";
+import { exampleNames, itemBundle } from "@/lib/llm-bundle";
 
-import { findExamples } from "../../../packages/cli/src/mcp/catalog.ts";
 import type { RegistryIndex, RegistryItem } from "../../../packages/cli/src/registry.ts";
 
 async function getJson<T>(url: string): Promise<T> {
@@ -19,7 +18,7 @@ async function buildBundle(name: string, style: string): Promise<string> {
     getJson<RegistryItem>(`${base}/${name}.json`),
     getJson<RegistryIndex>(`${base}/registry.json`),
   ]);
-  const names = findExamples(index.items ?? [], name)
+  const names = exampleNames(index.items ?? [], name)
     .filter((n) => n !== name)
     .slice(0, 5);
   const examples = await Promise.all(names.map((n) => getJson<RegistryItem>(`${base}/${n}.json`)));

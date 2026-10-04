@@ -25,6 +25,11 @@ const nextConfig: NextConfig = {
       beforeFiles: [
         { source: "/docs.md", destination: "/docs-md" },
         { source: "/docs/:slug([a-z0-9-]+)\\.md", destination: "/docs-md/:slug" },
+        // Generated Registry item pages: /docs/components/button.md, /docs/blocks/drawer-01.md, ...
+        {
+          source: "/docs/:section([a-z0-9-]+)/:slug([a-z0-9-]+)\\.md",
+          destination: "/docs-md/:section/:slug",
+        },
       ],
       afterFiles: [],
       fallback: [],
