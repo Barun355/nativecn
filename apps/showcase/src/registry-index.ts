@@ -8,6 +8,24 @@ export type RegistryIndexEntry = {
 };
 
 export const registryIndex: Record<string, RegistryIndexEntry> = {
+  announce: {
+    type: "registry:lib",
+    description:
+      "Reliable screen-reader announcements on iOS and Android (Button and Input status, Toast).",
+    load: () => import("@/registry/utils/announce"),
+  },
+  button: {
+    type: "registry:ui",
+    description:
+      "Button with Variants (primary, secondary, outline, ghost, destructive, link), Sizes, an icon slot, loading and status; icon-only requires aria-label.",
+    load: () => import("@/registry/components/button"),
+  },
+  container: {
+    type: "registry:ui",
+    description:
+      "Wraps a Screen: safe-area edges, scrolling, keyboard avoidance, Token padding and a max content width.",
+    load: () => import("@/registry/components/container"),
+  },
   "focus-chain": {
     type: "registry:ui",
     description: "Automatic Next/Done between fields in on-screen order; Done submits the form.",
@@ -18,6 +36,12 @@ export const registryIndex: Record<string, RegistryIndexEntry> = {
     description:
       "Links a field to its label, description and error for screen readers; passes status, disabled and required down.",
     load: () => import("@/registry/components/primitives/form-field-context"),
+  },
+  icon: {
+    type: "registry:ui",
+    description:
+      "Every glyph: a Lucide icon at a Token size in a Colour Role, decorative unless labelled.",
+    load: () => import("@/registry/components/icon"),
   },
   keyboard: {
     type: "registry:ui",
@@ -42,6 +66,12 @@ export const registryIndex: Record<string, RegistryIndexEntry> = {
     description:
       "Single or multiple choice within a group, with radio, tab or checkbox roles and selected states.",
     load: () => import("@/registry/components/primitives/selection-group"),
+  },
+  text: {
+    type: "registry:ui",
+    description:
+      "All text: the type ramp as Variants, text Colour Roles, alignment and the font-scaling switch.",
+    load: () => import("@/registry/components/text"),
   },
   theme: {
     type: "registry:lib",

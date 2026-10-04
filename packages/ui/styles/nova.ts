@@ -15,6 +15,17 @@ export const nova = defineStyle({
     fontSize: t.scaleValue(14),
     lineHeight: t.scaleValue(20),
   }),
+  // Sizes: `button.root` is the md size; sm and lg override its dimensions.
+  "button.sm": (t) => ({
+    height: t.scaleValue(32),
+    paddingHorizontal: t.scaleValue(10),
+    gap: t.spacing[1],
+  }),
+  "button.lg": (t) => ({
+    height: t.controlHeight.md,
+    paddingHorizontal: t.spacing[4],
+    gap: t.spacing[2],
+  }),
   "button.pressed": () => ({ filter: [{ brightness: 0.88 }], transform: [{ scale: 0.98 }] }),
   "input.root": (t) => ({
     height: t.controlHeight.sm,

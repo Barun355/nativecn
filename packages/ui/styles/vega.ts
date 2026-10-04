@@ -10,6 +10,17 @@ export const vega = defineStyle({
     gap: t.spacing[2],
   }),
   "button.label": (t) => ({ ...t.type.button }),
+  // Sizes: `button.root` is the md size; sm and lg override its dimensions.
+  "button.sm": (t) => ({
+    height: t.controlHeight.sm,
+    paddingHorizontal: t.spacing[3],
+    gap: t.scaleValue(6),
+  }),
+  "button.lg": (t) => ({
+    height: t.controlHeight.lg,
+    paddingHorizontal: t.spacing[6],
+    gap: t.spacing[2],
+  }),
   "button.pressed": () => ({ filter: [{ brightness: 0.88 }] }),
   "input.root": (t) => ({
     height: t.controlHeight.md,
