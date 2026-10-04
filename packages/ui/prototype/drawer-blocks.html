@@ -1,9 +1,9 @@
 <!doctype html>
 <!--
   PROTOTYPE, throwaway. Not production code.
-  Question: what do drawer-01 / drawer-02 / drawer-03 look like, built from the Drawer Components
+  Question: what do drawer-01 / drawer-02 look like, built from the Drawer Components
   (DrawerContent, DrawerHeader, DrawerSection, DrawerItem, DrawerFooter)?
-  ?variant=drawer-01|drawer-02|drawer-03, bottom bar or ←/→. Toggle Vega/Nova Style, light/dark, and open/close.
+  ?variant=drawer-01|drawer-02, bottom bar or ←/→. Toggle Vega/Nova Style, light/dark, and open/close.
   Tap the ☰ button to open, the backdrop to close; tap items to select (the "screen" behind updates).
 -->
 <html lang="en">
@@ -13,6 +13,7 @@
 <title>Drawer Blocks (prototype)</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
 <style>
+  *, *::before, *::after { box-sizing:border-box; }
   body { margin:0; font-family:Inter, system-ui, sans-serif; background:#e9e9ec; padding:24px 16px 110px; display:flex; gap:32px; justify-content:center; align-items:flex-start; }
   .phone { width:390px; height:844px; border-radius:44px; box-shadow:0 0 0 10px #111, 0 20px 50px rgba(0,0,0,.25); overflow:hidden; position:relative; }
   .side { width:300px; font-size:13px; }
@@ -66,14 +67,7 @@ const VARIANTS = {
         <div>${sectionLabel(c,'Workspace')}${item(S,c,3)}${item(S,c,4)}</div>
         <div>${sectionLabel(c,'Support')}${item(S,c,5)}${item(S,c,6)}</div></div>
       <div style="border-top:1px solid ${c.border};padding-top:12px"><div class="press" data-act="logout" role="button" style="height:${S.item.h}px;border-radius:${S.item.r}px;padding:0 ${S.item.padX}px;display:flex;align-items:center;gap:${S.item.gap}px;font:500 15px Inter;color:${c.destructive}">${I(ic.out,20)}Log out</div></div></div>` },
-  'drawer-02': { name:'Compact, icon-forward', width:88,
-    why:['A narrow rail (88 wide) of icon-only DrawerItems with accessible labels', 'Active item uses a filled primary background; unread shows as a dot', 'Avatar on top, settings and log out at the bottom', 'For power apps with many switches between few destinations; the content stays visible'],
-    panel:(S,c)=>`<div style="height:100%;display:flex;flex-direction:column;align-items:center;gap:8px;background:${c.background};border-right:1px solid ${c.border};padding:${S.pad+44}px 0 ${S.pad+20}px">
-      ${avatar(S,c,S.avatar)}<div style="width:40px;height:1px;background:${c.border};margin:8px 0"></div>
-      ${[0,1,2,3,4].map(k=>item(S,c,k,{iconOnly:true})).join('')}<div style="flex:1"></div>
-      ${item(S,c,5,{iconOnly:true})}${item(S,c,6,{iconOnly:true})}
-      <div class="press" data-act="logout" role="button" aria-label="Log out" style="width:${S.item.h}px;height:${S.item.h}px;display:flex;align-items:center;justify-content:center;color:${c.destructive}">${I(ic.out,22)}</div></div>` },
-  'drawer-03': { name:'Floating card panel', width:316, floating:true,
+  'drawer-02': { name:'Floating card panel', width:316, floating:true,
     why:['The panel floats inset from the edges (12px) with large rounded corners and a shadow, over a dimmed screen', 'A compact header with app name and close (×) button', 'Active item strongly filled (primary)', 'Footer card with an upgrade prompt and the user row', 'A modern, softer feel (Linear/Arc-like)'],
     panel:(S,c)=>`<div style="height:100%;display:flex;flex-direction:column;background:${c.card};border-radius:${S.cardR+6}px;box-shadow:0 12px 40px rgba(0,0,0,.25);border:1px solid ${c.border};padding:${S.pad}px">
       <div style="display:flex;align-items:center;justify-content:space-between;padding:4px 4px 14px"><div style="display:flex;gap:10px;align-items:center"><span style="width:30px;height:30px;border-radius:9px;background:${c.primary};color:${c.primaryForeground};display:inline-flex;align-items:center;justify-content:center;font:700 14px Inter">N</span><span style="font:600 16px Inter;color:${c.foreground}">nativecn</span></div>
@@ -95,10 +89,11 @@ function draw() {
         <span style="font:600 17px Inter">${label}</span></div>
       <div style="padding:16px;display:grid;gap:12px">${[1,2,3,4].map(n=>`<div style="height:72px;border-radius:12px;background:${c.muted};display:flex;align-items:center;padding:0 16px;gap:12px;color:${c.mutedForeground};font:400 14px Inter">${I(ic[icon],20)}${label} item ${n}</div>`).join('')}</div></div>`;
   const inset = v.floating ? 12 : 0;
-  const panel = `<div class="anim" style="position:absolute;top:${inset}px;bottom:${inset}px;left:${inset}px;width:${v.width}px;transform:translateX(${state.open?0:-(v.width+inset+20)}px)">${v.panel(S,c)}</div>`;
+  const top = v.floating ? 44 + 8 : 0, bottom = v.floating ? 34 + 8 : 0; // safe areas: status bar 44, home indicator 34
+  const panel = `<div class="anim" style="position:absolute;top:${top}px;bottom:${bottom}px;left:${inset}px;width:${v.width}px;transform:translateX(${state.open?0:-(v.width+inset+20)}px)">${v.panel(S,c)}</div>`;
   const backdrop = `<div class="anim" data-act="close" style="position:absolute;inset:0;background:${c.overlay};opacity:${state.open?1:0};pointer-events:${state.open?'auto':'none'}"></div>`;
   document.getElementById('phone').innerHTML = screen + backdrop + panel;
-  document.querySelectorAll('[data-go]').forEach(el => el.onclick = e => { e.stopPropagation(); state.active = +el.dataset.go; state.lastAction = 'navigate:' + NAV[state.active][1]; state.open = state.variant === 'drawer-02'; draw(); });
+  document.querySelectorAll('[data-go]').forEach(el => el.onclick = e => { e.stopPropagation(); state.active = +el.dataset.go; state.lastAction = 'navigate:' + NAV[state.active][1]; state.open = false; draw(); });
   document.querySelectorAll('[data-act]').forEach(el => el.onclick = e => { e.stopPropagation(); const a = el.dataset.act; state.lastAction = a; if (a === 'open') state.open = true; if (a === 'close') state.open = false; if (a === 'logout') state.open = false; draw(); });
   document.getElementById('title').textContent = `${state.variant}: ${v.name}`;
   document.getElementById('why').innerHTML = `<ul>${v.why.map(w=>`<li>${w}</li>`).join('')}</ul>`;
