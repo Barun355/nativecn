@@ -22,6 +22,8 @@ import { Text } from "@/registry/components/text";
 import { toast } from "@/registry/components/toast";
 import { createStyles, useTheme } from "@/registry/theme";
 
+import { useStepFocus } from "./hooks/use-step-focus";
+
 // sign-in-03, email first, in two steps: the email, then the password, with "Email me a code
 // instead" switching to a 6-digit code. The step is kept inside the Block. Edit the copy and the
 // rules below; they are yours.
@@ -76,6 +78,9 @@ export function SignIn03({ onSubmit, onSendCode }: SignIn03Props) {
   const { controlHeight, spacing } = useTheme();
   const [step, setStep] = useState<Step>("email");
   const [sending, setSending] = useState(false);
+  // Each step change moves the screen reader to the new title (or, without one, the keyboard to
+  // the new field).
+  const { headingRef, autoFocus } = useStepFocus(step);
   const {
     control,
     handleSubmit,
@@ -158,7 +163,9 @@ export function SignIn03({ onSubmit, onSendCode }: SignIn03Props) {
         ) : null}
 
         <View style={styles.heading}>
-          <Text variant="h1">{copy.title}</Text>
+          <Text variant="h1" ref={headingRef}>
+            {copy.title}
+          </Text>
           <Text variant="body" color="mutedForeground">
             {copy.subtitle}
           </Text>
@@ -196,7 +203,7 @@ export function SignIn03({ onSubmit, onSendCode }: SignIn03Props) {
                     value={field.value}
                     onChangeText={field.onChange}
                     onBlur={field.onBlur}
-                    autoFocus
+                    autoFocus={autoFocus}
                     secureTextEntry
                     autoComplete="current-password"
                     textContentType="password"
@@ -216,7 +223,7 @@ export function SignIn03({ onSubmit, onSendCode }: SignIn03Props) {
                     onChangeText={field.onChange}
                     onBlur={field.onBlur}
                     aria-label="Verification code"
-                    autoFocus
+                    autoFocus={autoFocus}
                     autoComplete="one-time-code"
                     textContentType="oneTimeCode"
                   />

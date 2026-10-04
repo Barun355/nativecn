@@ -67,6 +67,11 @@ const SOCIAL_A11Y =
 const BACK_A11Y =
   'Back is an icon-only Button named "Back"; Android\'s back button steps back too.';
 const CODE_A11Y = 'The code is one InputOTP field, read as "Verification code, 6 digits".';
+/** Multi-step Blocks: where focus goes when the step changes (#145). */
+const STEP_FOCUS_A11Y =
+  "While a screen reader runs, the new step's field doesn't take the keyboard, so focus stays on the heading; without one, the field takes the keyboard as before.";
+const STEP_FOCUS_DOCS =
+  "hooks/use-step-focus.ts moves screen-reader focus to the new step's heading on every step change; it is this Block's own copy.";
 const BACKEND =
   "The Block never talks to a server: wire your auth backend in the route file through the props, and keep any session or token in expo-secure-store, never AsyncStorage.";
 
@@ -138,7 +143,7 @@ export default [
     categories: ["auth"],
     dependencies: [...FORMS, ...LUCIDE],
     registryDependencies: [...FORM_ITEMS, "input-otp", "keyboard", "toast"],
-    files: ["index.tsx"],
+    files: ["index.tsx", "hooks/use-step-focus.ts"],
     meta: {
       route: "(auth)/sign-in",
       component: "SignIn03",
@@ -150,8 +155,15 @@ export default [
         onSendCode:
           "(email: string) => void | Promise<void>: email a 6-digit code (Email me a code instead, Resend); a thrown error becomes a toast and the step stays",
       },
-      docs: `Render it from a route: \`export default function Screen() { return <SignIn03 onSubmit={signIn} onSendCode={sendCode} />; }\`. The step (email, password, code) lives inside the Block; Back (an icon-only Button with a Lucide chevron-left) and Android's back button step back, keeping what was typed. Each step validates only its own field with zod through react-hook-form; the main button sits in a KeyboardStickyFooter above the keyboard. ${FEEDBACK} ${BACKEND}`,
-      a11y: ["Each step's title has role heading.", ...FORM_A11Y, BACK_A11Y, CODE_A11Y],
+      docs: `Render it from a route: \`export default function Screen() { return <SignIn03 onSubmit={signIn} onSendCode={sendCode} />; }\`. The step (email, password, code) lives inside the Block; Back (an icon-only Button with a Lucide chevron-left) and Android's back button step back, keeping what was typed. Each step validates only its own field with zod through react-hook-form; the main button sits in a KeyboardStickyFooter above the keyboard. ${STEP_FOCUS_DOCS} ${FEEDBACK} ${BACKEND}`,
+      a11y: [
+        "Each step's title has role heading.",
+        "Every step change (Continue, Email me a code instead, Back, Android's back button) moves screen-reader focus to the new step's title.",
+        STEP_FOCUS_A11Y,
+        ...FORM_A11Y,
+        BACK_A11Y,
+        CODE_A11Y,
+      ],
       keywords: [
         ...SIGN_IN_KEYWORDS,
         "email first",
@@ -204,7 +216,7 @@ export default [
     categories: ["auth"],
     dependencies: [...FORMS, ...LUCIDE],
     registryDependencies: [...FORM_ITEMS, "progress", "input-otp", "keyboard", "toast"],
-    files: ["index.tsx"],
+    files: ["index.tsx", "hooks/use-step-focus.ts"],
     meta: {
       route: "(auth)/sign-up",
       component: "SignUp02",
@@ -216,9 +228,11 @@ export default [
         onSubmit:
           '(values: { email, name, password, code }) => void | Promise<void>: check the code and finish the account; throw to show the error as a toast, resolve for an "Account created" toast',
       },
-      docs: `Render it from a route: \`export default function Screen() { return <SignUp02 onSendCode={register} onSubmit={verify} />; }\`. The step (email, name, password, code) lives inside the Block, and the Progress bar shows how far along it is. Back (an icon-only Button with a Lucide chevron-left) and Android's back button step back, keeping every answer. Each step validates its own field with zod through react-hook-form; the password needs at least 8 characters. The main button sits in a KeyboardStickyFooter above the keyboard. ${FEEDBACK} ${BACKEND}`,
+      docs: `Render it from a route: \`export default function Screen() { return <SignUp02 onSendCode={register} onSubmit={verify} />; }\`. The step (email, name, password, code) lives inside the Block, and the Progress bar shows how far along it is. Back (an icon-only Button with a Lucide chevron-left) and Android's back button step back, keeping every answer. Each step validates its own field with zod through react-hook-form; the password needs at least 8 characters. The main button sits in a KeyboardStickyFooter above the keyboard. ${STEP_FOCUS_DOCS} ${FEEDBACK} ${BACKEND}`,
       a11y: [
         "Each step's title has role heading.",
+        "Every step change (Continue, Back, Android's back button) moves screen-reader focus to the new step's title.",
+        STEP_FOCUS_A11Y,
         'The Progress bar is named "Step 2 of 4" and carries its value; the visible "2/4" is hidden from screen readers.',
         ...FORM_A11Y,
         BACK_A11Y,
@@ -244,7 +258,7 @@ export default [
     categories: ["auth"],
     dependencies: [...FORMS, ...LUCIDE],
     registryDependencies: [...FORM_ITEMS, "icon", "input-otp", "keyboard", "toast"],
-    files: ["index.tsx", "components/social-buttons.tsx"],
+    files: ["index.tsx", "components/social-buttons.tsx", "hooks/use-step-focus.ts"],
     meta: {
       route: "(auth)/sign-up",
       component: "SignUp03",
@@ -258,9 +272,11 @@ export default [
         onSubmit:
           '(values: { email, code }) => void | Promise<void>: check the code and create the account; throw to show the error as a toast, resolve for an "Account created" toast',
       },
-      docs: `Render it from a route: \`export default function Screen() { return <SignUp03 onSocialSignIn={signUpWith} onSendCode={sendCode} onSubmit={verify} />; }\`. There is no password: the email path checks the address with zod through react-hook-form, calls onSendCode, then asks for the 6-digit code. The step lives inside the Block; Back (an icon-only Button with a Lucide chevron-left) and Android's back button return to the email field, keeping it. The Create account button sits in a KeyboardStickyFooter above the keyboard. ${FEEDBACK} The Apple and Google logos are bundled SVGs in components/social-buttons.tsx; the buttons only call onSocialSignIn. ${BACKEND}`,
+      docs: `Render it from a route: \`export default function Screen() { return <SignUp03 onSocialSignIn={signUpWith} onSendCode={sendCode} onSubmit={verify} />; }\`. There is no password: the email path checks the address with zod through react-hook-form, calls onSendCode, then asks for the 6-digit code. The step lives inside the Block; Back (an icon-only Button with a Lucide chevron-left) and Android's back button return to the email field, keeping it. The Create account button sits in a KeyboardStickyFooter above the keyboard. ${STEP_FOCUS_DOCS} ${FEEDBACK} The Apple and Google logos are bundled SVGs in components/social-buttons.tsx; the buttons only call onSocialSignIn. ${BACKEND}`,
       a11y: [
         'The headline and "Check your inbox" have role heading; the logo icon is decorative.',
+        'Moving to the code step puts screen-reader focus on "Check your inbox"; Back and Android\'s back button put it on the headline.',
+        STEP_FOCUS_A11Y,
         ...FORM_A11Y,
         SOCIAL_A11Y,
         BACK_A11Y,

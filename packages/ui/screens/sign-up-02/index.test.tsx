@@ -1,5 +1,5 @@
 import { act, fireEvent, render, screen, waitFor } from "@testing-library/react-native";
-import { BackHandler } from "react-native";
+import { AccessibilityInfo, BackHandler } from "react-native";
 
 import { useToastStore } from "@/registry/components/toast";
 import { setActiveStyle } from "@/registry/styles";
@@ -31,6 +31,28 @@ const heading = (name: string) => screen.findByRole("heading", { name });
 const press = (name: string) => fireEvent.press(screen.getByRole("button", { name }));
 const progress = () => screen.getByRole("progressbar");
 
+/** Every screen-reader focus move (`AccessibilityInfo.sendAccessibilityEvent`, mocked by jest). */
+const focusMoves = jest.mocked(AccessibilityInfo.sendAccessibilityEvent);
+/** Where the last focus move landed: the event, and the element's role and text. */
+function lastFocus() {
+  const [target, event] = focusMoves.mock.calls.at(-1) ?? [];
+  const { role, children } =
+    (target as { props?: { role?: string; children?: unknown } })?.props ?? {};
+  return { event, role, name: children };
+}
+const expectFocusOn = (name: string) =>
+  waitFor(() => expect(lastFocus()).toEqual({ event: "focus", role: "heading", name }));
+const screenReader = (on: boolean) =>
+  jest.mocked(AccessibilityInfo.isScreenReaderEnabled).mockResolvedValue(on);
+
+/** Presses Android's back button through the listener the Block registered last. */
+async function androidBack(listen: jest.SpyInstance) {
+  const handler = listen.mock.calls.at(-1)![1] as () => boolean | null | undefined;
+  await act(async () => {
+    handler();
+  });
+}
+
 /** Answers a step's field and presses Continue. */
 async function answer(label: string, value: string, nextHeading: string) {
   await fireEvent.changeText(screen.getByLabelText(label), value);
@@ -47,6 +69,8 @@ beforeEach(() => {
   useSchemeStore.setState({ scheme: "system", hydrated: true });
   useToastStore.setState({ toasts: [] });
   jest.mocked(announce).mockClear();
+  focusMoves.mockClear();
+  screenReader(false);
 });
 
 afterEach(() => setActiveStyle("vega"));
@@ -204,5 +228,54 @@ describe("sign-up-02", () => {
     await renderBlock({}, scheme);
     await toPassword();
     expect(screen.getByRole("button", { name: "Continue" })).toBeTruthy();
+  });
+});
+
+describe("sign-up-02: screen-reader focus on step change", () => {
+  test("moves to each new step's heading going forward and with Back, not on first render", async () => {
+    await renderBlock();
+    expect(focusMoves).not.toHaveBeenCalled();
+    await answer("Email", "jane@example.com", "What should we call you?");
+    await expectFocusOn("What should we call you?");
+    await answer("Full name", "Jane Doe", "Create a password");
+    await expectFocusOn("Create a password");
+    await fireEvent.changeText(screen.getByLabelText("Password"), "correct horse");
+    await press("Continue");
+    await expectFocusOn("Verify your email");
+    for (const previous of [
+      "Create a password",
+      "What should we call you?",
+      "What's your email?",
+    ]) {
+      await press("Back");
+      await expectFocusOn(previous);
+    }
+  });
+
+  test("moves to the previous step's heading on Android's back button", async () => {
+    const listen = jest.spyOn(BackHandler, "addEventListener");
+    await renderBlock();
+    await toPassword();
+    await expectFocusOn("Create a password");
+    await androidBack(listen);
+    await expectFocusOn("What should we call you?");
+    await androidBack(listen);
+    await expectFocusOn("What's your email?");
+    listen.mockRestore();
+  });
+
+  test("without a screen reader, the new step's field takes the keyboard", async () => {
+    await renderBlock();
+    await toPassword();
+    expect(screen.getByLabelText("Password").props.autoFocus).toBe(true);
+  });
+
+  test("with a screen reader on, the new step's field leaves focus on the heading", async () => {
+    screenReader(true);
+    await renderBlock();
+    await answer("Email", "jane@example.com", "What should we call you?");
+    expect(screen.getByLabelText("Full name").props.autoFocus).toBe(false);
+    await answer("Full name", "Jane Doe", "Create a password");
+    expect(screen.getByLabelText("Password").props.autoFocus).toBe(false);
   });
 });
