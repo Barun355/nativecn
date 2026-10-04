@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
 
-import { allDocs, docHref } from "@/lib/docs-config";
+import type { NavSection } from "@/lib/nav";
 import { search, type SearchEntry } from "@/lib/search";
 
 // ⌘K search over the docs. The index is a static JSON file built with the site
@@ -19,13 +19,15 @@ function loadIndex(): Promise<SearchEntry[]> {
   return indexPromise;
 }
 
-const pageEntries = allDocs.map((page) => ({
-  page: page.title,
-  href: docHref(page.slug),
-  snippet: page.description,
-}));
-
-export function SearchDialog() {
+export function SearchDialog({ nav }: { nav: NavSection[] }) {
+  // With no query, every page is listed: the guides, then every Component, Block and Primitive.
+  const pageEntries = useMemo(
+    () =>
+      nav.flatMap((section) =>
+        section.pages.map((p) => ({ page: p.title, href: p.href, snippet: p.description })),
+      ),
+    [nav],
+  );
   const router = useRouter();
   const dialogRef = useRef<HTMLDialogElement>(null);
   const [query, setQuery] = useState("");
@@ -53,7 +55,7 @@ export function SearchDialog() {
   const results = useMemo(() => {
     if (!query.trim()) return pageEntries.map((p) => ({ ...p, heading: undefined }));
     return search(index ?? [], query);
-  }, [index, query]);
+  }, [index, query, pageEntries]);
 
   const go = (href: string) => {
     dialogRef.current?.close();

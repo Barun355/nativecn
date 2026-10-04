@@ -3,12 +3,14 @@ import Link from "next/link";
 import { MobileNav } from "@/components/mobile-nav";
 import { SearchDialog } from "@/components/search-dialog";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { navSections } from "@/lib/nav";
 
 export function SiteHeader() {
+  const nav = navSections();
   return (
     <header className="sticky top-0 z-40 border-b bg-background/90 backdrop-blur">
       <div className="mx-auto flex h-14 max-w-screen-2xl items-center gap-4 px-4 md:px-6">
-        <MobileNav />
+        <MobileNav nav={nav} />
         <Link href="/" className="font-semibold tracking-tight">
           nativecn
         </Link>
@@ -21,7 +23,7 @@ export function SiteHeader() {
           </Link>
         </nav>
         <div className="ml-auto flex items-center gap-1">
-          <SearchDialog />
+          <SearchDialog nav={nav} />
           <a
             href="https://github.com/Barun355/nativecn"
             className="inline-flex size-9 items-center justify-center rounded-md text-muted-foreground hover:bg-accent hover:text-foreground"

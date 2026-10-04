@@ -3,8 +3,9 @@
 import { useState } from "react";
 
 import { DocsSidebar } from "@/components/docs-sidebar";
+import type { NavSection } from "@/lib/nav";
 
-export function MobileNav() {
+export function MobileNav({ nav }: { nav: NavSection[] }) {
   const [open, setOpen] = useState(false);
   return (
     <div className="md:hidden">
@@ -31,7 +32,7 @@ export function MobileNav() {
           id="mobile-nav"
           className="fixed inset-x-0 top-14 bottom-0 z-40 overflow-y-auto border-t bg-background p-4"
         >
-          <DocsSidebar onNavigate={() => setOpen(false)} />
+          <DocsSidebar nav={nav} onNavigate={() => setOpen(false)} />
         </div>
       )}
     </div>

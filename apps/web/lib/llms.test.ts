@@ -19,7 +19,13 @@ const pages: DocPage[] = [
 
 const items: LlmsItem[] = [
   { name: "pressable", type: "registry:ui", description: "Pressed look.", kind: "Primitive" },
-  { name: "button", type: "registry:ui", description: "A button.", kind: "Component" },
+  {
+    name: "button",
+    type: "registry:ui",
+    description: "A button.",
+    kind: "Component",
+    href: "/docs/components/button",
+  },
   { name: "button-demo", type: "registry:example", kind: "Example" },
 ];
 
@@ -70,7 +76,9 @@ test("llms.txt indexes every page's .md twin and the Registry items by kind", ()
   const components = txt.indexOf("## Components");
   const primitives = txt.indexOf("## Primitives");
   assert.ok(components !== -1 && primitives > components);
-  assert.ok(txt.includes("- [button](https://nativecn.dev/r/styles/vega/button.json): A button."));
+  // An item with a docs page links to its .md twin; one without links to its Registry JSON.
+  assert.ok(txt.includes("- [button](https://nativecn.dev/docs/components/button.md): A button."));
+  assert.ok(txt.includes("- [pressable](https://nativecn.dev/r/styles/vega/pressable.json)"));
   assert.ok(!txt.includes("button-demo"));
   assert.ok(txt.includes("https://nativecn.dev/llms-full.txt"));
 });

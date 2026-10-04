@@ -7,7 +7,7 @@ export const dynamic = "force-static";
 export const dynamicParams = false;
 
 export function generateStaticParams() {
-  return allDocs.map((page) => ({ slug: page.slug ? [page.slug] : [] }));
+  return allDocs.map((page) => ({ slug: page.slug ? page.slug.split("/") : [] }));
 }
 
 export async function GET(_request: Request, ctx: RouteContext<"/docs-md/[[...slug]]">) {

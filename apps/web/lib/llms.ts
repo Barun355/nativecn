@@ -9,7 +9,14 @@ export const SITE_URL = "https://nativecn.dev";
 export type DocMarkdown = { page: DocPage; body: string };
 
 /** A Registry index entry, as much as llms.txt needs. */
-export type LlmsItem = { name: string; type: string; description?: string; kind?: string };
+export type LlmsItem = {
+  name: string;
+  type: string;
+  description?: string;
+  kind?: string;
+  /** The item's docs page (e.g. /docs/components/button); its `.md` twin is linked. */
+  href?: string;
+};
 
 /** The `.md` twin of a docs page: append `.md` to its URL. */
 export function mdPath(slug: string): string {
@@ -94,8 +101,9 @@ function itemsByKind(items: LlmsItem[]): [string, LlmsItem[]][] {
   });
 }
 
+/** An item links to its page's `.md` twin, or to its Registry JSON when it has no page. */
 const itemLine = (item: LlmsItem, style: string) =>
-  `- [${item.name}](${SITE_URL}/r/styles/${style}/${item.name}.json)${item.description ? `: ${item.description}` : ""}`;
+  `- [${item.name}](${SITE_URL}${item.href ? `${item.href}.md` : `/r/styles/${style}/${item.name}.json`})${item.description ? `: ${item.description}` : ""}`;
 
 /** /llms.txt: an index of every docs page (linking to its `.md` twin) and every Registry item. */
 export function llmsTxt({
