@@ -22,7 +22,7 @@ An agent-host package (Claude Code, Cursor, and others) that bundles the Agent K
 _Avoid_: Extension
 
 **Visual QA Loop**:
-The agent-driven cycle of running the app on a device, capturing screenshots, comparing them with the Reference Design, and fixing differences. nativecn provides only the Skill and Rules for it; the agent reaches devices through existing platform command-line tools (adb for Android).
+The agent-driven cycle of running the app on a device, capturing screenshots, comparing them with the Reference Design, and fixing differences. nativecn provides only the Skill and Rules for it; the agent reaches devices through existing platform command-line tools (adb for Android, `xcrun simctl` for the iOS Simulator).
 _Avoid_: AI testing, screenshot testing
 
 **Reference Design**:
