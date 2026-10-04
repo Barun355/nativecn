@@ -3,10 +3,13 @@ import Link from "next/link";
 import type { ComponentProps } from "react";
 
 import { CodeBlock } from "@/components/code-block";
+import { CopyToLlm } from "@/components/copy-to-llm";
 
 const components: MDXComponents = {
+  CopyToLlm,
   a: ({ href = "", ...props }: ComponentProps<"a">) =>
-    href.startsWith("/") || href.startsWith("#") ? (
+    // Plain-text files (/llms.txt, the .md twins) are not pages, so they get a plain link.
+    (href.startsWith("/") || href.startsWith("#")) && !/\.(md|txt|json)$/.test(href) ? (
       <Link href={href} {...props} />
     ) : (
       <a href={href} {...props} />

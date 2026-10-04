@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 import { DocShell } from "@/components/doc-shell";
-import { loadDocContent, mdxSlugs, readDocSource } from "@/lib/docs";
+import { docMarkdown, loadDocContent, mdxSlugs, readDocSource } from "@/lib/docs";
 import { findDoc } from "@/lib/docs-config";
 import { parseDoc } from "@/lib/markdown";
 
@@ -29,8 +29,9 @@ export default async function DocPage(props: PageProps<"/docs/[[...slug]]">) {
   if (!page || !Content) notFound();
 
   const { headings } = parseDoc(await readDocSource(slug));
+  const markdown = (await docMarkdown(slug))!;
   return (
-    <DocShell page={page} headings={headings}>
+    <DocShell page={page} headings={headings} markdown={markdown}>
       <Content />
     </DocShell>
   );

@@ -3,9 +3,22 @@ import { readFile } from "node:fs/promises";
 import path from "node:path";
 import type { MDXContent } from "mdx/types";
 
-import { allDocs, docHref } from "@/lib/docs-config";
+import { changelogMarkdown, UNRELEASED } from "@/lib/changelog";
+import { allDocs, docHref, findDoc } from "@/lib/docs-config";
+import {
+  llmsFullTxt,
+  llmsTxt,
+  mdxToMarkdown,
+  pageMarkdown,
+  type DocMarkdown,
+  type LlmsItem,
+} from "@/lib/llms";
 import { parseDoc } from "@/lib/markdown";
 import type { SearchEntry } from "@/lib/search";
+
+// The MCP server's own item classification, so llms.txt and the MCP never disagree on kinds.
+import { kindOf } from "../../../packages/cli/src/mcp/catalog.ts";
+import type { RegistryIndex } from "../../../packages/cli/src/registry.ts";
 
 /** Pages whose body is not an MDX file in content/docs. */
 const GENERATED = new Set(["changelog"]);
@@ -63,4 +76,51 @@ export async function buildSearchIndex(): Promise<SearchEntry[]> {
     }
   }
   return entries;
+}
+
+/** A page's markdown body (no title), generated from the same source as the rendered page. */
+async function docBody(slug: string): Promise<string> {
+  if (slug === "changelog") return (await changelogMarkdown()) || UNRELEASED;
+  return mdxToMarkdown(await readDocSource(slug));
+}
+
+/** A docs page as clean markdown: its `.md` twin and what "Copy for AI" copies. */
+export async function docMarkdown(slug: string): Promise<string | undefined> {
+  const page = findDoc(slug);
+  if (!page) return undefined;
+  return pageMarkdown({ page, body: await docBody(slug) });
+}
+
+/** The Style the llms files describe: the default, as on the remote MCP. */
+const LLMS_STYLE = "vega";
+
+/**
+ * The Registry index that `pnpm --filter ui build` writes into public/r before `next build`.
+ * Missing (e.g. a docs-only dev server) means no items rather than a failed page.
+ */
+async function registryItems(style = LLMS_STYLE): Promise<LlmsItem[]> {
+  let index: RegistryIndex;
+  try {
+    const file = path.join(process.cwd(), "public/r/styles", style, "registry.json");
+    index = JSON.parse(await readFile(file, "utf8")) as RegistryIndex;
+  } catch {
+    return [];
+  }
+  return (index.items ?? []).map((item) => ({
+    name: item.name,
+    type: item.type,
+    description: item.description,
+    kind: kindOf(item),
+  }));
+}
+
+export async function buildLlmsTxt(): Promise<string> {
+  return llmsTxt({ pages: allDocs, items: await registryItems(), style: LLMS_STYLE });
+}
+
+export async function buildLlmsFullTxt(): Promise<string> {
+  const docs: DocMarkdown[] = await Promise.all(
+    allDocs.map(async (page) => ({ page, body: await docBody(page.slug) })),
+  );
+  return llmsFullTxt({ docs, items: await registryItems(), style: LLMS_STYLE });
 }
