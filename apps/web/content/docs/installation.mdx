@@ -1,0 +1,99 @@
+## Requirements
+
+- **Expo SDK 57 or newer, with Expo Router.** nativecn supports every SDK from 57 to the latest.
+- Bare React Native apps are not supported.
+
+The CLI checks this first, before it creates or writes anything. On an older SDK it stops with:
+
+```txt
+nativecn supports Expo SDK 57 and newer; SDK <57 is not supported. Upgrade with `npx expo install expo@latest --fix`.
+```
+
+## Create a new app
+
+```sh
+npx nativecn-cli@latest create my-app
+```
+
+The CLI asks for the app name, the [Preset](/docs/presets), the [folder structure](/docs/folder-structure) and which AI agents you use. Then it:
+
+1. fetches the nativecn **Starter**, a base Expo app pinned to the current Expo SDK with no Expo default theming;
+2. renames the app (`package.json`, and `name` and `slug` in `app.json`);
+3. installs dependencies with your package manager;
+4. applies the Preset: writes the Theme's colours, radius and fonts, downloads only the chosen fonts into `assets/fonts/` and adds the `expo-font` Config Plugin;
+5. adds the Starter's promo Screen and the Registry Items it uses, plus any items you named;
+6. writes [`components.json`](/docs/components-json);
+7. writes the [Agent Kit](/docs/ai-agents) for your agents;
+8. runs `git init` and makes one commit, `feat: initial commit`.
+
+Name items after the app name to install them straight away:
+
+```sh
+npx nativecn-cli@latest create my-app button card
+```
+
+`create` is an alias of `init`: in a folder with no app, or with `--name`, `init` creates one.
+
+## Add to an existing app
+
+Inside an Expo app, run:
+
+```sh
+npx nativecn-cli@latest init
+```
+
+Init asks for the Preset, structure and agents, then writes the Theme, `components.json` and the Agent Kit, plus any items you named. It **never rewrites your existing files and never commits**. Instead it prints two things:
+
+1. **The root Layout snippet** to paste into `src/app/_layout.tsx` (or `app/_layout.tsx`).
+2. **Existing files that overlap** with the nativecn Theme, such as Expo's `constants/theme.ts` or `themed-text`. Keep them for now; the `nativecn-theme` Skill can migrate them later.
+
+The root Layout snippet has this shape:
+
+```tsx
+<ThemeProvider>
+  <KeyboardProvider>
+    <Stack />
+    <Toaster />
+  </KeyboardProvider>
+</ThemeProvider>
+```
+
+- `ThemeProvider` (from `@/theme`) wraps the whole app. `useTheme()` throws outside it.
+- `KeyboardProvider` comes from `react-native-keyboard-controller`.
+- `<Toaster />` renders once, after the navigator, so Toasts appear above every Screen.
+
+With `--yes`, an agent applies the snippet itself, guided by the `nativecn-setup` Skill.
+
+### Apps without `src/`
+
+- Init points the aliases at root folders (`@/components` → `components/`) and sets `routes` to `app`.
+- If `tsconfig.json` has no `@/*` path alias, Init shows the change and asks before adding it (`--yes` accepts it).
+- Init never moves existing files.
+
+## Without a terminal
+
+When there is no terminal to prompt in (for example, an agent running the CLI), the CLI behaves as if you passed `--yes`: it uses your flags, falls back to the defaults for anything missing, and prints every choice it made. Agents should always pass explicit flags.
+
+## Flags
+
+Both `create` and `init` take these flags. See the [CLI reference](/docs/cli#init) for details.
+
+| Flag                                                     | What it does                                                       |
+| -------------------------------------------------------- | ------------------------------------------------------------------ |
+| `-p, --preset <code>`                                    | Use a Preset short code from the builder, such as `a1Q17B`.        |
+| `--style --base --accent --radius --font --heading-font` | Set the Preset with long flags.                                    |
+| `--folder-feat`                                          | Use the feature Structure.                                         |
+| `--agents <list>`                                        | Agents to set up: any of `claude,codex,cursor,antigravity`.        |
+| `--qa-permissions`                                       | Write opt-in auto-approve rules for the Visual QA Loop's commands. |
+| `-n, --name <name>`                                      | The app name; creates a new app.                                   |
+| `-y, --yes`                                              | Skip prompts and use defaults for anything not given.              |
+| `-d, --defaults`                                         | Use the default Preset.                                            |
+| `-f, --force`                                            | Overwrite existing configuration.                                  |
+| `-c, --cwd <dir>`                                        | The working directory.                                             |
+| `-s, --silent`                                           | Print less output.                                                 |
+
+## After installing
+
+- Fonts are embedded by a Config Plugin, so a development build needs a native rebuild (`npx expo run:ios` or `npx expo run:android`). Expo Go works without one.
+- Add Components with [`nativecn-cli add`](/docs/cli#add).
+- Ask your agent to build something: it already has the Rules, Skills and MCP server.

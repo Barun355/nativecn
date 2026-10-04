@@ -1,0 +1,121 @@
+`nativecn-cli` is the only published nativecn package and command. Run it with `npx`, so you always get the latest version:
+
+```sh
+npx nativecn-cli@latest <command>
+```
+
+## init
+
+Sets up nativecn in an existing Expo app, or creates a new app. `create` is an alias.
+
+```sh
+npx nativecn-cli@latest init [items...] [options]
+npx nativecn-cli@latest create [name] [items...] [options]
+```
+
+Before anything else it checks for **Expo SDK 57 or newer with Expo Router**, and stops with the upgrade command if the app is older. In a folder without an app, or with `--name`, it creates one from the Starter; inside an app it runs Init. Items named after the command are installed straight away. See [Installation](/docs/installation) for each step.
+
+| Option                  | Description                                                                               |
+| ----------------------- | ----------------------------------------------------------------------------------------- |
+| `-p, --preset <code>`   | A Preset short code from the builder, such as `a1Q17B`.                                   |
+| `--style <style>`       | The Style: `vega` or `nova`.                                                              |
+| `--base <colour>`       | The Base Colour, such as `neutral` or `zinc`.                                             |
+| `--accent <colour>`     | The Accent Colour, such as `blue` or `violet`.                                            |
+| `--radius <radius>`     | `default`, `none`, `small`, `medium` or `large`.                                          |
+| `--font <font>`         | The Body Font, such as `inter` or `geist`.                                                |
+| `--heading-font <font>` | The Heading Font: `inherit` (the same as the Body Font) or a font id.                     |
+| `--folder-feat`         | Use the feature Structure (`"structure": "feature"`).                                     |
+| `--agents <list>`       | Agents to set up, comma-separated: `claude,codex,cursor,antigravity`.                     |
+| `--qa-permissions`      | Write opt-in auto-approve rules for the Visual QA Loop's device commands. Off by default. |
+| `-n, --name <name>`     | The app name. Creates a new app.                                                          |
+| `-y, --yes`             | Skip prompts. Anything not given uses its default.                                        |
+| `-d, --defaults`        | Use the default Preset: Vega · neutral · neutral · default radius · Inter.                |
+| `-f, --force`           | Overwrite existing configuration.                                                         |
+| `-c, --cwd <dir>`       | The working directory. Defaults to the current directory.                                 |
+| `-s, --silent`          | Print less output.                                                                        |
+
+The option values are listed on [Presets & Styles](/docs/presets). Without a terminal, `init` behaves as if `--yes` were passed and prints every choice.
+
+## add
+
+Adds Registry Items to your app.
+
+```sh
+npx nativecn-cli@latest add [items...] [options]
+```
+
+```sh
+npx nativecn-cli@latest add button card
+npx nativecn-cli@latest add sign-in-02 --route "(auth)/sign-in"
+```
+
+Items are names only: no URLs, local paths or namespaces. `add` needs a `components.json`; without one it stops with "Run `npx nativecn-cli init` first".
+
+| Option             | Description                                                                      |
+| ------------------ | -------------------------------------------------------------------------------- |
+| `-y, --yes`        | Skip the confirmation prompt. On its own it **never overwrites** a changed file. |
+| `-o, --overwrite`  | Overwrite existing files that differ.                                            |
+| `-c, --cwd <dir>`  | The working directory.                                                           |
+| `-a, --all`        | Add every Registry Item.                                                         |
+| `-p, --path <dir>` | Write Components to this folder instead of `{components}`, for this run only.    |
+| `-s, --silent`     | Print less output.                                                               |
+| `--dry-run`        | Show the plan (files and packages) and stop.                                     |
+| `--diff [path]`    | Compare your files with the latest upstream version. Never writes.               |
+| `--view [path]`    | Print the upstream file.                                                         |
+| `--feature <name>` | The Feature a Screen Block goes into, in feature mode.                           |
+| `--route <path>`   | The route file to create for a Screen Block, such as `(auth)/sign-in`.           |
+
+### What add does
+
+1. Reads `components.json` for your Style, aliases and Structure.
+2. Fetches each item for your Style from the Registry, then its dependencies, recursively. Dependencies come first.
+3. Shows the plan: the files and packages. `--dry-run` stops here.
+4. Handles existing files: identical files are skipped silently, a changed file gets a prompt, `-o` overwrites all, and `-y` alone never overwrites.
+5. Writes each file to its [Destination](/docs/folder-structure#destinations) and rewrites imports to your aliases.
+6. Installs packages: Expo SDK packages with `npx expo install`, and the few recorded exceptions (zustand, react-hook-form, zod, lucide-react-native) at the version range the item pins.
+7. Adds any Config Plugins to `app.json`. With `app.config.ts`, it prints the line to add instead of editing your code.
+8. Prints a summary, saying clearly when a native rebuild is needed rather than a reload.
+
+### Screen Blocks
+
+- **Routes.** The CLI asks "Create a route?" with a suggested route (such as `(auth)/sign-in`), a custom one, or skip. Agents pass `--route`. With `--yes` and no `--route`, the suggested route is created only if the file doesn't exist; otherwise it is skipped and the three-line route file is printed. An existing route is never overwritten.
+- **Feature mode.** Pass `--feature <name>`. Without it, the Block's category is the default (`auth` for sign-in and sign-up) and the CLI prints where it went. Interactively, it lists your existing Features plus "new feature…".
+
+### What's installed
+
+Like shadcn, nativecn tracks nothing: what is installed is whatever is on disk. Use `--diff` to see how your copy differs from the latest upstream before updating, and `--view` to read the upstream file.
+
+## agents
+
+Writes or refreshes the [Agent Kit](/docs/ai-agents) (Rules, Skills and MCP config) for your agents.
+
+```sh
+npx nativecn-cli@latest agents [options]
+```
+
+| Option             | Description                                                               |
+| ------------------ | ------------------------------------------------------------------------- |
+| `--agents <list>`  | Agents to set up: `claude,codex,cursor,antigravity`.                      |
+| `--update`         | Refresh existing Rules, Skills and MCP config to the latest versions.     |
+| `--qa-permissions` | Write opt-in auto-approve rules for the Visual QA Loop's device commands. |
+
+If you have edited the nativecn section of `AGENTS.md`, `agents` shows a diff before replacing it.
+
+## mcp
+
+Runs the nativecn MCP server locally, over stdio. `create`, `init` and `agents` write this command into each agent's MCP config, so you rarely run it yourself.
+
+```sh
+npx -y nativecn-cli@latest mcp
+```
+
+The local server reads your project's `components.json`, so its answers fit your Style, Structure and routes. See [the nativecn MCP server](/docs/ai-agents#the-nativecn-mcp-server) for its tools.
+
+## Environment variables
+
+These exist for developing nativecn itself.
+
+| Variable                | Description                                                        |
+| ----------------------- | ------------------------------------------------------------------ |
+| `NATIVECN_REGISTRY_URL` | Fetch Registry Items from another Registry, such as a local build. |
+| `NATIVECN_STARTER_DIR`  | Build new apps from a local Starter folder instead of fetching it. |

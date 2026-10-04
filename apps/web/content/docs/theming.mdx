@@ -1,0 +1,159 @@
+The **Theme** is the single source of truth for every Token in your app. Components read Tokens from it and never hardcode colours or sizes, so you change the look of the whole app in one place.
+
+## The Theme files
+
+`create` and `init` write the Theme into `src/theme/` (or `theme/` in apps without `src/`). You own these files.
+
+| File            | Holds                                                                                 |
+| --------------- | ------------------------------------------------------------------------------------- |
+| `colors.ts`     | the Colour Roles, light and dark                                                      |
+| `tokens.ts`     | spacing, radius, the type ramp, elevation, motion, control heights, opacity and fonts |
+| `config.ts`     | `fontScaling` (off), `defaultScheme` (`'system'`) and the Scale baseline and clamp    |
+| `scale.ts`      | the Scale computation and `scale(n)`                                                  |
+| `provider.tsx`  | `ThemeProvider`, `useTheme`, `createStyles` and the Scheme store                      |
+| `navigation.ts` | Expo Router's navigation theme, derived from the Tokens                               |
+| `index.ts`      | the public exports                                                                    |
+
+Edit `colors.ts`, `tokens.ts` and `config.ts` freely. The other files are the Theme's runtime.
+
+## Tokens
+
+A **Token** is a named visual value: a colour, spacing step, radius, type step, shadow or motion value. All values in `tokens.ts` are base values; the Theme adapts them to each device with the [Scale](#scale).
+
+### Colour Roles
+
+A **Colour Role** is a colour Token with a fixed purpose, defined once for light and once for dark, in hex.
+
+- **Paired with a `…Foreground` role** for content drawn on top: `background`, `card`, `popover`, `primary`, `secondary`, `muted`, `accent`, `destructive`, `success`, `warning`, `info`. For example, `primary` and `primaryForeground`.
+- **Unpaired:** `border`, `input`, `ring`, `overlay`.
+
+The Accent Colour of your [Preset](/docs/presets) sets `primary` and `ring`. Every role and its Foreground pair meets WCAG AA contrast (4.5:1) in both Schemes.
+
+To add your own role, such as `brand`, add `brand` and `brandForeground` to both the light and dark objects. The two must keep identical keys. Types are inferred from your files, so the new role type-checks immediately.
+
+### Spacing
+
+A 4px grid, named like Tailwind's steps.
+
+| Step  | 0.5 | 1   | 2   | 3   | 4   | 5   | 6   | 8   | 10  | 12  | 16  |
+| ----- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Value | 2   | 4   | 8   | 12  | 16  | 20  | 24  | 32  | 40  | 48  | 64  |
+
+### Radius
+
+Every step derives from one base, which your Preset's Radius sets (10 by default).
+
+| Step  | sm  | md  | lg  | xl  | 2xl | full |
+| ----- | --- | --- | --- | --- | --- | ---- |
+| Value | 6   | 8   | 10  | 14  | 18  | 9999 |
+
+Components also use `borderCurve: 'continuous'` for smooth corners.
+
+### Type ramp
+
+The `Text` Component's Variants. Weight is chosen by font face, never with `fontWeight`. `display` and `h1`–`h4` use the Heading Font; the rest use the Body Font.
+
+| Variant   | Size / line height | Face     | Letter spacing |
+| --------- | ------------------ | -------- | -------------- |
+| `display` | 36/40              | Bold     | -0.8           |
+| `h1`      | 30/36              | Bold     | -0.6           |
+| `h2`      | 24/32              | SemiBold | -0.4           |
+| `h3`      | 20/28              | SemiBold | -0.2           |
+| `h4`      | 17/24              | SemiBold | 0              |
+| `lead`    | 18/28              | Regular  | 0              |
+| `body`    | 16/24              | Regular  | 0              |
+| `label`   | 14/20              | Medium   | 0              |
+| `small`   | 14/20              | Regular  | 0              |
+| `caption` | 12/16              | Regular  | 0              |
+| `button`  | 15/20              | SemiBold | 0              |
+
+### Elevation, motion and controls
+
+- **Elevation:** three `boxShadow` levels with light and dark values: `sm` (Card), `md` (raised and pressed surfaces) and `lg` (Toast and overlays).
+- **Motion:** durations `fast` 150ms, `base` 250ms and `slow` 400ms; easings `standard`, `enter` and `exit`; Reanimated spring presets `snappy` and `gentle`.
+- **Control heights:** `sm` 36, `md` 44, `lg` 52. The minimum touch target is 48 on both platforms; smaller controls extend their tap area with `hitSlop`.
+- **Borders:** `default` 1, and `hairline` for separators only.
+- **Opacity:** `disabled` 0.5.
+
+## Scale
+
+The **Scale** adapts Tokens to the current device:
+
+```txt
+Scale = clamp(shorter screen side ÷ 390, 0.85, 1.25)
+```
+
+- It is measured against a 390pt baseline phone. Using the shorter side means rotating the device doesn't change it.
+- It is recomputed whenever the window changes (foldables, split screen).
+- Scaled values are rounded to the nearest pixel.
+
+| Scales                                 | Doesn't scale               |
+| -------------------------------------- | --------------------------- |
+| spacing                                | the 48 minimum touch target |
+| radius (except `full`)                 | border widths and hairlines |
+| control heights                        | shadows                     |
+| text size, line height, letter spacing | motion                      |
+| icon sizes                             | opacity                     |
+
+The Theme hands Components already-scaled Tokens. For a genuine one-off value in your own code, use `scale(n)` instead of a raw number. The unscaled base Tokens stay exported.
+
+Phones are the 0.1 target. Tablets work at the 1.25 cap, and `Container` caps content width.
+
+### Font scaling
+
+System font scaling is **off by default**: Text ignores the OS font-size setting, and nativecn adapts type with the Scale instead, so Components look as designed on every device. Set `fontScaling: true` in `config.ts` to turn it back on. Text size then becomes base × Scale × OS font scale, with the OS factor capped at 1.5× for the `button`, `label` and `caption` Variants. This is a whole-app accessibility decision.
+
+## Scheme
+
+The **Scheme** is whether the light or dark Colour Role values are in use.
+
+- `ThemeProvider` takes `scheme: 'system' | 'light' | 'dark'`, defaulting to `defaultScheme` in `config.ts`.
+- `useTheme()` returns the scaled Tokens plus `scheme`, `scale` and `setScheme()`.
+- `setScheme()` also sets the native appearance, so system UI such as the keyboard follows.
+- The choice is persisted with zustand and AsyncStorage under the `nativecn-theme` key. Only the Scheme is persisted.
+- The splash screen stays up until the persisted Scheme and the fonts have loaded, so the wrong Scheme never flashes.
+- `useNavigationTheme()` feeds Expo Router's navigation theme, and the status bar follows the Scheme.
+
+For a user-facing switch, add the SchemeSwitcher Component:
+
+```sh
+npx nativecn-cli@latest add scheme-switcher
+```
+
+## ThemeProvider
+
+`ThemeProvider` is required. It wraps your root Layout (`src/app/_layout.tsx`), which `create` sets up for you and `init` prints a snippet for. `useTheme()` outside it throws a development error that points at the root Layout.
+
+## createStyles
+
+`createStyles` builds a Component's styles from the Theme and returns a hook:
+
+```tsx
+import { createStyles } from "@/theme";
+
+const useStyles = createStyles((t) => ({
+  card: {
+    padding: t.spacing[4],
+    borderRadius: t.radius.lg,
+    backgroundColor: t.colors.card,
+  },
+}));
+
+export function ProfileCard() {
+  const styles = useStyles();
+  // ...
+}
+```
+
+Styles are built with `StyleSheet.create` once per Scale and Scheme and cached, never rebuilt on each render. Colours live in the same cached styles, and Variant styles are extra keys. Never style from React Native's `useColorScheme()` directly; read the Theme.
+
+## Fonts
+
+Your Preset picks a Body Font and a Heading Font from eight OFL fonts: Inter, Geist, DM Sans, Figtree, Lora, Source Serif 4, Geist Mono and JetBrains Mono.
+
+- Each font is four static faces (Regular, Medium, SemiBold, Bold) downloaded from nativecn.dev into `assets/fonts/`. Only the chosen fonts are downloaded.
+- They are embedded by the `expo-font` Config Plugin in `app.json`, and named in `tokens.ts`. `ThemeProvider` also loads them with `useFonts`, which is what makes Expo Go work.
+- Each font carries a small letter-spacing correction for the type ramp.
+- After changing fonts, rebuild the native app; a reload is not enough.
+
+nativecn never uses `@expo-google-fonts` packages. To use another font, add its four faces to `assets/fonts/`, update the `expo-font` plugin entry and the font names in `tokens.ts`, and check that its licence allows bundling.

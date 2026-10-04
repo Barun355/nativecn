@@ -1,0 +1,76 @@
+`components.json` sits at the root of your app. `create` and `init` write it, and `add`, the nativecn MCP server and your agent read it. You need it to use `nativecn-cli add`.
+
+It is nativecn's own file. It looks like shadcn's but is **not compatible with it**: the shadcn CLI would reject it, and that is expected.
+
+```json
+{
+  "$schema": "https://nativecn.dev/schema/components.json",
+  "version": 1,
+  "preset": {
+    "code": "a0",
+    "style": "vega",
+    "baseColor": "neutral",
+    "accentColor": "neutral",
+    "radius": "default",
+    "bodyFont": "inter",
+    "headingFont": "inherit"
+  },
+  "structure": "flat",
+  "aliases": {
+    "components": "@/components",
+    "hooks": "@/hooks",
+    "utils": "@/utils",
+    "theme": "@/theme",
+    "screens": "@/screens"
+  },
+  "routes": "src/app",
+  "agents": ["claude", "codex", "cursor", "antigravity"]
+}
+```
+
+## $schema
+
+The JSON Schema for the file, so your editor can validate it and autocomplete keys.
+
+## version
+
+The version of the file format. It is `1`.
+
+## preset
+
+Your project's [Preset](/docs/presets): the Style, Base Colour, Accent Colour, Radius, Body Font and Heading Font, plus the short `code` that encodes them. `headingFont: "inherit"` means the Heading Font is the same as the Body Font.
+
+The Preset is chosen once and **fixed for the life of the project**. Don't edit this block: `add` uses `preset.style` to fetch Components in your Style, and changing it would leave your app with a mix of Styles. To change the look later, edit your Theme and Component files directly.
+
+## structure
+
+How your app arranges its files: `"flat"` (the default) or `"feature"`. It is set at `create`/`init`, with `--folder-feat` for feature mode. See [Folder structure](/docs/folder-structure).
+
+## aliases
+
+The import aliases that resolve each [Destination](/docs/folder-structure#destinations). `add` writes files to these folders and rewrites the imports in each file to match.
+
+| Alias        | Default        | Holds                                                     |
+| ------------ | -------------- | --------------------------------------------------------- |
+| `components` | `@/components` | Components, and Primitives that render (in `primitives/`) |
+| `hooks`      | `@/hooks`      | hooks                                                     |
+| `utils`      | `@/utils`      | helpers                                                   |
+| `theme`      | `@/theme`      | the Theme                                                 |
+| `screens`    | `@/screens`    | Screen Blocks                                             |
+| `features`   | `@/features`   | Features (feature mode only)                              |
+
+There is no `components/ui` and no `lib`. In apps without `src/`, Init points the aliases at root folders instead.
+
+## routes
+
+The folder that holds your Expo Router routes: `src/app`, or `app` in apps without `src/`. It is a folder, not an alias. `add` creates route files for Screen Blocks here.
+
+## agents
+
+The agents whose Rules, Skills and MCP config nativecn manages: any of `claude`, `codex`, `cursor` and `antigravity`. `nativecn-cli agents` uses this list.
+
+## What's not in the file
+
+- **`tailwind`, `rsc`, `tsx` and `iconLibrary`.** nativecn has nothing web-only, and Lucide is its only icon set.
+- **`registries`.** There are no third-party or private registries. The nativecn Registry's address is built into the CLI.
+- **Installed items.** Like shadcn, nativecn knows what is installed only from the files on disk.
