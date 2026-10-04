@@ -1,0 +1,17 @@
+{
+  "name": "pressable",
+  "type": "registry:ui",
+  "registryDependencies": ["theme"],
+  "dependencies": ["expo-haptics"],
+  "meta": {
+    "configPlugins": ["expo-font"]
+  },
+  "files": [
+    {
+      "path": "components/primitives/pressable.tsx",
+      "type": "registry:ui",
+      "target": "{components}/primitives/pressable.tsx",
+      "content": "export const Pressable = 1;\n"
+    }
+  ]
+}

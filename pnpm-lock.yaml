@@ -74,9 +74,15 @@ importers:
 
   packages/cli:
     dependencies:
+      '@clack/prompts':
+        specifier: ^1.8.1
+        version: 1.8.1
       commander:
         specifier: ^15.0.0
         version: 15.0.0
+      diff:
+        specifier: ^9.0.0
+        version: 9.0.0
       jsonc-parser:
         specifier: ^3.3.1
         version: 3.3.1
@@ -2511,6 +2517,10 @@ packages:
 
   diff@8.0.4:
     resolution: {integrity: sha512-DPi0FmjiSU5EvQV0++GFDOJ9ASQUVFh5kD+OzOnYdi7n3Wpm9hWWGfB/O2blfHcMVTL5WkQXSnRiK9makhrcnw==}
+    engines: {node: '>=0.3.1'}
+
+  diff@9.0.0:
+    resolution: {integrity: sha512-svtcdpS8CgJyqAjEQIXdb3OjhFVVYjzGAPO8WGCmRbrml64SPw/jJD4GoE98aR7r25A0XcgrK3F02yw9R/vhQw==}
     engines: {node: '>=0.3.1'}
 
   dnssd-advertise@1.1.6:
@@ -8284,6 +8294,8 @@ snapshots:
   diff-sequences@29.6.3: {}
 
   diff@8.0.4: {}
+
+  diff@9.0.0: {}
 
   dnssd-advertise@1.1.6: {}
 

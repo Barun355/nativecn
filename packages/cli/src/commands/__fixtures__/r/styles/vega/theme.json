@@ -1,0 +1,13 @@
+{
+  "name": "theme",
+  "type": "registry:lib",
+  "dependencies": ["zustand@^5.0.15", "expo-font"],
+  "files": [
+    {
+      "path": "theme/index.ts",
+      "type": "registry:lib",
+      "target": "{theme}/index.ts",
+      "content": "export const theme = 1;\n"
+    }
+  ]
+}
