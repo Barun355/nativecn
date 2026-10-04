@@ -9,6 +9,8 @@ export default [
       "**/.expo/**",
       "**/.next/**",
       "apps/web/public/r/**",
+      // The Starter is a standalone Expo app copied by `create`; its deps are not installed here
+      "packages/cli/starter/**",
     ],
   },
   // Expo / React Native code: the component source and the Showcase App
