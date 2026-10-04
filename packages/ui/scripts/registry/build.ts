@@ -1,5 +1,6 @@
-// Build the nativecn Registry: inline Style Slots per Style, validate items with shadcn's schema,
-// emit /r/styles/<style>/<item>.json via `shadcn build`, plus the Preset ingredient JSON.
+// Build the nativecn Registry: inline Style Slots per Style, validate items with shadcn's schema
+// and the dependency rule (ADR 0007), check every Preset's contrast (WCAG AA), emit
+// /r/styles/<style>/<item>.json via `shadcn build`, plus the Preset ingredient JSON.
 // Usage: node scripts/registry/build.ts [--root <dir>] [--out <dir>] [--no-presets]
 import { execFileSync } from "node:child_process";
 import fs from "node:fs";
@@ -9,6 +10,7 @@ import { pathToFileURL } from "node:url";
 import type { RegistryItem } from "shadcn/schema";
 import { registryItemSchema } from "shadcn/schema";
 
+import { assertDependencyRule } from "./dependency-rule.ts";
 import { inlineSlots, readSlotFills, type SlotFills } from "./inline-slots.ts";
 
 const UI = path.resolve(import.meta.dirname, "../..");
@@ -147,9 +149,16 @@ function buildStyle(
 
 async function buildPresets(out: string): Promise<void> {
   const options = await import("preset");
-  const { BASE_COLOR_VALUES, ACCENT_COLOR_VALUES, SHARED_COLOR_VALUES } = await import(
-    pathToFileURL(path.join(UI, "presets", "index.ts")).href
-  );
+  const { BASE_COLOR_VALUES, ACCENT_COLOR_VALUES, SHARED_COLOR_VALUES, contrastFailures } =
+    await import(pathToFileURL(path.join(UI, "presets", "index.ts")).href);
+  const failures: string[] = contrastFailures();
+  if (failures.length)
+    throw new Error(
+      [
+        "Contrast check failed: these Foreground pairs are below WCAG AA (4.5:1):",
+        ...failures.map((f) => `  - ${f}`),
+      ].join("\n"),
+    );
   const { FONTS } = await import(pathToFileURL(path.join(UI, "presets", "fonts.ts")).href);
   const dir = path.join(out, "presets");
   fs.rmSync(dir, { recursive: true, force: true });
@@ -182,6 +191,7 @@ export async function build(
   const root = path.resolve(opts.root ?? UI);
   const out = path.resolve(opts.out ?? path.join(UI, "..", "..", "apps", "web", "public", "r"));
   const items = await loadItems(root);
+  assertDependencyRule(items);
   const styles = loadStyles(root);
   for (const [style, fills] of styles) buildStyle(root, out, style, fills, items);
   if (opts.presets !== false) await buildPresets(out);

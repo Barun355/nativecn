@@ -10,7 +10,8 @@
     "ios": "node --no-warnings scripts/generate-index.ts && expo start --ios",
     "generate:index": "node --no-warnings scripts/generate-index.ts",
     "lint": "node --no-warnings scripts/generate-index.ts --check && eslint .",
-    "typecheck": "tsc -p tsconfig.json && tsc -p scripts/tsconfig.json"
+    "typecheck": "tsc -p tsconfig.json && tsc -p scripts/tsconfig.json",
+    "test": "node --test --no-warnings \"scripts/*.test.ts\""
   },
   "dependencies": {
     "@react-native-async-storage/async-storage": "2.2.0",

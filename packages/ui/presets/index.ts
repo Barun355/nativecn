@@ -11,6 +11,7 @@ export {
 export { COLOUR_ROLES, composeColors, isAccentColor, isBaseColor } from "./colors.ts";
 export { contrastRatio, WCAG_AA } from "./color-math.ts";
 export { CONTRAST_PAIRS } from "./types.ts";
+export { contrastFailures } from "./contrast.ts";
 export type {
   AccentColor,
   AccentColourRoles,

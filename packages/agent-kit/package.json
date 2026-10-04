@@ -2,5 +2,10 @@
   "name": "agent-kit",
   "version": "0.0.0",
   "private": true,
-  "license": "MIT"
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "lint": "eslint .",
+    "test": "node --test --no-warnings \"scripts/*.test.ts\""
+  }
 }
