@@ -41,4 +41,10 @@ export default [
     undefined,
     ["use-controllable-state"],
   ),
+  primitive(
+    "pressable",
+    "Pressed look from a Style Slot, tap area extended to 48, no handlers while disabled or loading, optional haptics, role and aria-* states.",
+    ["expo-haptics"],
+    ["theme"],
+  ),
 ] satisfies RegistryItem[];
