@@ -1,12 +1,13 @@
 import { Check, CircleAlert, type LucideIcon } from "lucide-react-native";
 import { useEffect, useRef } from "react";
-import { ActivityIndicator, type StyleProp, type ViewStyle } from "react-native";
+import type { StyleProp, ViewStyle } from "react-native";
 
 import { Icon, type IconSize } from "@/registry/components/icon";
 import { Pressable, type PressableProps } from "@/registry/components/primitives/pressable";
+import { Spinner } from "@/registry/components/spinner";
 import { Text, type TextColor } from "@/registry/components/text";
 import { slot } from "@/registry/styles";
-import { createStyles, useTheme, type ColorRole } from "@/registry/theme";
+import { createStyles, type ColorRole } from "@/registry/theme";
 import { announce } from "@/registry/utils/announce";
 
 /** Each Variant's Colour Roles: fill, content and (optional) border. */
@@ -120,7 +121,6 @@ export function Button({
   style,
   ...props
 }: ButtonProps) {
-  const { colors } = useTheme();
   const styles = useStyles();
   const variantStyles = useVariantStyles();
   const v: { foreground: TextColor; underline?: boolean } = variants[variant];
@@ -143,12 +143,8 @@ export function Button({
 
   const iconColor = v.foreground;
   const slotIcon = isLoading ? (
-    <ActivityIndicator
-      size="small"
-      color={colors[iconColor]}
-      aria-hidden
-      importantForAccessibility="no-hide-descendants"
-    />
+    // The Button itself is announced busy, so the Spinner stays silent.
+    <Spinner size={iconSizes[size]} color={iconColor} aria-hidden />
   ) : shownStatus ? (
     <Icon icon={statusIcons[shownStatus]} size={iconSizes[size]} color={iconColor} />
   ) : icon ? (
