@@ -20,6 +20,17 @@
       "persistent": true
     },
     "lint": {},
+    "start": {
+      "cache": false,
+      "persistent": true
+    },
+    "showcase#lint": {
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "$TURBO_ROOT$/packages/ui/**/*.{ts,tsx}",
+        "!$TURBO_ROOT$/packages/ui/node_modules/**"
+      ]
+    },
     "typecheck": {
       "dependsOn": ["^build"]
     },
