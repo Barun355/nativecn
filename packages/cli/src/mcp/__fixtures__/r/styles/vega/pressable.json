@@ -1,0 +1,15 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "pressable",
+  "type": "registry:ui",
+  "description": "Pressed look, 48 tap area, no handlers while disabled.",
+  "registryDependencies": ["theme"],
+  "files": [
+    {
+      "path": "components/primitives/pressable.tsx",
+      "type": "registry:ui",
+      "target": "{components}/primitives/pressable.tsx",
+      "content": "import { theme } from \"@/registry/theme\";\nexport const Pressable = () => theme;\n"
+    }
+  ]
+}

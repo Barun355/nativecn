@@ -1,0 +1,14 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "use-controllable-state",
+  "type": "registry:hook",
+  "description": "Controlled or uncontrolled state for a value.",
+  "files": [
+    {
+      "path": "hooks/use-controllable-state.ts",
+      "type": "registry:hook",
+      "target": "{hooks}/use-controllable-state.ts",
+      "content": "export const useControllableState = () => null;\n"
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "profile-01",
+  "type": "registry:block",
+  "title": "Profile",
+  "description": "A profile Screen with no suggested route.",
+  "categories": [],
+  "registryDependencies": ["text"],
+  "files": [
+    {
+      "path": "screens/profile-01/index.tsx",
+      "type": "registry:file",
+      "target": "{screens}/profile-01/index.tsx",
+      "content": "export const Profile01 = () => null;\n"
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "button-demo",
+  "type": "registry:example",
+  "title": "Button demo",
+  "description": "Buttons in every variant.",
+  "registryDependencies": ["button"],
+  "files": [
+    {
+      "path": "examples/button-demo.tsx",
+      "type": "registry:example",
+      "target": "{components}/examples/button-demo.tsx",
+      "content": "import { Button } from \"@/components/button\";\nexport default function ButtonDemo() {\n  return <Button variant=\"outline\">Save</Button>;\n}\n"
+    }
+  ]
+}

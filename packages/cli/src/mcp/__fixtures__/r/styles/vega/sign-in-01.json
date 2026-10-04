@@ -1,0 +1,26 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "sign-in-01",
+  "type": "registry:block",
+  "title": "Classic centred",
+  "description": "Classic centred sign-in Screen.",
+  "categories": ["auth"],
+  "registryDependencies": ["button", "text"],
+  "meta": {
+    "route": "(auth)/sign-in",
+    "component": "SignIn01",
+    "difference": "Logo, email and password, \"or\", then social; everything on one screen.",
+    "screenshots": {
+      "light": "https://nativecn.dev/screens/sign-in-01-light.png",
+      "dark": "https://nativecn.dev/screens/sign-in-01-dark.png"
+    }
+  },
+  "files": [
+    {
+      "path": "screens/sign-in-01/index.tsx",
+      "type": "registry:file",
+      "target": "{screens}/sign-in-01/index.tsx",
+      "content": "export function SignIn01() { return null; }\n"
+    }
+  ]
+}
