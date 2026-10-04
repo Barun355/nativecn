@@ -39,7 +39,9 @@ export type SearchFieldProps = Omit<
 };
 
 const useStyles = createStyles((t) => {
-  const { fontSize, fontFamily, letterSpacing } = slot("input.root", t);
+  // Not destructured straight from slot(): once inlined, that literal fails excess-property checks.
+  const input = slot("input.root", t);
+  const { fontSize, fontFamily, letterSpacing } = input;
   return {
     root: {
       ...slot("search-field.root", t),

@@ -64,12 +64,13 @@ export function planLeg(sdk: string, latestVersion: string, starter: number): Le
   };
 }
 
-function run(command: string, args: string[], opts: SpawnSyncOptions & { cwd: string }): string {
-  console.log(`\n$ ${[command, ...args].join(" ")}   (in ${path.relative(REPO, opts.cwd) || "."})`);
-  const res = spawnSync(command, args, { stdio: "inherit", ...opts, encoding: "utf8" });
+function run(command: string, args: string[], opts: SpawnSyncOptions & { cwd: string }): void {
+  const rel = path.relative(REPO, opts.cwd);
+  const where = rel.startsWith("..") ? opts.cwd : rel || ".";
+  console.log(`\n$ ${[command, ...args].join(" ")}   (in ${where})`);
+  const res = spawnSync(command, args, { stdio: "inherit", ...opts });
   if (res.error) throw res.error;
   if (res.status !== 0) throw new Error(`"${command} ${args.join(" ")}" exited ${res.status}`);
-  return typeof res.stdout === "string" ? res.stdout : "";
 }
 
 function output(command: string, args: string[], cwd: string): string {
