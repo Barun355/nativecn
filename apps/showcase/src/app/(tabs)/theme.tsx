@@ -1,4 +1,4 @@
-import { Text, View } from "react-native";
+import { Text, View, type TextStyle, type ViewStyle } from "react-native";
 
 import { Choice } from "@/components/choice";
 import { Screen } from "@/components/screen";
@@ -54,14 +54,15 @@ const useStyles = createStyles((t) => ({
 }));
 
 // Reads the active Style's Slot fills, as base Components do. setActiveStyle() clears this cache.
+// slot() is typed as the union of every Slot's fill, so each use is narrowed to its style type.
 const usePreviewStyles = createStyles((t) => ({
   button: {
-    ...slot("button.root", t),
+    ...(slot("button.root", t) as ViewStyle),
     alignSelf: "flex-start",
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
     backgroundColor: t.colors.primary,
   },
-  label: { ...slot("button.label", t), color: t.colors.primaryForeground },
+  label: { ...(slot("button.label", t) as TextStyle), color: t.colors.primaryForeground },
 }));
