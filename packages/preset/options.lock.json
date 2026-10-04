@@ -1,0 +1,63 @@
+{
+  "version": "a",
+  "fields": [
+    { "key": "style", "bits": 4 },
+    { "key": "baseColor", "bits": 4 },
+    { "key": "accentColor", "bits": 6 },
+    { "key": "radius", "bits": 3 },
+    { "key": "bodyFont", "bits": 5 },
+    { "key": "headingFont", "bits": 5 }
+  ],
+  "options": {
+    "style": ["vega", "nova"],
+    "baseColor": ["neutral", "stone", "zinc", "mauve", "olive", "mist", "taupe"],
+    "accentColor": [
+      "neutral",
+      "stone",
+      "zinc",
+      "mauve",
+      "olive",
+      "mist",
+      "taupe",
+      "amber",
+      "blue",
+      "cyan",
+      "emerald",
+      "fuchsia",
+      "green",
+      "indigo",
+      "lime",
+      "orange",
+      "pink",
+      "purple",
+      "red",
+      "rose",
+      "sky",
+      "teal",
+      "violet",
+      "yellow"
+    ],
+    "radius": ["default", "none", "small", "medium", "large"],
+    "bodyFont": [
+      "inter",
+      "geist",
+      "dm-sans",
+      "figtree",
+      "lora",
+      "source-serif-4",
+      "geist-mono",
+      "jetbrains-mono"
+    ],
+    "headingFont": [
+      "inherit",
+      "inter",
+      "geist",
+      "dm-sans",
+      "figtree",
+      "lora",
+      "source-serif-4",
+      "geist-mono",
+      "jetbrains-mono"
+    ]
+  }
+}
