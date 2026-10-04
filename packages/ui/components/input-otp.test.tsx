@@ -2,7 +2,12 @@ import { fireEvent, render, screen } from "@testing-library/react-native";
 import { useState } from "react";
 import { Dimensions, StyleSheet, TextInput } from "react-native";
 
-import { InputOTP, sanitizeCode, type InputOTPProps } from "@/registry/components/input-otp";
+import {
+  InputOTP,
+  cellsHitSlop,
+  sanitizeCode,
+  type InputOTPProps,
+} from "@/registry/components/input-otp";
 import { FocusChain } from "@/registry/components/primitives/focus-chain";
 import { FormFieldProvider } from "@/registry/components/primitives/form-field-context";
 import { setActiveStyle } from "@/registry/styles";
@@ -244,6 +249,60 @@ describe("InputOTP: accessibility, FormField and FocusChain", () => {
     await renderOTP({ ref });
     expect(ref.current).toBeTruthy();
     expect(typeof ref.current?.focus).toBe("function");
+  });
+});
+
+describe("InputOTP: 48 touch target", () => {
+  test("cellsHitSlop extends the row to 48 on each short axis, or not at all", () => {
+    // Nova at Scale 0.85: 34 × 40.8 cells, 5.1 gap.
+    const nova = cellsHitSlop(34, 40.8, 5.1, 6, 48)!;
+    expect(nova.top).toBeCloseTo(3.6);
+    expect(nova.bottom).toBeCloseTo(3.6);
+    expect(nova).toMatchObject({ left: 0, right: 0 });
+    // A single narrow cell gets side slop too.
+    expect(cellsHitSlop(40, 48, 6, 1, 48)).toEqual({ top: 0, bottom: 0, left: 4, right: 4 });
+    // Vega at Scale 1: 48 × 56 cells already reach it.
+    expect(cellsHitSlop(48, 56, 8, 6, 48)).toBeUndefined();
+  });
+
+  test.each([
+    ["vega", s(48), s(56), t.spacing[2]],
+    ["nova", s(40), s(48), s(6)],
+  ] as const)(
+    "%s: the root's hitSlop is computed from the cell Slots",
+    async (style, w, h, gap) => {
+      setActiveStyle(style);
+      await renderOTP();
+      expect(flat(cell(0))).toMatchObject({ width: w, height: h });
+      expect(screen.getByTestId("otp").props.hitSlop).toEqual(
+        cellsHitSlop(w, h, gap, 6, tokens.minTouchTarget),
+      );
+    },
+  );
+
+  test("a tap on the root focuses the hidden input, except while disabled", async () => {
+    const ref = { current: null as TextInput | null };
+    await renderOTP({ ref });
+    const focus = jest.spyOn(ref.current!, "focus").mockImplementation(() => {});
+    focus.mockClear();
+    await fireEvent.press(screen.getByTestId("otp"));
+    expect(focus).toHaveBeenCalledTimes(1);
+
+    focus.mockClear();
+    await renderOTP({ ref, disabled: true });
+    await fireEvent.press(screen.getByTestId("otp"));
+    expect(focus).not.toHaveBeenCalled();
+    focus.mockRestore();
+  });
+
+  test("screen readers skip the root and read the hidden input", async () => {
+    await renderOTP();
+    expect(screen.getByTestId("otp").props).toMatchObject({
+      accessible: false,
+      importantForAccessibility: "no",
+    });
+    expect(screen.getByTestId("otp").props.role).toBeUndefined();
+    expect(screen.getByLabelText("Code, 6 digits")).toBe(screen.getByTestId("otp-input"));
   });
 });
 

@@ -1,12 +1,20 @@
 import { useCallback, useEffect, useRef, useState, type Ref } from "react";
-import { TextInput, View, type StyleProp, type TextInputProps, type ViewStyle } from "react-native";
+import {
+  Pressable as RNPressable,
+  TextInput,
+  View,
+  type Insets,
+  type StyleProp,
+  type TextInputProps,
+  type ViewStyle,
+} from "react-native";
 
 import { useFocusChainField } from "@/registry/components/primitives/focus-chain";
 import { useFormField } from "@/registry/components/primitives/form-field-context";
 import { Text } from "@/registry/components/text";
 import { useControllableState } from "@/registry/hooks/use-controllable-state";
 import { slot } from "@/registry/styles";
-import { createStyles } from "@/registry/theme";
+import { createStyles, useTheme } from "@/registry/theme";
 import { announce } from "@/registry/utils/announce";
 
 export type InputOTPStatus = "error" | "success";
@@ -56,6 +64,23 @@ export type InputOTPProps = Omit<
 };
 
 /** Keep digits only, at most `length` of them (a pasted "123 456" becomes "123456"). */
+/**
+ * The extra tap area around the row of cells so it reaches `min` (the 48 touch target) on both
+ * axes. The hidden TextInput covers the row but has no hitSlop of its own.
+ */
+export function cellsHitSlop(
+  cellWidth: number,
+  cellHeight: number,
+  gap: number,
+  length: number,
+  min: number,
+): Insets | undefined {
+  const rowWidth = length * cellWidth + Math.max(0, length - 1) * gap;
+  const x = Math.max(0, (min - rowWidth) / 2);
+  const y = Math.max(0, (min - cellHeight) / 2);
+  return x === 0 && y === 0 ? undefined : { top: y, bottom: y, left: x, right: x };
+}
+
 export function sanitizeCode(text: string, length: number): string {
   return text.replace(/\D/g, "").slice(0, length);
 }
@@ -121,6 +146,7 @@ export function InputOTP({
 }: InputOTPProps) {
   const field = useFormField();
   const styles = useStyles();
+  const { minTouchTarget } = useTheme();
 
   const isDisabled = disabled ?? field?.disabled ?? false;
   const shownStatus = isDisabled ? undefined : (status ?? field?.status);
@@ -183,8 +209,28 @@ export function InputOTP({
 
   const activeIndex = focused && !isDisabled ? Math.min(code.length, length - 1) : -1;
 
+  // Known before layout (Style Slots), so the tap area reaches 48 from the first frame.
+  const hitSlop = cellsHitSlop(
+    styles.cell.width as number,
+    styles.cell.height as number,
+    (styles.cells.gap as number | undefined) ?? 0,
+    length,
+    minTouchTarget,
+  );
+
   return (
-    <View testID={testID} style={[styles.root, isDisabled ? styles.disabled : null, style]}>
+    // A tap within the root's hitSlop focuses the hidden TextInput (taps on the cells reach it
+    // directly). Screen readers skip the root and read the TextInput as one field.
+    <RNPressable
+      testID={testID}
+      accessible={false}
+      focusable={false}
+      importantForAccessibility="no"
+      disabled={isDisabled}
+      hitSlop={hitSlop}
+      onPress={isDisabled ? undefined : () => inputRef.current?.focus()}
+      style={[styles.root, isDisabled ? styles.disabled : null, style]}
+    >
       <View
         style={styles.cells}
         aria-hidden
@@ -231,6 +277,6 @@ export function InputOTP({
         {...props}
         style={styles.input}
       />
-    </View>
+    </RNPressable>
   );
 }

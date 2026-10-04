@@ -502,7 +502,7 @@ export default [
             "other TextInput props pass through to the hidden input (autoFocus, onFocus, aria-label, accessibilityHint, ...)",
         },
         variants: { status: ["error", "success"] },
-        docs: 'One hidden TextInput drives the cells, so typing, deleting, one-time-code autofill (iOS Keychain/SMS, Android SMS) and paste behave like one field. Non-digits are dropped, so a pasted "123 456" fills every cell. Screen readers read one field: "Code, 6 digits" (or the FormField label). Inside FormField it takes the label, error and disabled; inside FocusChain it joins as one field. Cell size, radius and gap come from the input-otp.cell and input-otp.root Style Slots. Precedence: disabled > status.',
+        docs: 'One hidden TextInput drives the cells, so typing, deleting, one-time-code autofill (iOS Keychain/SMS, Android SMS) and paste behave like one field. Non-digits are dropped, so a pasted "123 456" fills every cell. Screen readers read one field: "Code, 6 digits" (or the FormField label). Inside FormField it takes the label, error and disabled; inside FocusChain it joins as one field. Cell size, radius and gap come from the input-otp.cell and input-otp.root Style Slots; when the row is under 48 (e.g. at a small Scale) the root extends the tap area to 48 and a tap there focuses the field. Precedence: disabled > status.',
         keywords: [
           "otp",
           "one-time code",
