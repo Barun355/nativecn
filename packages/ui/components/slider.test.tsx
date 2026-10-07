@@ -28,6 +28,16 @@ jest.mock("react-native-reanimated", () => ({
   useReducedMotion: jest.fn(() => false),
 }));
 
+// Gesture roots become marked Views, so the tests can see where they are and how big.
+jest.mock("react-native-gesture-handler", () => {
+  const actual = jest.requireActual("react-native-gesture-handler");
+  const { View: RNView } = jest.requireActual("react-native");
+  return {
+    ...actual,
+    GestureHandlerRootView: (props: object) => <RNView {...props} testID="gesture-root" />,
+  };
+});
+
 const mutableConfig = config as { haptics: boolean };
 const reducedMotion = jest.mocked(useReducedMotion);
 
@@ -255,8 +265,34 @@ describe("Slider: motion and Style Slots", () => {
   });
 
   test("the root is at least the 48 touch target tall; style is merged last", async () => {
-    const el = await renderSlider({ style: { width: 200 } });
+    const el = await renderSlider({ style: { width: 200, flex: 1 } });
     expect(flat(el).height).toBeGreaterThanOrEqual(48);
-    expect(flat(el).width).toBe(200);
+    // `style` lays out the outermost box, the Slider's own gesture root.
+    const root = screen.getByTestId("gesture-root");
+    expect(flat(root).width).toBe(200);
+    expect(flat(root).flex).toBe(1);
+  });
+});
+
+// #153: an app made by `create`/`init` has no GestureHandlerRootView in its root Layout, and
+// without one GestureDetector throws "must be used as a descendant of GestureHandlerRootView".
+describe("Slider: its own gesture root", () => {
+  type Node = ReturnType<typeof screen.getByTestId>;
+  const ancestorIds = (el: Node) => {
+    const ids: string[] = [];
+    for (let p = el.parent; p; p = p.parent) if (p.props?.testID) ids.push(p.props.testID);
+    return ids;
+  };
+
+  test("wraps the Slider in one gesture root sized to it, never the screen", async () => {
+    const el = await renderSlider();
+    const roots = screen.getAllByTestId("gesture-root");
+    expect(roots).toHaveLength(1);
+    expect(ancestorIds(el)).toContain("gesture-root");
+    const style = flat(roots[0]!);
+    // GestureHandlerRootView defaults to flex: 1; the Slider's must not grow to fill its parent.
+    expect(style.flex).toBe(0);
+    expect(style.position).not.toBe("absolute");
+    expect(roots[0]!.props.pointerEvents).toBeUndefined();
   });
 });
