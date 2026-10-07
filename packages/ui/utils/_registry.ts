@@ -7,7 +7,7 @@ export default [
     type: "registry:lib",
     title: "announce",
     description:
-      "Reliable screen-reader announcements on iOS and Android (Button and Input status, Toast, error and success Alerts).",
+      "Reliable screen-reader announcements on iOS and Android (Button and Input status, Toast, error, success and warning Alerts).",
     categories: ["accessibility"],
     meta: {
       kind: "Helper",

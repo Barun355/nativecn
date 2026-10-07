@@ -822,8 +822,8 @@ export default [
         docs: "Never use Alert.alert or any platform dialog: use this inline Alert, or toast() for transient and server feedback. The border, icon and title take the Variant's Colour Role on a card background.",
         a11y: [
           "role alert, read as one element: the title and description together.",
-          'A destructive or success Alert is announced once when it appears and again when its text changes ("Error: Wrong password. Check it and try again.", "Success: Saved"); unrelated re-renders stay silent.',
-          "default, warning and info Alerts are not announced; screen readers read them when the user reaches them.",
+          'A destructive, success or warning Alert is announced once when it appears and again when its text changes ("Error: Wrong password. Check it and try again.", "Success: Saved", "Warning: Your session expires soon"); unrelated re-renders stay silent.',
+          "default and info Alerts are not announced; screen readers read them when the user reaches them.",
           "aria-label, if given, replaces the announced text; without it the announcement is built from the text written inside the Alert.",
           "Not announced when it sits inside another Alert (the outer one speaks) or inside a FormField that is announcing its error.",
           "The Variant's icon is decorative.",
