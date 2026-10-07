@@ -48,7 +48,7 @@ export default [
           tokens: "the unscaled Token values",
         },
       },
-      docs: "The single source of truth for every Token. create/init install it and write colors.ts and the radius and font parts of tokens.ts from the Preset; edit Tokens there by hand when asked, keeping light and dark keys identical, but never re-run setup to change the Preset. ThemeProvider must wrap the root Layout. Components read Tokens through createStyles and never hard-code literals. The Scheme preference is kept in AsyncStorage (a non-sensitive preference).",
+      docs: "The single source of truth for every Token. create/init install it and write colors.ts and the radius and font parts of tokens.ts from the Preset; edit Tokens there by hand when asked, keeping light and dark keys identical, but never re-run setup to change the Preset. ThemeProvider must wrap the root Layout; it also sets the window background (behind the status and navigation bars) to the Scheme's background with expo-system-ui. Components read Tokens through createStyles and never hard-code literals. The Scheme preference is kept in AsyncStorage (a non-sensitive preference).",
       keywords: [
         "theme",
         "tokens",
@@ -66,6 +66,7 @@ export default [
       "@react-native-async-storage/async-storage",
       "expo-font",
       "expo-splash-screen",
+      "expo-system-ui",
     ],
     files: [
       "colors.ts",

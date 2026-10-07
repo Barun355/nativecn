@@ -22,6 +22,7 @@ export const PACKAGE_LICENCES: Licence[] = [
   npm("expo-router"),
   npm("expo-splash-screen"),
   npm("expo-status-bar"),
+  npm("expo-system-ui"),
   npm("lucide-react-native", "ISC"),
   npm("react"),
   npm("react-hook-form"),

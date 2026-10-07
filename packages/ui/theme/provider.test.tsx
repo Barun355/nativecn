@@ -1,7 +1,9 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { act, render, screen, waitFor } from "@testing-library/react-native";
+import * as SystemUI from "expo-system-ui";
 import { Text } from "react-native";
 
+import { colors } from "./colors";
 import { ThemeProvider, createStyles, useTheme } from "./provider";
 import { useSchemeStore } from "./scheme-store";
 
@@ -54,6 +56,41 @@ describe("ThemeProvider", () => {
       </ThemeProvider>,
     );
     expect(screen.queryByTestId("probe")).toBeNull();
+  });
+});
+
+// #153: the window behind the app (the status bar and gesture bar strips on Android) follows the
+// Theme's background; otherwise it stays white in dark mode.
+describe("ThemeProvider: the window background", () => {
+  const setBackground = jest.spyOn(SystemUI, "setBackgroundColorAsync");
+
+  beforeEach(async () => {
+    await AsyncStorage.clear();
+    useSchemeStore.setState({ scheme: "light", hydrated: true });
+    setBackground.mockClear().mockResolvedValue(undefined);
+  });
+
+  test("is the Scheme's background, and follows a Scheme change", async () => {
+    await render(
+      <ThemeProvider>
+        <Probe />
+      </ThemeProvider>,
+    );
+    expect(setBackground).toHaveBeenLastCalledWith(colors.light.background);
+    await act(async () => useSchemeStore.getState().setScheme("dark"));
+    expect(setBackground).toHaveBeenLastCalledWith(colors.dark.background);
+  });
+
+  test("a nested ThemeProvider (a dark hero, a preview) leaves it alone", async () => {
+    await render(
+      <ThemeProvider>
+        <ThemeProvider scheme="dark">
+          <Probe />
+        </ThemeProvider>
+      </ThemeProvider>,
+    );
+    expect(setBackground).toHaveBeenCalledWith(colors.light.background);
+    expect(setBackground).not.toHaveBeenCalledWith(colors.dark.background);
   });
 });
 

@@ -8,7 +8,6 @@ import {
 import { useEffect, useRef, useState } from "react";
 import {
   AccessibilityInfo,
-  StyleSheet,
   View,
   useWindowDimensions,
   type AccessibilityActionEvent,
@@ -168,6 +167,8 @@ const useStyles = createStyles((t) => ({
     gap: t.spacing[2],
   },
   frame: { width: "100%", maxWidth: t.scaleValue(560) },
+  // Overrides the gesture root's default `flex: 1`, so it sizes to the Toast.
+  gestureRoot: { flex: 0 },
   root: {
     ...slot("toast.root", t),
     flexDirection: "row",
@@ -233,23 +234,23 @@ function ToastViewport({ position }: { position: "top" | "bottom" }) {
   const visible = toasts.slice(-MAX_VISIBLE_TOASTS);
   const ordered = position === "top" ? [...visible].reverse() : visible;
 
+  // A plain View: taps between and around the Toasts pass through to the Screen. Never wrap this
+  // in a gesture root: Android ignores `pointerEvents` on one, so it would take every tap (#153).
   return (
-    <GestureHandlerRootView style={StyleSheet.absoluteFill} pointerEvents="box-none">
-      <View
-        pointerEvents="box-none"
-        testID="toaster"
-        style={[
-          styles.viewport,
-          styles.edge,
-          position === "top" ? { top: insets.top } : { bottom: insets.bottom },
-          { marginLeft: insets.left, marginRight: insets.right },
-        ]}
-      >
-        {ordered.map((item) => (
-          <ToastItem key={item.id} toast={item} position={position} reduced={reduced} />
-        ))}
-      </View>
-    </GestureHandlerRootView>
+    <View
+      pointerEvents="box-none"
+      testID="toaster"
+      style={[
+        styles.viewport,
+        styles.edge,
+        position === "top" ? { top: insets.top } : { bottom: insets.bottom },
+        { marginLeft: insets.left, marginRight: insets.right },
+      ]}
+    >
+      {ordered.map((item) => (
+        <ToastItem key={item.id} toast={item} position={position} reduced={reduced} />
+      ))}
+    </View>
   );
 }
 
@@ -359,42 +360,47 @@ function ToastItem({
       layout={reduced ? undefined : LinearTransition.duration(motion.duration("base"))}
       style={styles.frame}
     >
-      <GestureDetector gesture={pan}>
-        <Animated.View testID={`toast-${id}`} style={[styles.root, swipeStyle]}>
-          {variant.icon ? <Icon icon={variant.icon} color={variant.color} /> : null}
-          <View
-            style={styles.content}
-            accessible
-            aria-label={spoken}
-            accessibilityActions={[
-              { name: "dismiss", label: "Dismiss" },
-              { name: "escape", label: "Dismiss" },
-            ]}
-            onAccessibilityAction={onAccessibilityAction}
-            onAccessibilityEscape={remove}
-          >
-            <Text variant="label" color="popoverForeground">
-              {item.title}
-            </Text>
-            {item.description ? (
-              <Text variant="small" color="mutedForeground">
-                {item.description}
+      {/* The swipe needs a gesture root above it, and the app's root Layout may not have one. This
+          one is only as big as the Toast, so it takes no taps meant for the Screen; inside another
+          gesture root it simply defers to it. */}
+      <GestureHandlerRootView style={styles.gestureRoot}>
+        <GestureDetector gesture={pan}>
+          <Animated.View testID={`toast-${id}`} style={[styles.root, swipeStyle]}>
+            {variant.icon ? <Icon icon={variant.icon} color={variant.color} /> : null}
+            <View
+              style={styles.content}
+              accessible
+              aria-label={spoken}
+              accessibilityActions={[
+                { name: "dismiss", label: "Dismiss" },
+                { name: "escape", label: "Dismiss" },
+              ]}
+              onAccessibilityAction={onAccessibilityAction}
+              onAccessibilityEscape={remove}
+            >
+              <Text variant="label" color="popoverForeground">
+                {item.title}
               </Text>
+              {item.description ? (
+                <Text variant="small" color="mutedForeground">
+                  {item.description}
+                </Text>
+              ) : null}
+            </View>
+            {action ? (
+              <Button
+                label={action.label}
+                size="sm"
+                variant="secondary"
+                onPress={() => {
+                  action.onPress();
+                  remove();
+                }}
+              />
             ) : null}
-          </View>
-          {action ? (
-            <Button
-              label={action.label}
-              size="sm"
-              variant="secondary"
-              onPress={() => {
-                action.onPress();
-                remove();
-              }}
-            />
-          ) : null}
-        </Animated.View>
-      </GestureDetector>
+          </Animated.View>
+        </GestureDetector>
+      </GestureHandlerRootView>
     </Animated.View>
   );
 }

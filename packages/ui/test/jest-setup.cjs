@@ -13,3 +13,9 @@ jest.mock("react-native-keyboard-controller", () =>
 
 // react-native-gesture-handler's own Jest setup: its native module and buttons become mocks.
 require("react-native-gesture-handler/jestSetup");
+
+// expo-system-ui (the Theme sets the window background with it): no native module in Jest.
+jest.mock("expo-system-ui", () => ({
+  setBackgroundColorAsync: jest.fn(() => Promise.resolve()),
+  getBackgroundColorAsync: jest.fn(() => Promise.resolve(null)),
+}));
