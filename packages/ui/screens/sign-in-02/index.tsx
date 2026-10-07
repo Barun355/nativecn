@@ -1,13 +1,7 @@
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Hexagon } from "lucide-react-native";
 import { use, useState } from "react";
-import {
-  Controller,
-  useForm,
-  type FieldError,
-  type FieldErrors,
-  type FieldValues,
-  type Resolver,
-} from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { StatusBar, View } from "react-native";
 import { SafeAreaInsetsContext, initialWindowMetrics } from "react-native-safe-area-context";
 import { z } from "zod";
@@ -229,18 +223,4 @@ function messageOf(error: unknown): string {
   return error instanceof Error && error.message
     ? error.message
     : "Something went wrong. Try again.";
-}
-
-/** Validates the form with a zod schema and hands react-hook-form the first error per field. */
-function zodResolver<T extends FieldValues>(schema: z.ZodType<T>): Resolver<T> {
-  return async (values) => {
-    const result = await schema.safeParseAsync(values);
-    if (result.success) return { values: result.data, errors: {} };
-    const errors: Record<string, FieldError> = {};
-    for (const issue of result.error.issues) {
-      const name = issue.path.join(".");
-      errors[name] ??= { type: issue.code, message: issue.message };
-    }
-    return { values: {}, errors: errors as FieldErrors<T> };
-  };
 }

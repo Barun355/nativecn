@@ -8,7 +8,7 @@ It targets iOS and Android first, and it is built so that AI agents can build, c
 - **One Theme, the same look on both platforms.** Every Component reads Tokens from the Theme and never hardcodes a colour or size, so iOS and Android match.
 - **Plain React Native.** Styling is React Native's `StyleSheet` plus a TypeScript Theme. There is no Tailwind, NativeWind or `className`, and no build-time CSS step.
 - **nativecn builds its own Primitives.** Dialogs, sheets, pickers and menus are written by nativecn rather than wrapped native controls, so they follow your Theme and you can edit them.
-- **Few dependencies.** Components depend only on the Expo SDK's pinned modules, plus a short list of recorded exceptions (zustand, react-hook-form, zod and lucide-react-native).
+- **Few dependencies.** Components depend only on the Expo SDK's pinned modules, plus a short list of recorded exceptions (zustand, react-hook-form, zod, @hookform/resolvers and lucide-react-native).
 - **Agent first.** Every project gets Rules, Skills and the nativecn MCP server, so an agent knows what exists, how to add it and how to check the result on a device.
 
 ## What you get

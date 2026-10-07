@@ -72,7 +72,7 @@ Items are names only: no URLs, local paths or namespaces. `add` needs a `compone
 3. Shows the plan: the files and packages. `--dry-run` stops here.
 4. Handles existing files: identical files are skipped silently, a changed file gets a prompt, `-o` overwrites all, and `-y` alone never overwrites.
 5. Writes each file to its [Destination](/docs/folder-structure#destinations) and rewrites imports to your aliases.
-6. Installs packages: Expo SDK packages with `npx expo install`, and the few recorded exceptions (zustand, react-hook-form, zod, lucide-react-native) at the version range the item pins.
+6. Installs packages: Expo SDK packages with `npx expo install`, and the few recorded exceptions (zustand, react-hook-form, zod, @hookform/resolvers, lucide-react-native) at the version range the item pins.
 7. Adds any Config Plugins to `app.json`. With `app.config.ts`, it prints the line to add instead of editing your code.
 8. Prints a summary, saying clearly when a native rebuild is needed rather than a reload.
 

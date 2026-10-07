@@ -6,7 +6,10 @@ Anything nativecn writes into a user's app (Components, Primitives, Blocks, the 
 
 Any other package needs its own ADR that names the item that needs it and says why. The recorded exceptions so far are:
 - zustand: Theme Scheme persistence and the Toast queue (Design System ADR 0001)
-- react-hook-form and zod: form logic in Blocks (Design System ADR 0002) Under this rule, Lucide's `react-native-svg` is SDK-pinned, and `lucide-react-native` is covered by the Lucide decision.
+- react-hook-form and zod: form logic in Blocks (Design System ADR 0002)
+- @hookform/resolvers: the `zodResolver` that connects zod to react-hook-form in the form Blocks (Design System ADR 0002; owner decision, issue #149, 2026-10-07)
+
+Under this rule, Lucide's `react-native-svg` is SDK-pinned, and `lucide-react-native` is covered by the Lucide decision.
 
 This keeps the "lightweight, faster builds" promise checkable. Every addition is either version-locked by Expo or deliberately argued for, and "can I add library X?" has one place to look.
 

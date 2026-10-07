@@ -34,6 +34,17 @@ test("SDK-pinned packages and recorded exceptions pass", () => {
   assert.deepEqual(dependencyRuleViolations(items, PINNED), []);
 });
 
+test("@hookform/resolvers is a recorded exception for form Blocks (#149)", () => {
+  const items = [
+    {
+      name: "sign-in-01",
+      dependencies: ["react-hook-form@^7.89.0", "zod@^4.6.5", "@hookform/resolvers@^5.9.1"],
+    },
+  ];
+  assert.equal(packageName("@hookform/resolvers@^5.9.1"), "@hookform/resolvers");
+  assert.deepEqual(dependencyRuleViolations(items, PINNED), []);
+});
+
 test("a dependency outside the pinned list without an exception fails", () => {
   const items = [
     { name: "drawer", dependencies: ["@react-navigation/drawer@^7", "react-native-svg"] },
@@ -62,6 +73,7 @@ test("the Registry build fails on a dependency that breaks the rule", async () =
 test("every recorded exception points at an existing decision", () => {
   assert.deepEqual(missingExceptionDecisions(), []);
   assert.deepEqual(Object.keys(RECORDED_EXCEPTIONS).sort(), [
+    "@hookform/resolvers",
     "lucide-react-native",
     "react-hook-form",
     "zod",

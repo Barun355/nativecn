@@ -26,6 +26,10 @@ export const RECORDED_EXCEPTIONS: Record<string, { decision: string; reason: str
     decision: "packages/ui/docs/adr/0002-react-hook-form-and-zod.md",
     reason: "form logic in Blocks",
   },
+  "@hookform/resolvers": {
+    decision: "packages/ui/docs/adr/0002-react-hook-form-and-zod.md",
+    reason: "zodResolver for form Blocks (owner decision, issue #149)",
+  },
   "lucide-react-native": {
     decision: "docs/adr/0007-dependency-rule.md",
     reason: "the Lucide decision (#9), recorded in ADR 0007",

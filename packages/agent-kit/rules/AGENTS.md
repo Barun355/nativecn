@@ -37,7 +37,7 @@ These 12 Rules are non-negotiable. Follow them in every file you write or edit i
 
 - **Feedback:** validation errors appear under their field via `FormField`. Server errors thrown from `onSubmit`, and success messages, are shown only through `toast()`.
 - **Blocks never talk to a server.** Form Blocks call the Screen's `onSubmit(values)`. You write the backend call in the Screen, and any session you store follows Rule 6.
-- **Dependencies:** the recorded exceptions to Rule 5 are zustand, react-hook-form, zod and lucide-react-native. `nativecn-cli add` installs them at the version range the item pins.
+- **Dependencies:** the recorded exceptions to Rule 5 are zustand, react-hook-form, zod, @hookform/resolvers and lucide-react-native. `nativecn-cli add` installs them at the version range the item pins.
 - **Theme edits:** you may hand-edit Tokens in `src/theme/` when the user asks (for example to add a Colour Role). Keep light and dark keys identical in `colors.ts`. Never re-run setup to change the Preset.
 - **Scheme:** switch light/dark with `setScheme('system' | 'light' | 'dark')` from `useTheme()`, or the `SchemeSwitcher` Component. `ThemeProvider` must wrap the root Layout.
 - **Components:** every Component takes only `style` as an override, merged last onto the root. For deeper changes, edit the Component's file. Use the `role` / `aria-*` props, not `accessibility*`.

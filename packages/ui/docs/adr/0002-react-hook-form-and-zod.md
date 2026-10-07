@@ -8,3 +8,7 @@ The form logic uses **react-hook-form** for form state and **zod** for the valid
 - `FormField` stays library-neutral. Blocks connect it to react-hook-form through `Controller`, and apps can use FormField without either library.
 - Validation errors appear under their field. Server errors thrown from `onSubmit`, and success messages, are shown **only** through nativecn's own `toast()`. Platform dialogs (`Alert.alert`) are never used, here or anywhere else nativecn writes code.
 - Social sign-in buttons only call `onSocialSignIn(provider)`. Validation messages are English strings in the Block file; i18n is out of scope for 0.1.
+
+## Amendment: @hookform/resolvers (2026-10-07)
+
+Owner decision, issue #149. The form Blocks connect zod to react-hook-form with `zodResolver` from **@hookform/resolvers** (`import { zodResolver } from "@hookform/resolvers/zod"`), instead of each Block carrying its own small copy. It is the third package of shadcn's form stack, so agents and developers already know the import, and one maintained resolver replaces six hand-written ones. It is a recorded exception under ADR 0007, next to react-hook-form and zod, and every form Block lists it in its `dependencies`.

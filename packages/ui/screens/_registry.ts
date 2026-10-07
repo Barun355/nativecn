@@ -36,7 +36,7 @@ const screenBlock = ({
 });
 
 /** The recorded ADR 0007 exceptions for form Blocks (Design System ADR 0002), pinned. */
-const FORMS = ["react-hook-form@^7.89.0", "zod@^4.6.5"];
+const FORMS = ["react-hook-form@^7.89.0", "zod@^4.6.5", "@hookform/resolvers@^5.9.1"];
 /** lucide-react-native is the recorded ADR 0007 exception (Lucide decision); react-native-svg is SDK-pinned. */
 const LUCIDE = ["lucide-react-native@^1.51.0", "react-native-svg"];
 
