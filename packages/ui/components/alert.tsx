@@ -25,8 +25,8 @@ import { announce } from "@/registry/utils/announce";
 
 /**
  * Each Variant's default icon, its Colour Roles (border, icon and title, description) and the
- * prefix it is announced with. Only error (destructive) and success are announced, per the
- * Component contract; the others are read when the user reaches them.
+ * prefix it is announced with. Error (destructive), success and warning are announced; default
+ * and info are read when the user reaches them.
  */
 const variants = {
   default: {
@@ -55,7 +55,7 @@ const variants = {
     border: "warning",
     accent: "warning",
     description: "warning",
-    spoken: null,
+    spoken: "Warning",
   },
   info: { icon: Info, border: "info", accent: "info", description: "info", spoken: null },
 } as const satisfies Record<
@@ -150,9 +150,10 @@ function spokenText(prefix: string, label: string | undefined, children: ReactNo
 
 /**
  * An inline message that calls attention to something on the Screen. It has the `alert` role
- * and is read as one element. A destructive or success Alert is also announced to screen
- * readers once when it appears and again when its text changes ("Error: …", "Success: …"),
- * unless it sits inside another Alert or inside a FormField that is announcing its error.
+ * and is read as one element. A destructive, success or warning Alert is also announced to
+ * screen readers once when it appears and again when its text changes ("Error: …",
+ * "Success: …", "Warning: …"), unless it sits inside another Alert or inside a FormField that
+ * is announcing its error.
  * Never a platform dialog: use it (or `toast()`) instead of `Alert.alert`. Compose with
  * AlertTitle and AlertDescription. `style` is merged last.
  */

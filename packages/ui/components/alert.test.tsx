@@ -155,13 +155,14 @@ describe("Alert announcements", () => {
   test.each([
     ["destructive", "Error: Wrong password. Check it and try again."],
     ["success", "Success: Wrong password. Check it and try again."],
+    ["warning", "Warning: Wrong password. Check it and try again."],
   ] as const)("%s is announced once when it appears", async (variant, spoken) => {
     await render(alertUI({ variant }, "Wrong password", "Check it and try again."));
     expect(announce).toHaveBeenCalledTimes(1);
     expect(announce).toHaveBeenCalledWith(spoken);
   });
 
-  test.each(["default", "warning", "info"] as const)("%s is not announced", async (variant) => {
+  test.each(["default", "info"] as const)("%s is not announced", async (variant) => {
     await render(alertUI({ variant }, "Heads up", "Your session expires soon."));
     expect(announce).not.toHaveBeenCalled();
   });
@@ -181,7 +182,7 @@ describe("Alert announcements", () => {
     expect(announce).toHaveBeenLastCalledWith("Error: Too many attempts. Try again later.");
   });
 
-  test("announced when it changes to error or success, silent when it changes away", async () => {
+  test("announced when it changes to error, success or warning, silent when it changes away", async () => {
     const { rerender } = await render(alertUI({ variant: "default" }, "Saving"));
     expect(announce).not.toHaveBeenCalled();
     await rerender(alertUI({ variant: "success" }, "Saved"));
@@ -189,6 +190,9 @@ describe("Alert announcements", () => {
     expect(announce).toHaveBeenLastCalledWith("Success: Saved");
     await rerender(alertUI({ variant: "info" }, "Saved"));
     expect(announce).toHaveBeenCalledTimes(1);
+    await rerender(alertUI({ variant: "warning" }, "Saved"));
+    expect(announce).toHaveBeenCalledTimes(2);
+    expect(announce).toHaveBeenLastCalledWith("Warning: Saved");
   });
 
   test("announced again when it is shown again after being removed", async () => {
