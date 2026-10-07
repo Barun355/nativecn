@@ -16,6 +16,7 @@
     "react-native": "*"
   },
   "devDependencies": {
+    "@hookform/resolvers": "^5.9.1",
     "@react-native-async-storage/async-storage": "2.2.0",
     "@testing-library/react-native": "catalog:",
     "@types/jest": "catalog:",
