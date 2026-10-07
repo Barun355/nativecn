@@ -29,6 +29,10 @@ export default [
           "createStyles((t) => styles)":
             "returns a useStyles() hook; StyleSheet.create runs once per Scale and Scheme and is cached",
         },
+        ThemeContext: {
+          ThemeContext:
+            "the React context useTheme() reads; ThemeProvider provides it. Only for previews that layer a Theme over the app's (the Showcase App's live Preset); apps never need it",
+        },
         useNavigationTheme: {
           "useNavigationTheme()":
             "an Expo Router / React Navigation theme from the Theme, for headers, tab bars and drawers",

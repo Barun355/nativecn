@@ -63,6 +63,11 @@
         "$TURBO_ROOT$/docs/adr/**"
       ]
     },
+    "showcase#test": {
+      "dependsOn": ["transit"],
+      "outputs": [],
+      "inputs": ["$TURBO_DEFAULT$", "$TURBO_ROOT$/apps/web/public/fonts/**"]
+    },
     "nativecn-cli#test": {
       "dependsOn": ["transit"],
       "outputs": [],

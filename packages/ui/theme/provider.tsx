@@ -31,7 +31,11 @@ export type Theme = ScaledTokens & {
   config: typeof config;
 };
 
-const ThemeContext = createContext<Theme | null>(null);
+/**
+ * The Theme that useTheme() reads. Apps never need it: ThemeProvider provides it. It is exported
+ * for previews that layer a Theme over the app's (the Showcase App's live Preset).
+ */
+export const ThemeContext = createContext<Theme | null>(null);
 
 type ThemeProviderProps = {
   children: ReactNode;

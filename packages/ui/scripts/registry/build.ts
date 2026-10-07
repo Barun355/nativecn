@@ -160,6 +160,7 @@ async function buildPresets(out: string): Promise<void> {
       ].join("\n"),
     );
   const { FONTS } = await import(pathToFileURL(path.join(UI, "presets", "fonts.ts")).href);
+  const { RADIUS_BASE } = await import(pathToFileURL(path.join(UI, "presets", "radius.ts")).href);
   const dir = path.join(out, "presets");
   fs.rmSync(dir, { recursive: true, force: true });
   const write = (rel: string, data: unknown) => {
@@ -172,7 +173,7 @@ async function buildPresets(out: string): Promise<void> {
     baseColor: options.BASE_COLORS,
     accentColor: options.ACCENT_COLORS,
     radius: options.RADII,
-    radiusBase: { default: null, none: 0, small: 7, medium: 10, large: 14 },
+    radiusBase: RADIUS_BASE,
     bodyFont: options.FONTS,
     headingFont: options.HEADING_FONTS,
     shared: SHARED_COLOR_VALUES,

@@ -2,6 +2,7 @@ export { colors, type ColorRole, type Colors } from "./colors";
 export { config } from "./config";
 export { useNavigationTheme } from "./navigation";
 export {
+  ThemeContext,
   ThemeProvider,
   createStyles,
   resetStyles,
