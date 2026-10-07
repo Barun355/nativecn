@@ -1,5 +1,6 @@
 import { useFonts, type FontSource } from "expo-font";
 import * as SplashScreen from "expo-splash-screen";
+import * as SystemUI from "expo-system-ui";
 import { createContext, use, useEffect, useMemo, type ReactNode } from "react";
 import { Appearance, StyleSheet, useColorScheme, useWindowDimensions } from "react-native";
 
@@ -52,6 +53,8 @@ export function ThemeProvider({ children, scheme: forced, fonts = {} }: ThemePro
   const system = useColorScheme();
   const { width, height } = useWindowDimensions();
   const [fontsLoaded, fontError] = useFonts(fonts);
+  // Set when this ThemeProvider is nested in another one (a dark hero, a preview).
+  const parent = use(ThemeContext);
 
   const schemePreference = forced ?? preference;
   const resolved: Scheme =
@@ -64,6 +67,14 @@ export function ThemeProvider({ children, scheme: forced, fonts = {} }: ThemePro
     // Native chrome (keyboard, status bar, Switch) follows the app's Scheme, not just our Components.
     Appearance.setColorScheme(preference === "system" ? "unspecified" : preference);
   }, [preference]);
+
+  const background = colors[resolved].background;
+  useEffect(() => {
+    // The window behind the app (the status bar and navigation bar strips on Android, what shows
+    // behind the app on iOS) follows the Scheme too; otherwise it stays white in dark mode. Only
+    // the app's own ThemeProvider sets it, never a nested one.
+    if (!parent) SystemUI.setBackgroundColorAsync(background).catch(() => {});
+  }, [parent, background]);
 
   useEffect(() => {
     if (ready) SplashScreen.hideAsync().catch(() => {});

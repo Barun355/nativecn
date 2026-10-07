@@ -67,6 +67,8 @@ test.each([
 ])("the %s tab renders", async (url, title) => {
   await open(url);
   expect(screen.getAllByText(title).length).toBeGreaterThan(0);
+  // One title per tab: the Screen's own h1, no navigator header above it (#153).
+  expect(screen.getAllByRole("heading", { name: title })).toHaveLength(1);
 });
 
 test("the Components tab lists every Component", async () => {

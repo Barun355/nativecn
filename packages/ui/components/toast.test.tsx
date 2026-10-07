@@ -36,6 +36,16 @@ jest.mock("react-native-screens", () => {
   };
 });
 
+// Gesture roots become marked Views, so the tests can see where they are and how big.
+jest.mock("react-native-gesture-handler", () => {
+  const actual = jest.requireActual("react-native-gesture-handler");
+  const { View: RNView } = jest.requireActual("react-native");
+  return {
+    ...actual,
+    GestureHandlerRootView: (props: object) => <RNView {...props} testID="gesture-root" />,
+  };
+});
+
 // Variant icons become marked Views, so each Toast's icon can be found.
 jest.mock("lucide-react-native", () => {
   const actual = jest.requireActual("lucide-react-native");
@@ -65,6 +75,15 @@ async function renderToaster(props: ToasterProps = {}) {
       </ThemeProvider>
     </SafeAreaInsetsContext>,
   );
+}
+
+type Node = ReturnType<typeof screen.getByTestId>;
+
+/** The testIDs of an element's ancestors, nearest first. */
+function ancestorIds(el: Node): string[] {
+  const ids: string[] = [];
+  for (let p = el.parent; p; p = p.parent) if (p.props?.testID) ids.push(p.props.testID);
+  return ids;
 }
 
 /** Titles of the Toasts on screen, top to bottom. */
@@ -176,6 +195,41 @@ describe("Toaster", () => {
     await renderToaster();
     await act(() => toast("Saved"));
     expect(screen.getByTestId("toaster")).toHaveStyle({ top: INSETS.top });
+  });
+
+  // #153: Android ignores pointerEvents on a gesture root, so a full-screen one takes every tap.
+  describe("on Android, taps outside a Toast reach the Screen", () => {
+    const os = Platform.OS;
+    beforeEach(() => {
+      Platform.OS = "android";
+    });
+    afterEach(() => {
+      Platform.OS = os;
+    });
+
+    test("with no Toasts, nothing is drawn that could take a touch", async () => {
+      await renderToaster();
+      expect(screen.queryAllByTestId("gesture-root", hidden)).toEqual([]);
+      const viewport = screen.getByTestId("toaster", hidden);
+      expect(viewport.props.pointerEvents).toBe("box-none");
+      expect(viewport.children).toEqual([]);
+    });
+
+    test("no gesture root covers the screen: each wraps only its Toast", async () => {
+      await renderToaster();
+      const ids = await act(() => [toast("One"), toast("Two")]);
+      const roots = screen.getAllByTestId("gesture-root", hidden);
+      expect(roots).toHaveLength(ids.length);
+      for (const root of roots) {
+        // Inside the box-none viewport, never around it, and not absolutely filling anything.
+        expect(ancestorIds(root)).toContain("toaster");
+        expect(StyleSheet.flatten(root.props.style)?.position).not.toBe("absolute");
+      }
+      // ...and each Toast's swipe still has a gesture root, even in apps without one at the root.
+      for (const id of ids)
+        expect(ancestorIds(screen.getByTestId(`toast-${id}`, hidden))).toContain("gesture-root");
+      expect(ancestorIds(screen.getByTestId("toaster", hidden))).not.toContain("gesture-root");
+    });
   });
 
   test("auto-dismisses after 4s", async () => {

@@ -1,5 +1,6 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { act, render, screen } from "@testing-library/react-native";
+import * as SystemUI from "expo-system-ui";
 import { StyleSheet, Text } from "react-native";
 
 import { Button } from "@/registry/components/button";
@@ -83,6 +84,24 @@ test("Components rebuild their cached styles for the new Preset", async () => {
   // Vega's Button uses radius.md, the radius base less 2: 10 - 2, then 14 - 2 (before Scale).
   expect(radius()).toBeGreaterThan(before);
   expect(radius() / before).toBeCloseTo(12 / 8, 1);
+});
+
+// #153: the window behind the app (status and navigation bar strips) follows the Preset's
+// background, not only the Scheme's.
+test("the window background follows the Preset's base colour", async () => {
+  await render(
+    <ThemeProvider scheme="dark">
+      <LivePreset>
+        <Probe />
+      </LivePreset>
+    </ThemeProvider>,
+  );
+  await screen.findByTestId("probe");
+  const zinc: Preset = { ...DEFAULT_PRESET, baseColor: "zinc" };
+  await act(async () => setPreset(zinc));
+  const background = presetTheme(zinc).colors.dark.background;
+  expect(background).not.toBe(presetTheme(DEFAULT_PRESET).colors.dark.background);
+  expect(SystemUI.setBackgroundColorAsync).toHaveBeenLastCalledWith(background);
 });
 
 test("the Preset is kept on the device as its short code", async () => {

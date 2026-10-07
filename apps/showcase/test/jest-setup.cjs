@@ -44,3 +44,9 @@ jest.mock("expo-image", () => {
   const { View } = require("react-native");
   return { Image: View };
 });
+
+// expo-system-ui (the Theme sets the window background with it): no native module in Jest.
+jest.mock("expo-system-ui", () => ({
+  setBackgroundColorAsync: jest.fn(() => Promise.resolve()),
+  getBackgroundColorAsync: jest.fn(() => Promise.resolve(null)),
+}));

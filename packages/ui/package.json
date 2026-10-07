@@ -28,6 +28,7 @@
     "expo-image": "~57.0.5",
     "expo-router": "~57.0.24",
     "expo-splash-screen": "~57.0.9",
+    "expo-system-ui": "~57.0.4",
     "jest": "catalog:",
     "jest-expo": "catalog:",
     "lucide-react-native": "^1.51.0",

@@ -1,4 +1,5 @@
-import { useMemo, type ReactNode } from "react";
+import * as SystemUI from "expo-system-ui";
+import { useEffect, useMemo, type ReactNode } from "react";
 
 import {
   ThemeContext,
@@ -39,6 +40,13 @@ export function LivePreset({ children }: { children: ReactNode }) {
       colors: { ...colors[base.scheme] },
     };
   }, [base, preset]);
+
+  // The ThemeProvider keeps the window background on the Scheme's background; a new Preset can
+  // change that colour (its base colour) without a Scheme change.
+  const background = theme.colors.background;
+  useEffect(() => {
+    SystemUI.setBackgroundColorAsync(background).catch(() => {});
+  }, [background]);
 
   if (!hydrated) return null;
   return <ThemeContext value={theme}>{children}</ThemeContext>;

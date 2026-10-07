@@ -58,7 +58,7 @@ The root Layout snippet has this shape:
 </ThemeProvider>
 ```
 
-- `ThemeProvider` (from `@/theme`) wraps the whole app. `useTheme()` throws outside it.
+- `ThemeProvider` (from `@/theme`) wraps the whole app. `useTheme()` throws outside it. It also keeps the native window background on the Scheme's background (with `expo-system-ui`, installed with the Theme), so the strips behind the status bar and the Android navigation bar are dark in dark mode and light in light mode.
 - `KeyboardProvider` comes from `react-native-keyboard-controller`.
 - `<Toaster />` renders once, after the navigator, so Toasts appear above every Screen.
 
@@ -95,5 +95,6 @@ Both `create` and `init` take these flags. See the [CLI reference](/docs/cli#ini
 ## After installing
 
 - Fonts are embedded by a Config Plugin, so a development build needs a native rebuild (`npx expo run:ios` or `npx expo run:android`). Expo Go works without one.
+- Keep `"userInterfaceStyle": "automatic"` in `app.json` (Expo's default, and the Starter's), so the system's dark mode reaches the app and the Scheme can follow it.
 - Add Components with [`nativecn-cli add`](/docs/cli#add).
 - Ask your agent to build something: it already has the Rules, Skills and MCP server.
