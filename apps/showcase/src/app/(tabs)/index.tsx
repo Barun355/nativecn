@@ -1,72 +1,92 @@
+import { router } from "expo-router";
+import { SearchX, Sparkles } from "lucide-react-native";
 import { useState } from "react";
-import { Pressable, Text, View } from "react-native";
 
-import { Screen } from "@/components/screen";
+import { Padded, TabScreen } from "@/components/tab-screen";
+import { componentGroups, foundations, type CatalogItem } from "@/catalog";
 import { registryIndex } from "@/registry-index";
-import { createStyles } from "@/registry/theme";
+import { EmptyState } from "@/registry/components/empty-state";
+import {
+  ListItem,
+  ListSection,
+  ListSectionFooter,
+  ListSectionHeader,
+} from "@/registry/components/list";
+import { SearchField } from "@/registry/components/search-field";
 
-const names = Object.keys(registryIndex);
+const COMPONENT_COUNT = componentGroups(registryIndex).reduce((n, g) => n + g.items.length, 0);
 
-// Components tab. For now: every built Registry Item from the generated index, loading its
-// source on demand. Grouped, searchable detail pages follow (#29).
+// Components tab (decision #29): every Component, searchable and grouped, from the generated
+// Registry index; each row opens a page with its live examples. The Feedback group starts with
+// live demos of Toast, Alert, Skeleton, Progress, field errors and loading Buttons.
 export default function ComponentsScreen() {
+  const [query, setQuery] = useState("");
+  const groups = componentGroups(registryIndex, query);
+  const primitives = foundations(registryIndex, query);
+  const searching = query.trim().length > 0;
+
   return (
-    <Screen
+    <TabScreen
       title="Components"
-      description={`${names.length} Registry Items, imported from packages/ui source.`}
+      description={`${COMPONENT_COUNT} Components, rendered from the nativecn source in your Preset.`}
     >
-      {names.map((name) => (
-        <ItemRow key={name} name={name} />
+      <Padded>
+        <SearchField
+          value={query}
+          onChangeText={setQuery}
+          placeholder="Search components"
+          returnKeyType="search"
+        />
+      </Padded>
+
+      {groups.map((group) => (
+        <ListSection key={group.id}>
+          <ListSectionHeader>{group.title}</ListSectionHeader>
+          {group.id === "feedback" && !searching ? (
+            <ListItem
+              title="Feedback demos"
+              description="Toast, Alert, Skeleton, Progress, field errors and loading Buttons, working together."
+              icon={Sparkles}
+              chevron
+              onPress={() => router.push("/feedback")}
+            />
+          ) : null}
+          {group.items.map((item) => (
+            <ItemRow key={item.name} item={item} />
+          ))}
+        </ListSection>
       ))}
-    </Screen>
+
+      {primitives.length ? (
+        <ListSection>
+          <ListSectionHeader>Primitives and Theme</ListSectionHeader>
+          {primitives.map((item) => (
+            <ItemRow key={item.name} item={item} />
+          ))}
+          <ListSectionFooter>
+            The foundations Components are built on. They have no look of their own.
+          </ListSectionFooter>
+        </ListSection>
+      ) : null}
+
+      {groups.length === 0 && primitives.length === 0 ? (
+        <EmptyState
+          icon={SearchX}
+          title="No matches"
+          description={`Nothing matches "${query.trim()}". Try a name like Button or a group like Forms.`}
+        />
+      ) : null}
+    </TabScreen>
   );
 }
 
-function ItemRow({ name }: { name: string }) {
-  const styles = useStyles();
-  const entry = registryIndex[name]!;
-  const [exports, setExports] = useState<string[] | null>(null);
-  const [error, setError] = useState<string | null>(null);
-
-  const load = () => {
-    entry
-      .load()
-      .then((mod) => setExports(Object.keys(mod).sort()))
-      .catch((e: Error) => setError(e.message));
-  };
-
+function ItemRow({ item }: { item: CatalogItem }) {
   return (
-    <Pressable
-      role="button"
-      aria-label={`${name}: load source`}
-      onPress={load}
-      style={({ pressed }) => [styles.row, pressed && styles.pressed]}
-    >
-      <View style={styles.header}>
-        <Text style={styles.name}>{name}</Text>
-        <Text style={styles.type}>{entry.type.replace("registry:", "")}</Text>
-      </View>
-      <Text style={styles.description}>{entry.description}</Text>
-      {exports ? <Text style={styles.exports}>Exports: {exports.join(", ")}</Text> : null}
-      {error ? <Text style={styles.error}>{error}</Text> : null}
-    </Pressable>
+    <ListItem
+      title={item.title}
+      description={item.description}
+      chevron
+      onPress={() => router.push({ pathname: "/component/[name]", params: { name: item.name } })}
+    />
   );
 }
-
-const useStyles = createStyles((t) => ({
-  row: {
-    padding: t.spacing[4],
-    gap: t.spacing[1],
-    borderRadius: t.radius.lg,
-    borderWidth: t.borderWidth.default,
-    borderColor: t.colors.border,
-    backgroundColor: t.colors.card,
-  },
-  pressed: { backgroundColor: t.colors.accent },
-  header: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
-  name: { ...t.type.label, color: t.colors.cardForeground },
-  type: { ...t.type.caption, color: t.colors.mutedForeground },
-  description: { ...t.type.body, color: t.colors.mutedForeground },
-  exports: { ...t.type.caption, color: t.colors.foreground },
-  error: { ...t.type.caption, color: t.colors.destructive },
-}));
