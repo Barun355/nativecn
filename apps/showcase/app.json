@@ -12,10 +12,19 @@
     "android": {
       "package": "dev.nativecn.showcase"
     },
-    "plugins": ["expo-router"],
+    "plugins": [
+      "expo-router"
+    ],
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "fd21cb93-cc23-48d6-8961-6a7c11d8e265"
+      }
+    },
+    "owner": "baruntiwary"
   }
 }
