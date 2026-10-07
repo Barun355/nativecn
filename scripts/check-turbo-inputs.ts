@@ -35,6 +35,11 @@ const RUNTIME_READS: RuntimeRead[] = [
     why: "presets/fonts.test.ts checks the served font files",
   },
   {
+    tasks: ["showcase#test"],
+    files: ["apps/web/public/fonts/"],
+    why: "scripts/fonts.test.ts checks the Showcase bundles every served font file",
+  },
+  {
     tasks: ["ui#test", "ui#build"],
     files: ["docs/adr/"],
     why: "dependency-rule.ts checks each recorded exception's ADR exists",
