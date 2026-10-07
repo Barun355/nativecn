@@ -12,9 +12,7 @@
     "android": {
       "package": "dev.nativecn.showcase"
     },
-    "plugins": [
-      "expo-router"
-    ],
+    "plugins": ["expo-router"],
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
