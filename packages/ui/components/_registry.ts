@@ -663,9 +663,9 @@ export default [
           disabled: "boolean: no dragging or actions, dimmed",
           "aria-label": "string: the accessible name (a FormField label provides it)",
           "aria-valuetext": 'string: a spoken value with units, e.g. "40 percent"',
-          style: "ViewStyle, layout only (e.g. width), merged last",
+          style: "ViewStyle, layout only (e.g. width, flex), merged last onto the outermost View",
         },
-        docs: "Needs GestureHandlerRootView at the app root (Expo Router provides it). The drag runs on the UI thread; horizontal drags only, so a vertical scroll still works. A light haptic tick per step when config.haptics is on. Track and thumb sizes come from the slider.track and slider.thumb Style Slots.",
+        docs: "Brings its own small GestureHandlerRootView, sized to the Slider, so it works whether or not the app root has one (Expo Router does not add one). The drag runs on the UI thread; horizontal drags only, so a vertical scroll still works. A light haptic tick per step when config.haptics is on. Track and thumb sizes come from the slider.track and slider.thumb Style Slots.",
         a11y: [
           "An adjustable control: role slider on Android and web, and accessibilityRole adjustable on iOS (a recorded exception, so VoiceOver users can swipe up and down).",
           "It exposes aria-valuemin, aria-valuemax and aria-valuenow; the increment and decrement actions move it one step.",

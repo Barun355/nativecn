@@ -9,7 +9,7 @@ import {
   type ViewProps,
   type ViewStyle,
 } from "react-native";
-import { Gesture, GestureDetector } from "react-native-gesture-handler";
+import { Gesture, GestureDetector, GestureHandlerRootView } from "react-native-gesture-handler";
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from "react-native-reanimated";
 import { scheduleOnRN } from "react-native-worklets";
 
@@ -44,7 +44,7 @@ export type SliderProps = Omit<
   step?: number;
   /** Blocks dragging and the accessibility actions, and is announced as disabled. */
   disabled?: boolean;
-  /** Layout only (e.g. width), merged last onto the root. */
+  /** Layout only (e.g. width, flex, margins), merged last onto the outermost View. */
   style?: StyleProp<ViewStyle>;
   ref?: Ref<View>;
 };
@@ -86,8 +86,11 @@ const useStyles = createStyles((t) => {
   const thumb = slot("slider.thumb", t);
   const track = slot("slider.track", t);
   return {
+    // GestureHandlerRootView defaults to flex: 1; this one stays the Slider's own size.
+    gestureRoot: { flex: 0 },
     // At least the 48 touch target tall, so the whole row is easy to grab.
     root: {
+      flexGrow: 1,
       height: Math.max(Number(thumb.height), t.minTouchTarget),
       justifyContent: "center",
     },
@@ -252,31 +255,36 @@ export function Slider({
   };
 
   return (
-    <GestureDetector gesture={gesture}>
-      <View
-        accessible
-        {...adjustableRole}
-        aria-label={ariaLabel ?? field?.accessibilityProps["aria-label"]}
-        accessibilityHint={accessibilityHint ?? field?.accessibilityProps.accessibilityHint}
-        aria-valuemin={min}
-        aria-valuemax={max}
-        aria-valuenow={current}
-        aria-disabled={isDisabled}
-        accessibilityActions={[{ name: "increment" }, { name: "decrement" }]}
-        onAccessibilityAction={handleAccessibilityAction}
-        onLayout={handleLayout}
-        testID={testID}
-        style={[styles.root, isDisabled ? styles.disabled : null, style]}
-        {...props}
-      >
-        <View style={styles.track}>
-          <Animated.View style={[styles.range, rangeStyle]} />
+    // The drag needs a gesture root above it, and the app's root Layout may not have one (#153).
+    // This one is only as big as the Slider, so it takes no touches meant for the Screen; inside
+    // another gesture root it simply defers to it. `style` lays it out, as the outermost View.
+    <GestureHandlerRootView style={[styles.gestureRoot, style]}>
+      <GestureDetector gesture={gesture}>
+        <View
+          accessible
+          {...adjustableRole}
+          aria-label={ariaLabel ?? field?.accessibilityProps["aria-label"]}
+          accessibilityHint={accessibilityHint ?? field?.accessibilityProps.accessibilityHint}
+          aria-valuemin={min}
+          aria-valuemax={max}
+          aria-valuenow={current}
+          aria-disabled={isDisabled}
+          accessibilityActions={[{ name: "increment" }, { name: "decrement" }]}
+          onAccessibilityAction={handleAccessibilityAction}
+          onLayout={handleLayout}
+          testID={testID}
+          style={[styles.root, isDisabled ? styles.disabled : null]}
+          {...props}
+        >
+          <View style={styles.track}>
+            <Animated.View style={[styles.range, rangeStyle]} />
+          </View>
+          <Animated.View
+            testID={testID ? `${testID}-thumb` : undefined}
+            style={[styles.thumb, thumbStyle]}
+          />
         </View>
-        <Animated.View
-          testID={testID ? `${testID}-thumb` : undefined}
-          style={[styles.thumb, thumbStyle]}
-        />
-      </View>
-    </GestureDetector>
+      </GestureDetector>
+    </GestureHandlerRootView>
   );
 }
