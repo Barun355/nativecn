@@ -1,6 +1,6 @@
 {
   "name": "nativecn-cli",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "license": "MIT",
   "type": "module",
   "description": "Add nativecn components to Expo apps",
