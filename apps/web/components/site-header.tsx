@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 
 import { MobileNav } from "@/components/mobile-nav";
@@ -11,8 +12,23 @@ export function SiteHeader() {
     <header className="sticky top-0 z-40 border-b bg-background/90 backdrop-blur">
       <div className="mx-auto flex h-14 max-w-screen-2xl items-center gap-4 px-4 md:px-6">
         <MobileNav nav={nav} />
-        <Link href="/" className="font-semibold tracking-tight">
-          nativecn
+        <Link href="/" className="inline-flex shrink-0 items-center" aria-label="nativecn home">
+          <Image
+            src="/brand/logo-lockup-light.png"
+            alt=""
+            width={174}
+            height={64}
+            className="h-7 w-auto dark:hidden"
+            priority
+          />
+          <Image
+            src="/brand/logo-lockup-dark.png"
+            alt=""
+            width={174}
+            height={64}
+            className="hidden h-7 w-auto dark:block"
+            priority
+          />
         </Link>
         <nav aria-label="Main" className="hidden items-center gap-4 text-sm md:flex">
           <Link href="/docs" className="text-muted-foreground hover:text-foreground">

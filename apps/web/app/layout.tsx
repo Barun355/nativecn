@@ -31,12 +31,27 @@ export const metadata: Metadata = {
   title: { default: "nativecn", template: "%s – nativecn" },
   description:
     "shadcn for Expo apps: Components you copy into your app and own, built for AI agents to build and verify mobile apps.",
+  openGraph: {
+    type: "website",
+    siteName: "nativecn",
+    title: "nativecn",
+    description:
+      "shadcn for Expo apps: Components you copy into your app and own, built for AI agents to build and verify mobile apps.",
+    images: [{ url: "/opengraph-image.png", width: 1200, height: 630, alt: "nativecn" }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "nativecn",
+    description:
+      "shadcn for Expo apps: Components you copy into your app and own, built for AI agents to build and verify mobile apps.",
+    images: ["/twitter-image.png"],
+  },
 };
 
 export const viewport: Viewport = {
   themeColor: [
     { media: "(prefers-color-scheme: light)", color: "#ffffff" },
-    { media: "(prefers-color-scheme: dark)", color: "#0a0a0a" },
+    { media: "(prefers-color-scheme: dark)", color: "#0B0B0B" },
   ],
 };
 

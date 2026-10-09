@@ -6,3 +6,6 @@ dist/
 # Native projects from `expo prebuild` (EAS Build generates them)
 /android
 /ios
+
+**/**/*.apk
+**/**/*.ipa
