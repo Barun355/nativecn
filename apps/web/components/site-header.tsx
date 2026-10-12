@@ -34,6 +34,9 @@ export function SiteHeader() {
           <Link href="/docs" className="text-muted-foreground hover:text-foreground">
             Docs
           </Link>
+          <Link href="/create" className="text-muted-foreground hover:text-foreground">
+            Create
+          </Link>
           <Link href="/docs/changelog" className="text-muted-foreground hover:text-foreground">
             Changelog
           </Link>
