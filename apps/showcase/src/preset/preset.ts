@@ -3,8 +3,12 @@
 import {
   DEFAULT_PRESET,
   PRESET_OPTIONS,
+  createCommand,
   decodePreset,
+  describePreset,
   encodePreset,
+  optionLabel,
+  promptForAi,
   type AccentColor,
   type BaseColor,
   type Preset,
@@ -19,7 +23,18 @@ import { fontTokens, type FontTokens } from "../../../../packages/ui/presets/fon
 import { RADIUS_BASE } from "../../../../packages/ui/presets/radius.ts";
 import type { PresetColors } from "../../../../packages/ui/presets/types.ts";
 
-export { DEFAULT_PRESET, PRESET_OPTIONS, decodePreset, encodePreset, type Preset };
+// The Preset in words and as commands is shared with the builder on nativecn.dev (packages/preset).
+export {
+  DEFAULT_PRESET,
+  PRESET_OPTIONS,
+  createCommand,
+  decodePreset,
+  describePreset,
+  encodePreset,
+  optionLabel,
+  promptForAi,
+  type Preset,
+};
 
 /** The URL scheme the Showcase App answers to (app.json `scheme`). */
 export const SCHEME = "nativecn";
@@ -35,11 +50,6 @@ export function presetLink(preset: Preset): string {
   return `${SCHEME}://preset/${encodePreset(preset)}`;
 }
 
-/** The `create` command for this Preset. */
-export function createCommand(preset: Preset): string {
-  return `npx nativecn-cli@latest create my-app --preset ${encodePreset(preset)}`;
-}
-
 /** What Share sends: the code, the command that uses it and the link that opens it here. */
 export function shareMessage(preset: Preset): string {
   return [
@@ -47,11 +57,6 @@ export function shareMessage(preset: Preset): string {
     createCommand(preset),
     `Open in the Showcase App: ${presetLink(preset)}`,
   ].join("\n");
-}
-
-/** "Copy for AI": the code and its settings in words, and the command an agent runs with it. */
-export function promptForAi(preset: Preset): string {
-  return `Use the nativecn Preset ${encodePreset(preset)} (${describePreset(preset)}). Create the app with: ${createCommand(preset)}`;
 }
 
 /** The Theme values a Preset stands for: what `create`/`init` write into theme/colors.ts and tokens.ts. */
@@ -83,30 +88,4 @@ export function swatchColor(
   return field === "accentColor"
     ? ACCENT_COLOR_VALUES[option as AccentColor][scheme].primary
     : BASE_COLOR_VALUES[option as BaseColor][scheme].mutedForeground;
-}
-
-const WORDS: Record<string, string> = { dm: "DM", jetbrains: "JetBrains" };
-
-/** An option id as people read it: `source-serif-4` → `Source Serif 4`, `dm-sans` → `DM Sans`. */
-export function optionLabel(id: string): string {
-  if (id === "inherit") return "Same as body";
-  return id
-    .split("-")
-    .map((w) => WORDS[w] ?? w.charAt(0).toUpperCase() + w.slice(1))
-    .join(" ");
-}
-
-/** One line in words, e.g. "Nova, zinc, violet accent, large radius, Lora with Inter headings". */
-export function describePreset(preset: Preset): string {
-  const font =
-    preset.headingFont === "inherit" || preset.headingFont === preset.bodyFont
-      ? optionLabel(preset.bodyFont)
-      : `${optionLabel(preset.bodyFont)} with ${optionLabel(preset.headingFont)} headings`;
-  return [
-    optionLabel(preset.style),
-    preset.baseColor,
-    `${preset.accentColor} accent`,
-    `${preset.radius} radius`,
-    font,
-  ].join(", ");
 }
