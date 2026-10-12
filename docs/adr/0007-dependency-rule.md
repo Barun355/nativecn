@@ -11,6 +11,8 @@ Any other package needs its own ADR that names the item that needs it and says w
 
 Under this rule, Lucide's `react-native-svg` is SDK-pinned, and `lucide-react-native` is covered by the Lucide decision.
 
+Scope: the rule covers only what nativecn writes into a user's app. nativecn's own website (`apps/web`), Showcase App and build tooling are outside it. For example, the Preset builder's react-native-web preview (#80, PR #160) adds website-only packages. (Owner decision, 2026-10-13.)
+
 This keeps the "lightweight, faster builds" promise checkable. Every addition is either version-locked by Expo or deliberately argued for, and "can I add library X?" has one place to look.
 
 ## Consequences
