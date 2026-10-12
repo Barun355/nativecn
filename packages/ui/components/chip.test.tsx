@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from "@testing-library/react-native";
+import { fireEvent, render, screen, within } from "@testing-library/react-native";
 import * as Haptics from "expo-haptics";
 import { Star } from "lucide-react-native";
 import { Dimensions, StyleSheet } from "react-native";
@@ -111,26 +111,93 @@ describe("Chip: onRemove", () => {
     const onRemove = jest.fn();
     const onSelectedChange = jest.fn();
     await renderChip({ onRemove, defaultSelected: false, onSelectedChange });
-    await fireEvent.press(screen.getByTestId("chip-remove", hidden));
+    await fireEvent.press(screen.getByRole("button", { name: "Remove Vegan" }));
     expect(onRemove).toHaveBeenCalledTimes(1);
     expect(onSelectedChange).not.toHaveBeenCalled();
   });
 
-  test("screen readers get a Remove action; the × button is hidden from them", async () => {
+  test("the Chip and its × are two sibling controls, each with its own name", async () => {
+    const onPress = jest.fn();
     const onRemove = jest.fn();
-    const root = await renderChip({ onRemove });
-    expect(root.props.accessibilityActions).toEqual([{ name: "remove", label: "Remove" }]);
-    await fireEvent(root, "accessibilityAction", { nativeEvent: { actionName: "remove" } });
-    expect(onRemove).toHaveBeenCalledTimes(1);
-    expect(screen.getAllByRole("button")).toHaveLength(1);
+    await renderChip({ onPress, onRemove });
+    const chip = screen.getByRole("button", { name: "Vegan" });
+    const remove = screen.getByRole("button", { name: "Remove Vegan" });
+    expect(screen.getAllByRole("button")).toHaveLength(2);
+    expect(screen.getByTestId("chip-remove")).toBe(remove);
+    // Not nested: a button inside a button is invalid HTML on react-native-web.
+    expect(within(chip).queryByRole("button", { name: "Remove Vegan" })).toBeNull();
+    expect(within(remove).queryByRole("button", { name: "Vegan" })).toBeNull();
+    expect(chip.parent).toBe(remove.parent);
+    await fireEvent.press(chip);
+    expect(onPress).toHaveBeenCalledTimes(1);
+    expect(onRemove).not.toHaveBeenCalled();
+  });
+
+  test("a toggle Chip keeps its checkbox role next to the × button", async () => {
+    await renderChip({ onRemove: jest.fn(), defaultSelected: true });
+    const chip = screen.getByRole("checkbox", { name: "Vegan" });
+    expect(chip).toBeChecked();
+    expect(within(chip).queryByRole("button")).toBeNull();
+    expect(screen.getByRole("button", { name: "Remove Vegan" })).toBeOnTheScreen();
+  });
+
+  test("the × reaches 48 through hitSlop", async () => {
+    await renderChip({ onRemove: jest.fn() });
+    const remove = screen.getByRole("button", { name: "Remove Vegan" });
+    const { top, bottom, left, right } = remove.props.hitSlop;
+    expect(s(16) + top + bottom).toBeCloseTo(48);
+    expect(s(16) + left + right).toBeCloseTo(48);
+  });
+
+  test("the pill around both controls keeps the chip.root look per Style", async () => {
+    await renderChip({ onRemove: jest.fn(), defaultSelected: true });
+    let pill = flat(screen.getByRole("checkbox").parent as never);
+    expect(pill).toMatchObject({ height: s(32), borderRadius: 9999 });
+    expect(pill.backgroundColor).toBe(colors.light.primary);
+    setActiveStyle("nova");
+    await renderChip({ onRemove: jest.fn() });
+    pill = flat(screen.getByRole("button", { name: "Vegan" }).parent as never);
+    expect(pill).toMatchObject({ height: s(28), paddingHorizontal: s(10) });
+  });
+
+  test("pressing the Chip gives the whole pill the chip.pressed look", async () => {
+    setActiveStyle("nova");
+    await renderChip({ onRemove: jest.fn() });
+    const chip = screen.getByRole("button", { name: "Vegan" });
+    expect(flat(chip.parent as never).transform).toBeUndefined();
+    await fireEvent(chip, "pressIn");
+    expect(flat(chip.parent as never)).toMatchObject({ transform: [{ scale: 0.98 }] });
+    await fireEvent(chip, "pressOut");
+    expect(flat(chip.parent as never).transform).toBeUndefined();
   });
 
   test("no removal while disabled", async () => {
     const onRemove = jest.fn();
-    const root = await renderChip({ onRemove, disabled: true });
-    await fireEvent.press(screen.getByTestId("chip-remove", hidden));
-    await fireEvent(root, "accessibilityAction", { nativeEvent: { actionName: "remove" } });
+    await renderChip({ onRemove, disabled: true });
+    const remove = screen.getByRole("button", { name: "Remove Vegan" });
+    expect(remove).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Vegan" })).toBeDisabled();
+    await fireEvent.press(remove);
     expect(onRemove).not.toHaveBeenCalled();
+  });
+
+  test("removable Chips in a ChipGroup still select", async () => {
+    const onValueChange = jest.fn();
+    const onRemove = jest.fn();
+    await render(
+      <ThemeProvider scheme="light">
+        <ChipGroup type="multiple" onValueChange={onValueChange}>
+          <Chip value="a" label="Apple" onRemove={onRemove} />
+          <Chip value="b" label="Banana" onRemove={onRemove} />
+        </ChipGroup>
+      </ThemeProvider>,
+    );
+    await fireEvent.press(screen.getByRole("checkbox", { name: "Banana" }));
+    expect(onValueChange).toHaveBeenLastCalledWith(["b"]);
+    expect(screen.getByRole("checkbox", { name: "Banana" })).toBeChecked();
+    await fireEvent.press(screen.getByRole("button", { name: "Remove Apple" }));
+    expect(onRemove).toHaveBeenCalledTimes(1);
+    expect(onValueChange).toHaveBeenCalledTimes(1);
   });
 });
 
