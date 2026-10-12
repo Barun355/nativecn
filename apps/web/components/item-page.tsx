@@ -3,6 +3,7 @@ import { Fragment, type ReactNode } from "react";
 
 import { CodeBlock } from "@/components/code-block";
 import { CopyCommand } from "@/components/copy-command";
+import { DocsPreview } from "@/components/preview/docs-preview";
 import {
   CurrentStyle,
   ForStyle,
@@ -10,8 +11,10 @@ import {
   StyleProvider,
   StyleSwitch,
 } from "@/components/style-switch";
+import { docsPreview } from "@/lib/docs-preview";
 import { HEADINGS, type CodeFile, type ItemDoc, type ItemLink } from "@/lib/item-doc";
 import type { Heading } from "@/lib/markdown";
+import { previewFontFaces } from "@/lib/preview-fonts";
 
 /** Renders `code` spans in Registry text (descriptions, props, notes). */
 function Inline({ text }: { text: string }) {
@@ -84,6 +87,11 @@ export function ItemPage({
   built: boolean;
 }) {
   const doc = docs[0]!;
+  const preview = docsPreview({
+    name: doc.name,
+    kind: doc.kind,
+    examples: doc.examples.map((e) => e.name),
+  });
   const perStyle = (render: (d: ItemDoc) => ReactNode) =>
     docs.map((d) => (
       <ForStyle key={d.style} style={d.style}>
@@ -105,6 +113,14 @@ export function ItemPage({
           <StyleSwitch />
         </div>
       </div>
+
+      {preview && (
+        <>
+          {/* The Preset fonts, for the preview and the spec card (each face loads only when used). */}
+          <style>{previewFontFaces()}</style>
+          <DocsPreview plan={preview} />
+        </>
+      )}
 
       {!built && (
         <p className="rounded-md border border-dashed p-3 text-sm">

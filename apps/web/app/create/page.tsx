@@ -32,6 +32,7 @@ export default async function CreatePage({
       <PresetBuilder
         initialPreset={preset}
         invalidCode={invalid ? (Array.isArray(code) ? code[0] : code) : undefined}
+        fromLink={Boolean(code) && !invalid}
       />
     </main>
   );

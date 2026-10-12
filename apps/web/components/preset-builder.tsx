@@ -19,14 +19,18 @@ import { CopyCommand } from "@/components/copy-command";
 import { PresetPreview } from "@/components/preview/preset-preview";
 import type { PreviewScheme } from "@/components/preview/theme";
 import { PRESET_CONTROLS, builderHref, previewValues, withSetting } from "@/lib/preset-builder";
+import { browserStorage, rememberPreset } from "@/lib/preset-choice";
 
 export function PresetBuilder({
   initialPreset,
   invalidCode,
+  fromLink = false,
 }: {
   initialPreset: Preset;
   /** The URL's code, when it could not be decoded (the default Preset is shown instead). */
   invalidCode?: string;
+  /** True when the URL's valid code chose `initialPreset` (a shared or docs link). */
+  fromLink?: boolean;
 }) {
   const [preset, setPreset] = useState(initialPreset);
   const [scheme, setScheme] = useState<PreviewScheme>("light");
@@ -34,13 +38,16 @@ export function PresetBuilder({
   const code = encodePreset(preset);
 
   // Keep the URL on the current Preset without a navigation (no re-render of the page, no
-  // history entry per click), so the address bar is always the shareable link.
+  // history entry per click), so the address bar is always the shareable link. The Preset is
+  // also remembered, so the docs pages' preview shows it (#162); the default shown for a missing
+  // or invalid code is not a choice, so it never replaces the remembered one.
   useEffect(() => {
     const href = builderHref(preset);
     if (window.location.pathname + window.location.search !== href) {
       window.history.replaceState(window.history.state, "", href);
     }
-  }, [preset]);
+    if (fromLink || preset !== initialPreset) rememberPreset(browserStorage(), preset);
+  }, [preset, initialPreset, fromLink]);
 
   const set = useCallback(
     (field: PresetField, value: string) => setPreset((p) => withSetting(p, field, value)),

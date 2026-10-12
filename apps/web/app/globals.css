@@ -106,3 +106,12 @@
 [data-preview] :is(input, textarea):focus-visible {
   outline: none;
 }
+
+/*
+ * React Native flex items may shrink below their content; a browser's text fields keep a minimum
+ * width from their default size. Without this, a field with a trailing icon (the password's eye)
+ * pushes the icon out of the field when the phone is narrower than 390 (phone-width browsers).
+ */
+[data-preview] :is(input, textarea) {
+  min-width: 0;
+}
