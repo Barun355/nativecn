@@ -5,7 +5,7 @@ import { StyleSheet, Text } from "react-native";
 
 import { Button } from "@/registry/components/button";
 import { getActiveStyle } from "@/registry/styles";
-import { ThemeProvider, tokens, useTheme } from "@/registry/theme";
+import { ThemeProvider, createStyles, tokens, useTheme } from "@/registry/theme";
 
 import { LivePreset } from "./live-preset";
 import { DEFAULT_PRESET, encodePreset, presetTheme, type Preset } from "./preset";
@@ -102,6 +102,63 @@ test("the window background follows the Preset's base colour", async () => {
   const background = presetTheme(zinc).colors.dark.background;
   expect(background).not.toBe(presetTheme(DEFAULT_PRESET).colors.dark.background);
   expect(SystemUI.setBackgroundColorAsync).toHaveBeenLastCalledWith(background);
+});
+
+// #156: the app is built with the React Compiler (jest.config.cjs runs this file with it too).
+test("switching the Scheme after a colour change shows that Preset's colours for the new Scheme", async () => {
+  const violet: Preset = { ...DEFAULT_PRESET, baseColor: "zinc", accentColor: "violet" };
+  const yellow: Preset = { ...violet, accentColor: "yellow" };
+  const app = (scheme: "light" | "dark") => (
+    <ThemeProvider scheme={scheme}>
+      <LivePreset>
+        <Probe />
+      </LivePreset>
+    </ThemeProvider>
+  );
+  await render(app("light"));
+  await screen.findByTestId("probe");
+  await act(async () => setPreset(violet));
+  expect(probe()[0]).toBe(presetTheme(violet).colors.light.primary);
+  await act(async () => setPreset(yellow));
+  expect(probe()[0]).toBe(presetTheme(yellow).colors.light.primary);
+  await screen.rerender(app("dark"));
+  expect(probe()[0]).toBe(presetTheme(yellow).colors.dark.primary);
+});
+
+test("cached Component styles are kept while neither the Preset nor the Theme changes", async () => {
+  let builds = 0;
+  const useStyles = createStyles((t) => {
+    builds += 1;
+    return { box: { borderRadius: t.radius.md } };
+  });
+  function Styled({ label }: { label: string }) {
+    const styles = useStyles();
+    return <Text style={styles.box}>{label}</Text>;
+  }
+  const app = (label: string) => (
+    <ThemeProvider scheme="light">
+      <LivePreset>
+        <Styled label={label} />
+      </LivePreset>
+    </ThemeProvider>
+  );
+  await render(app("one"));
+  await screen.findByText("one");
+  const first = builds;
+  // A re-render with the same Preset and Theme: the styles built for them still hold.
+  await screen.rerender(app("two"));
+  await screen.findByText("two");
+  expect(builds).toBe(first);
+  // A new Preset: rebuilt before the Component renders with it.
+  await act(async () => setPreset({ ...DEFAULT_PRESET, radius: "large" }));
+  expect(builds).toBe(first + 1);
+});
+
+// The compiler skips a component it cannot compile (a ref read during render, say), which would
+// hide what the test above checks.
+test("LivePreset is compiled whenever this file is", () => {
+  const compiled = (fn: (...args: never[]) => unknown) => /\$\[\d+\]/.test(String(fn));
+  expect(compiled(LivePreset)).toBe(compiled(Probe));
 });
 
 test("the Preset is kept on the device as its short code", async () => {
