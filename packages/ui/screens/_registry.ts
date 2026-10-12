@@ -112,7 +112,7 @@ export default [
     description:
       'A social-first sign-in Screen: a dark brand hero (logo, headline, subtitle, centred) above a panel where Apple and Google lead and "Continue with email" reveals the email form.',
     categories: ["auth"],
-    dependencies: [...FORMS, ...LUCIDE, "react-native-safe-area-context"],
+    dependencies: [...FORMS, ...LUCIDE, "react-native-safe-area-context", "expo-system-ui"],
     registryDependencies: [...FORM_ITEMS, "icon", "separator", "toast"],
     files: ["index.tsx", "components/social-buttons.tsx"],
     meta: {
@@ -126,7 +126,7 @@ export default [
         onSocialSignIn:
           '(provider: "apple" | "google") => void | Promise<void>: run that provider\'s sign-in; a thrown error becomes a toast',
       },
-      docs: `Render it from a route: \`export default function Screen() { return <SignIn02 onSocialSignIn={signInWith} onSubmit={signIn} />; }\`. The hero is drawn with the dark Scheme's Colour Roles in both Schemes (a nested ThemeProvider scheme="dark") and runs under a light status bar. The email form appears only after "Continue with email"; it is validated with zod through react-hook-form, in a FocusChain. ${FEEDBACK} ${BACKEND}`,
+      docs: `Render it from a route: \`export default function Screen() { return <SignIn02 onSocialSignIn={signInWith} onSubmit={signIn} />; }\`. The hero is drawn with the dark Scheme's Colour Roles in both Schemes (a nested ThemeProvider scheme="dark") and runs under a light status bar; while the Block is shown, the window background (what shows behind the status bar where the app is not drawn under it, as in Expo Go on Android) is the hero's colour, and it goes back to the Scheme's when the Block unmounts. The email form appears only after "Continue with email"; it is validated with zod through react-hook-form, in a FocusChain. ${FEEDBACK} ${BACKEND}`,
       a11y: [
         'The headline has role heading; the logo icon and the lines around "or" are decorative.',
         ...FORM_A11Y,

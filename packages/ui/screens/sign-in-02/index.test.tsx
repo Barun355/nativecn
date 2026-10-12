@@ -1,4 +1,6 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react-native";
+import * as SystemUI from "expo-system-ui";
+import { StatusBar } from "react-native";
 
 import { useToastStore } from "@/registry/components/toast";
 import { setActiveStyle } from "@/registry/styles";
@@ -10,6 +12,13 @@ import { SignIn02, type SignIn02Props } from ".";
 jest.mock("@/registry/utils/announce", () => ({ announce: jest.fn() }));
 
 const hidden = { includeHiddenElements: true } as const;
+
+/** The bar style the mounted StatusBars resolve to (React Native merges them, last mounted wins). */
+const statusBarStyle = () =>
+  (StatusBar as unknown as { _propsStack: { barStyle?: { value: string } }[] })._propsStack
+    .map((entry) => entry.barStyle?.value)
+    .filter(Boolean)
+    .pop();
 
 async function renderBlock(props: SignIn02Props = {}, scheme: Scheme = "light") {
   await render(
@@ -45,6 +54,23 @@ describe("sign-in-02", () => {
     expect(headline).toHaveStyle({ color: colors.dark.foreground });
     expect(headline.parent).toHaveStyle({ backgroundColor: colors.dark.background });
   });
+
+  // #159: where the app is not drawn under the status bar (Expo Go on Android), the strip there
+  // is the window background, so the hero paints it while the Block is shown.
+  test.each(["light", "dark"] as const)(
+    "%s Scheme: light status bar and the hero's colour behind it, back to the app's on leaving",
+    async (scheme) => {
+      const setBackground = jest.mocked(SystemUI.setBackgroundColorAsync);
+      setBackground.mockClear();
+      await renderBlock({}, scheme);
+      expect(statusBarStyle()).toBe("light-content");
+      // After the app's ThemeProvider has set its own background in the same commit.
+      expect(setBackground).toHaveBeenLastCalledWith(colors.dark.background);
+      await screen.unmount();
+      expect(statusBarStyle()).toBeUndefined();
+      expect(setBackground).toHaveBeenLastCalledWith(colors[scheme].background);
+    },
+  );
 
   test("Apple and Google come first; the email form is hidden until asked for", async () => {
     await renderBlock();

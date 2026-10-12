@@ -1,6 +1,7 @@
 import { fireEvent, render, screen, within } from "@testing-library/react-native";
+import * as SystemUI from "expo-system-ui";
 import type { ReactNode } from "react";
-import { Dimensions, StyleSheet } from "react-native";
+import { Dimensions, StatusBar, StyleSheet } from "react-native";
 import { SafeAreaInsetsContext } from "react-native-safe-area-context";
 
 import type { DrawerContentProps } from "@/registry/components/drawer";
@@ -35,6 +36,21 @@ const s = (v: number) => scaleValue(v, computeScale(width, height));
 
 const flat = (el: { props: Record<string, unknown> }) =>
   StyleSheet.flatten(el.props.style as never) as Record<string, unknown>;
+
+/** The bar style the mounted StatusBars resolve to (React Native merges them, last mounted wins). */
+const statusBarStyle = () =>
+  (StatusBar as unknown as { _propsStack: { barStyle?: { value: string } }[] })._propsStack
+    .map((entry) => entry.barStyle?.value)
+    .filter(Boolean)
+    .pop();
+
+/** Expo Router's drawer state, open or closed, as handed to drawerContent. */
+const drawerState = (open: boolean) =>
+  ({
+    type: "drawer",
+    default: "closed",
+    history: open ? [{ type: "drawer", status: "open" }] : [],
+  }) as unknown as NonNullable<DrawerContentProps["state"]>;
 
 const insets = { top: 47, bottom: 34, left: 0, right: 0 };
 const closeDrawer = jest.fn();
@@ -182,6 +198,40 @@ describe("drawer-03: cover header", () => {
       expect(flat(cover).backgroundColor).toBe(colors.dark.muted);
     },
   );
+
+  // #159: where the app is not drawn under the status bar (Expo Go on Android), the strip there
+  // is the window background, so the open drawer paints it in the cover's colour.
+  test.each(["light", "dark"] as const)(
+    "%s Scheme: while open, light status bar and the cover's colour behind it",
+    async (scheme) => {
+      const setBackground = jest.mocked(SystemUI.setBackgroundColorAsync);
+      setBackground.mockClear();
+      const drawer = (open: boolean) => (
+        <SafeAreaInsetsContext.Provider value={insets}>
+          <ThemeProvider scheme={scheme}>
+            <Drawer03 navigation={navigation} state={drawerState(open)} />
+          </ThemeProvider>
+        </SafeAreaInsetsContext.Provider>
+      );
+      await render(drawer(true));
+      expect(statusBarStyle()).toBe("light-content");
+      expect(setBackground).toHaveBeenLastCalledWith(colors.dark.muted);
+
+      await screen.rerender(drawer(false));
+      expect(statusBarStyle()).toBeUndefined();
+      expect(setBackground).toHaveBeenLastCalledWith(colors[scheme].background);
+    },
+  );
+
+  test("closed, or without Expo Router's props, it leaves the system bars alone", async () => {
+    const setBackground = jest.mocked(SystemUI.setBackgroundColorAsync);
+    setBackground.mockClear();
+    await renderUi(<Drawer03 navigation={navigation} state={drawerState(false)} />);
+    await screen.unmount();
+    await renderUi(<Drawer03 />);
+    expect(statusBarStyle()).toBeUndefined();
+    expect(setBackground).not.toHaveBeenCalledWith(colors.dark.muted);
+  });
 
   test("header actions are labelled and run their callbacks", async () => {
     const onNotificationsPress = jest.fn();

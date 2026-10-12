@@ -1,6 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
+import * as SystemUI from "expo-system-ui";
 import { Hexagon } from "lucide-react-native";
-import { use, useState } from "react";
+import { use, useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { StatusBar, View } from "react-native";
 import { SafeAreaInsetsContext, initialWindowMetrics } from "react-native-safe-area-context";
@@ -15,7 +16,7 @@ import { FocusChain } from "@/registry/components/primitives/focus-chain";
 import { Separator } from "@/registry/components/separator";
 import { Text } from "@/registry/components/text";
 import { toast } from "@/registry/components/toast";
-import { ThemeProvider, createStyles, useTheme } from "@/registry/theme";
+import { ThemeProvider, colors, createStyles, useTheme } from "@/registry/theme";
 
 import { SocialButtons, type SocialProvider } from "./components/social-buttons";
 
@@ -73,8 +74,7 @@ export function SignIn02({ onSubmit, onSocialSignIn }: SignIn02Props) {
 
   return (
     <Container edges={["bottom"]} padded={false} contentContainerStyle={styles.content}>
-      {/* The hero is dark in both Schemes, so the status bar above it is light. */}
-      <StatusBar barStyle="light-content" />
+      <HeroSystemBars />
       <ThemeProvider scheme="dark">
         <Hero />
       </ThemeProvider>
@@ -147,6 +147,29 @@ export function SignIn02({ onSubmit, onSocialSignIn }: SignIn02Props) {
       </View>
     </Container>
   );
+}
+
+/**
+ * The hero is dark in both Schemes, so while the Block is shown the status bar is light, and the
+ * window behind it is the hero's colour: where the app is not drawn under the status bar (Expo Go
+ * on Android), that strip is the window background, which the app's ThemeProvider sets to the
+ * Scheme's. Both go back to the app's Scheme when the Block unmounts.
+ */
+function HeroSystemBars() {
+  const { scheme } = useTheme();
+  useEffect(() => {
+    let shown = true;
+    // A microtask runs after this commit's other effects, including the app ThemeProvider's
+    // (a parent's effects run after its children's), so the hero's colour is set last.
+    queueMicrotask(() => {
+      if (shown) SystemUI.setBackgroundColorAsync(colors.dark.background).catch(() => {});
+    });
+    return () => {
+      shown = false;
+      SystemUI.setBackgroundColorAsync(colors[scheme].background).catch(() => {});
+    };
+  }, [scheme]);
+  return <StatusBar barStyle="light-content" />;
 }
 
 /** The brand hero, rendered inside a dark ThemeProvider so every Colour Role is the dark one. */
