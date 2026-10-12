@@ -3,6 +3,7 @@
 import { useState } from "react";
 
 import { DocsSidebar } from "@/components/docs-sidebar";
+import { MobileSiteNav } from "@/components/site-nav";
 import type { NavSection } from "@/lib/nav";
 
 export function MobileNav({ nav }: { nav: NavSection[] }) {
@@ -32,6 +33,7 @@ export function MobileNav({ nav }: { nav: NavSection[] }) {
           id="mobile-nav"
           className="fixed inset-x-0 top-14 bottom-0 z-40 overflow-y-auto border-t bg-background p-4"
         >
+          <MobileSiteNav onNavigate={() => setOpen(false)} />
           <DocsSidebar nav={nav} onNavigate={() => setOpen(false)} />
         </div>
       )}
