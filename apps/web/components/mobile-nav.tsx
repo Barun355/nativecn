@@ -29,9 +29,11 @@ export function MobileNav({ nav }: { nav: NavSection[] }) {
         </svg>
       </button>
       {open && (
+        // The header's backdrop-blur makes it the containing block for this fixed panel, so
+        // `bottom-0` would end at the header; an explicit height fills the screen below it.
         <div
           id="mobile-nav"
-          className="fixed inset-x-0 top-14 bottom-0 z-40 overflow-y-auto border-t bg-background p-4"
+          className="fixed inset-x-0 top-14 z-40 h-[calc(100dvh-3.5rem)] overflow-y-auto border-t bg-background p-4"
         >
           <MobileSiteNav onNavigate={() => setOpen(false)} />
           <DocsSidebar nav={nav} onNavigate={() => setOpen(false)} />
