@@ -4,6 +4,8 @@ import { createRequire } from "node:module";
 import { dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
+import { STARTER_SCREEN, starterImport, type StarterTargets } from "./lib/starter-preview.ts";
+
 // Cache rules for the served files (decision #27).
 /** Registry and schema: redeployed on every merge to main (#30), so only minutes at the edge. */
 const SHORT = "public, max-age=300, s-maxage=300, stale-while-revalidate=3600";
@@ -35,6 +37,18 @@ const PREVIEW_THEME = fileURLToPath(
   new URL("./components/preview/shims/registry-theme.tsx", import.meta.url),
 );
 
+/** The Starter's promo Screen (packages/cli/starter), which the preview's Starter tab renders. */
+const STARTER_FILE = fileURLToPath(new URL(`../../${STARTER_SCREEN}`, import.meta.url));
+const shim = (file: string) =>
+  fileURLToPath(new URL(`./components/preview/shims/${file}`, import.meta.url));
+/** Where the Starter Screen's user-app imports go in the website (lib/starter-preview). */
+const STARTER_TARGETS: StarterTargets = {
+  ui: UI_DIR,
+  theme: PREVIEW_THEME,
+  config: shim("starter-config.ts"),
+  expoRouter: shim("expo-router.tsx"),
+};
+
 const nextConfig: NextConfig = {
   pageExtensions: ["ts", "tsx", "mdx"],
   // The Preset encoder is shared TypeScript source (packages/preset), not a built package.
@@ -59,17 +73,28 @@ const nextConfig: NextConfig = {
           if (resource.context?.startsWith(UI_DIR)) resource.request = PREVIEW_THEME;
         },
       ),
+      // The Starter tab renders the Starter's own Screen, written with a user app's import paths:
+      // its Components come from the Registry source, its Theme and components.json are the
+      // preview's (one source, #163).
+      new webpack.NormalModuleReplacementPlugin(
+        /.*/,
+        (resource: { context?: string; request: string; contextInfo?: { issuer?: string } }) => {
+          if (resource.contextInfo?.issuer !== STARTER_FILE) return;
+          const to = starterImport(resource.request, STARTER_TARGETS);
+          if (to && "request" in to) resource.request = to.request;
+          else if (to) resource.context = to.context;
+        },
+      ),
     );
     config.resolve.alias = {
       ...config.resolve.alias,
       "react-native$": REACT_NATIVE_WEB,
       "react-native-web": REACT_NATIVE_WEB,
+      // The Starter's promo Screen, by the Starter's package name (types in starter-screen.d.ts).
+      "nativecn-starter/screen$": STARTER_FILE,
       // Expo modules with no part in a web preview (they ship untranspiled TypeScript).
       ...Object.fromEntries(
-        Object.entries(PREVIEW_SHIMS).map(([name, file]) => [
-          `${name}$`,
-          fileURLToPath(new URL(`./components/preview/shims/${file}`, import.meta.url)),
-        ]),
+        Object.entries(PREVIEW_SHIMS).map(([name, file]) => [`${name}$`, shim(file)]),
       ),
     };
     config.resolve.extensions = [".web.tsx", ".web.ts", ".web.js", ...config.resolve.extensions];

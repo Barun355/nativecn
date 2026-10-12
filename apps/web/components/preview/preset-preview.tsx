@@ -14,6 +14,7 @@ import type { PreviewScheme } from "./theme";
 const TABS: { id: PreviewTab; label: string }[] = [
   { id: "components", label: "Components" },
   { id: "sign-in", label: "Sign-in" },
+  { id: "starter", label: "Starter" },
 ];
 
 export type PresetPreviewProps = {

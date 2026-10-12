@@ -9,10 +9,10 @@ import type { ReactNode } from "react";
 import type { Preset } from "preset";
 
 import { PreviewRoot } from "./preview-root";
-import { ComponentsScreen, SignInScreen } from "./screens";
+import { ComponentsScreen, SignInScreen, StarterScreen } from "./screens";
 import type { PreviewScheme } from "./theme";
 
-export type PreviewTab = "components" | "sign-in";
+export type PreviewTab = "components" | "sign-in" | "starter";
 
 export type PhonePreviewProps = {
   preset: Preset;
@@ -25,6 +25,7 @@ export type PhonePreviewProps = {
 const SCREENS: Record<PreviewTab, () => ReactNode> = {
   components: ComponentsScreen,
   "sign-in": SignInScreen,
+  starter: StarterScreen,
 };
 
 export default function PhonePreview({ preset, scheme, onSchemeChange, tab }: PhonePreviewProps) {
