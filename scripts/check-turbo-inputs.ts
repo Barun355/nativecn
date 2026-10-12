@@ -74,6 +74,11 @@ const RUNTIME_READS: RuntimeRead[] = [
     why: "mcp.test.ts points NATIVECN_REGISTRY_URL at the CLI's fixture Registry",
   },
   {
+    tasks: ["web#build", "web#test"],
+    files: [/^packages\/cli\/starter\/src\//],
+    why: "the /create Starter tab bundles the Starter's promo Screen through a webpack alias, and starter-preview.test.ts reads it",
+  },
+  {
     tasks: ["web#build"],
     files: ["packages/cli/CHANGELOG.md", "packages/ui/CHANGELOG.md"],
     why: "lib/changelog.ts renders the changelogs (not written until the first release)",

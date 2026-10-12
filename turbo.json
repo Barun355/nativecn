@@ -31,6 +31,7 @@
         "!$TURBO_ROOT$/packages/ui/node_modules/**",
         "!$TURBO_ROOT$/packages/ui/.registry-build/**",
         "$TURBO_ROOT$/packages/cli/src/**",
+        "$TURBO_ROOT$/packages/cli/starter/src/**",
         "$TURBO_ROOT$/packages/cli/package.json",
         "$TURBO_ROOT$/packages/cli/CHANGELOG.md",
         "$TURBO_ROOT$/packages/preset/src/**"

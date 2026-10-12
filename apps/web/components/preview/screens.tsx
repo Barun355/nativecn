@@ -1,6 +1,7 @@
 // What the preview's phone shows on each tab. The Components and Screens are the Registry's own
 // source (packages/ui), rendered with react-native-web, so they look as they do in an app.
 
+import StarterPromo from "nativecn-starter/screen";
 import type { ComponentType } from "react";
 import { ScrollView, View } from "react-native";
 
@@ -59,6 +60,14 @@ export function ComponentsScreen() {
 /** sign-in-01 (decision #28): real validation; submitting does nothing in the preview. */
 export function SignInScreen() {
   return <SignIn01 />;
+}
+
+/**
+ * The Starter's promo Screen (decision #28): the very file `create` puts in a new app, so the tab
+ * cannot drift from it (#163). Its Your Preset card shows the phone's Preset.
+ */
+export function StarterScreen() {
+  return <StarterPromo />;
 }
 
 const useStyles = createStyles((t) => ({
