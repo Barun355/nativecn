@@ -3,6 +3,7 @@ import Link from "next/link";
 
 import { MobileNav } from "@/components/mobile-nav";
 import { SearchDialog } from "@/components/search-dialog";
+import { SiteNav } from "@/components/site-nav";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { navSections } from "@/lib/nav";
 
@@ -30,17 +31,7 @@ export function SiteHeader() {
             priority
           />
         </Link>
-        <nav aria-label="Main" className="hidden items-center gap-4 text-sm md:flex">
-          <Link href="/docs" className="text-muted-foreground hover:text-foreground">
-            Docs
-          </Link>
-          <Link href="/create" className="text-muted-foreground hover:text-foreground">
-            Create
-          </Link>
-          <Link href="/docs/changelog" className="text-muted-foreground hover:text-foreground">
-            Changelog
-          </Link>
-        </nav>
+        <SiteNav />
         <div className="ml-auto flex items-center gap-1">
           <SearchDialog nav={nav} />
           <a
