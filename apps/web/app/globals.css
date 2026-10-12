@@ -101,3 +101,8 @@
 .docs-prose :where(pre) {
   border: 1px solid var(--color-border);
 }
+
+/* The live Preset preview: nativecn's Input draws its own focus ring, as it does in an app. */
+[data-preview] :is(input, textarea):focus-visible {
+  outline: none;
+}

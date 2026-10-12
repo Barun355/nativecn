@@ -5,8 +5,8 @@
   "license": "MIT",
   "type": "module",
   "scripts": {
-    "dev": "next dev",
-    "build": "pnpm run build:registry && next build",
+    "dev": "next dev --webpack",
+    "build": "pnpm run build:registry && next build --webpack",
     "build:registry": "pnpm --filter ui build",
     "start": "next start",
     "lint": "eslint .",
@@ -27,12 +27,14 @@
     "preset": "workspace:*",
     "react": "catalog:",
     "react-dom": "catalog:",
+    "react-native-web": "~0.21.0",
     "rehype-slug": "^6.0.0",
     "remark-gfm": "^4.0.1",
     "tailwind-merge": "^3.7.0",
     "zod": "^4.6.5"
   },
   "devDependencies": {
+    "@babel/core": "^7.29.7",
     "@tailwindcss/postcss": "^4.3.3",
     "@tailwindcss/typography": "^0.5.20",
     "@types/mdx": "^2.0.14",
@@ -42,6 +44,8 @@
     "eslint": "^9.39.0",
     "eslint-config-next": "^16.3.8",
     "nativecn-cli": "workspace:*",
+    "react-native": "catalog:",
+    "react-native-worklets": "0.10.1",
     "tailwindcss": "^4.3.3",
     "typescript": "catalog:",
     "ui": "workspace:*"

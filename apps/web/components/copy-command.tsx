@@ -2,12 +2,25 @@
 
 import { useState } from "react";
 
-export function CopyCommand({ command }: { command: string }) {
+/** A copyable shell command. `wrap` breaks a long command over lines instead of truncating it. */
+export function CopyCommand({ command, wrap = false }: { command: string; wrap?: boolean }) {
   const [copied, setCopied] = useState(false);
   return (
-    <div className="flex items-center gap-2 rounded-lg border bg-muted px-4 py-3 font-mono text-sm">
+    <div
+      className={`flex gap-2 rounded-lg border bg-muted px-4 py-3 font-mono text-sm ${wrap ? "items-start" : "items-center"}`}
+    >
       <span className="select-none text-muted-foreground">$</span>
-      <code className="flex-1 truncate text-left">{command}</code>
+      <code className={`min-w-0 flex-1 text-left ${wrap ? "" : "truncate"}`}>
+        {wrap
+          ? // Break only between words, never inside a flag such as --heading-font.
+            command.split(" ").map((word, i) => (
+              <span key={i}>
+                {i > 0 ? " " : null}
+                <span className="whitespace-nowrap">{word}</span>
+              </span>
+            ))
+          : command}
+      </code>
       <button
         type="button"
         aria-label={copied ? "Copied" : "Copy command"}
