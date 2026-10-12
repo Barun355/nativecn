@@ -13,6 +13,7 @@
 // The cover is dark in both Schemes: it renders the dark Scheme's Colour Roles through a nested
 // ThemeProvider. The name, counts, items and routes are placeholders: rename them to your app's.
 import { router } from "expo-router";
+import { getDrawerStatusFromState } from "expo-router/drawer";
 import {
   Bell,
   EllipsisVertical,
@@ -22,7 +23,7 @@ import {
   ShoppingCart,
   Store,
 } from "lucide-react-native";
-import { View } from "react-native";
+import { StatusBar, View } from "react-native";
 
 import { Avatar } from "@/registry/components/avatar";
 import { Badge } from "@/registry/components/badge";
@@ -58,6 +59,7 @@ export function Drawer03({
   ...props
 }: Drawer03Props) {
   const styles = useStyles();
+  const open = props.state ? getDrawerStatusFromState(props.state) === "open" : false;
   const viewProfile = () => {
     router.navigate("/profile");
     props.navigation?.closeDrawer();
@@ -65,6 +67,8 @@ export function Drawer03({
 
   return (
     <DrawerContent {...props}>
+      {/* The cover is dark in both Schemes, so the status bar over it is light while it's open. */}
+      {open ? <StatusBar barStyle="light-content" /> : null}
       <DrawerHeader style={styles.cover}>
         <ThemeProvider scheme="dark">
           <Cover

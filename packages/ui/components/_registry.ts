@@ -1484,7 +1484,7 @@ export default [
     "Drawer03",
     "Cover header",
     "Drawer panel with a dark cover (large avatar, name, View profile, a bell with a count, an overflow button and a round + action), icon items active in Accent Colour text, a divider and text-only secondary items.",
-    "A consumer or commerce app drawer: a dark profile cover that stays dark in both Schemes, and items that show the current route by Accent Colour text and icon, with no background.",
+    "A consumer or commerce app drawer: a dark profile cover that stays dark in both Schemes (with a light status bar over it while the drawer is open), and items that show the current route by Accent Colour text and icon, with no background.",
     [
       'The bell is an icon-only Button named "Notifications, <count> unread"; its count Badge is hidden from screen readers.',
       'The overflow and + buttons are icon-only Buttons named "More" and "Create".',

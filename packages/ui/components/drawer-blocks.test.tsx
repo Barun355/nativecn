@@ -1,6 +1,6 @@
 import { fireEvent, render, screen, within } from "@testing-library/react-native";
 import type { ReactNode } from "react";
-import { Dimensions, StyleSheet } from "react-native";
+import { Dimensions, StatusBar, StyleSheet } from "react-native";
 import { SafeAreaInsetsContext } from "react-native-safe-area-context";
 
 import type { DrawerContentProps } from "@/registry/components/drawer";
@@ -35,6 +35,21 @@ const s = (v: number) => scaleValue(v, computeScale(width, height));
 
 const flat = (el: { props: Record<string, unknown> }) =>
   StyleSheet.flatten(el.props.style as never) as Record<string, unknown>;
+
+/** The bar style the mounted StatusBars resolve to (React Native merges them, last mounted wins). */
+const statusBarStyle = () =>
+  (StatusBar as unknown as { _propsStack: { barStyle?: { value: string } }[] })._propsStack
+    .map((entry) => entry.barStyle?.value)
+    .filter(Boolean)
+    .pop();
+
+/** Expo Router's drawer state, open or closed, as handed to drawerContent. */
+const drawerState = (open: boolean) =>
+  ({
+    type: "drawer",
+    default: "closed",
+    history: open ? [{ type: "drawer", status: "open" }] : [],
+  }) as unknown as NonNullable<DrawerContentProps["state"]>;
 
 const insets = { top: 47, bottom: 34, left: 0, right: 0 };
 const closeDrawer = jest.fn();
@@ -182,6 +197,33 @@ describe("drawer-03: cover header", () => {
       expect(flat(cover).backgroundColor).toBe(colors.dark.muted);
     },
   );
+
+  // #159: the cover is dark in both Schemes, so its status-bar icons must be light while it's open.
+  test.each(["light", "dark"] as const)(
+    "%s Scheme: light status bar while open, the app's again once closed",
+    async (scheme) => {
+      const drawer = (open: boolean) => (
+        <SafeAreaInsetsContext.Provider value={insets}>
+          <ThemeProvider scheme={scheme}>
+            <Drawer03 navigation={navigation} state={drawerState(open)} />
+          </ThemeProvider>
+        </SafeAreaInsetsContext.Provider>
+      );
+      await render(drawer(true));
+      expect(statusBarStyle()).toBe("light-content");
+
+      await screen.rerender(drawer(false));
+      expect(statusBarStyle()).toBeUndefined();
+    },
+  );
+
+  test("closed, or without Expo Router's props, it leaves the status bar alone", async () => {
+    await renderUi(<Drawer03 navigation={navigation} state={drawerState(false)} />);
+    expect(statusBarStyle()).toBeUndefined();
+    await screen.unmount();
+    await renderUi(<Drawer03 />);
+    expect(statusBarStyle()).toBeUndefined();
+  });
 
   test("header actions are labelled and run their callbacks", async () => {
     const onNotificationsPress = jest.fn();
