@@ -3,17 +3,12 @@
 
 import type { Preset } from "preset";
 
-import { previewValues, presetType } from "@/lib/preset-builder";
 import { setActiveStyle } from "@/registry/styles";
-import { config, resetStyles, scaleTokens, scaleValue, tokens, type Theme } from "@/registry/theme";
+import { resetStyles, type Theme } from "@/registry/theme";
 
-export type PreviewScheme = "light" | "dark";
+import { presetTheme, type PreviewScheme } from "./preset-theme";
 
-/**
- * The phone in the preview is the 390pt baseline phone, so Tokens are shown at Scale 1 whatever
- * the browser window's size.
- */
-const SCALE = 1;
+export type { PreviewScheme } from "./preset-theme";
 
 /**
  * A new Theme for this Preset and Scheme. Nothing is written into the Theme's module values
@@ -31,22 +26,5 @@ export function previewTheme(
 ): Theme {
   setActiveStyle(preset.style);
   resetStyles();
-  const values = previewValues(preset);
-  const scaled = scaleTokens(SCALE, { radiusBase: values.radiusBase ?? tokens.radiusBase });
-  return {
-    ...scaled,
-    type: presetType(values.fonts, scaled.type, SCALE),
-    scheme,
-    schemePreference: scheme,
-    setScheme,
-    scale: SCALE,
-    scaleValue: (v) => scaleValue(v, SCALE),
-    colors: values.colors[scheme],
-    elevation: tokens.elevation[scheme],
-    borderWidth: tokens.borderWidth,
-    motion: tokens.motion,
-    opacity: tokens.opacity,
-    minTouchTarget: tokens.minTouchTarget,
-    config,
-  };
+  return presetTheme(preset, scheme, setScheme);
 }

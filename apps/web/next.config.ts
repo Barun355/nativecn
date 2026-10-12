@@ -28,6 +28,13 @@ const PREVIEW_SHIMS: Record<string, string> = {
   "@react-native-async-storage/async-storage": "async-storage.ts",
 };
 
+/** The Registry source the preview renders. */
+const UI_DIR = fileURLToPath(new URL("../../packages/ui/", import.meta.url));
+/** The Registry's theme module as the preview's Components see it (a Preset-aware ThemeProvider). */
+const PREVIEW_THEME = fileURLToPath(
+  new URL("./components/preview/shims/registry-theme.tsx", import.meta.url),
+);
+
 const nextConfig: NextConfig = {
   pageExtensions: ["ts", "tsx", "mdx"],
   // The Preset encoder is shared TypeScript source (packages/preset), not a built package.
@@ -44,6 +51,14 @@ const nextConfig: NextConfig = {
         "process.env.EXPO_OS": '"web"',
         global: "globalThis",
       }),
+      // Inside packages/ui, the theme module is the preview's (see the shim): a Block's nested
+      // ThemeProvider derives its Theme from the phone's Preset.
+      new webpack.NormalModuleReplacementPlugin(
+        /^@\/registry\/theme$/,
+        (resource: { context?: string; request: string }) => {
+          if (resource.context?.startsWith(UI_DIR)) resource.request = PREVIEW_THEME;
+        },
+      ),
     );
     config.resolve.alias = {
       ...config.resolve.alias,
@@ -67,7 +82,7 @@ const nextConfig: NextConfig = {
     // Reanimated's worklets transform over the Registry source, before SWC (see the loader).
     config.module.rules.push({
       test: /\.tsx?$/,
-      include: [fileURLToPath(new URL("../../packages/ui/", import.meta.url))],
+      include: [UI_DIR],
       enforce: "pre",
       use: [fileURLToPath(new URL("./components/preview/worklets-loader.mjs", import.meta.url))],
     });

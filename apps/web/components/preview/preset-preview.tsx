@@ -77,13 +77,16 @@ const isServer = () => false;
 
 const PhonePreview = lazy(() => import("./phone-preview"));
 
-/** A 390 × 780 phone: the 390pt baseline phone Tokens are designed for, so Scale is 1. */
-export function PhoneFrame({ children }: { children: ReactNode }) {
+/**
+ * A 390 × 780 phone: the 390pt baseline phone Tokens are designed for, so Scale is 1. `short`
+ * is a shorter phone of the same width, for a docs page showing one Component's example.
+ */
+export function PhoneFrame({ children, short }: { children: ReactNode; short?: boolean }) {
   return (
     <div className="w-[406px] max-w-full rounded-[2.75rem] border-8 border-neutral-900 bg-neutral-900 shadow-xl dark:border-neutral-700">
       <div
         data-preview
-        className="relative flex h-[780px] max-h-[80vh] flex-col overflow-hidden rounded-[2.25rem] bg-background"
+        className={`relative flex ${short ? "h-[600px]" : "h-[780px]"} max-h-[80vh] flex-col overflow-hidden rounded-[2.25rem] bg-background`}
       >
         {children}
       </div>
@@ -92,7 +95,7 @@ export function PhoneFrame({ children }: { children: ReactNode }) {
 }
 
 /** Shows the spec card if the live preview throws. */
-class PreviewBoundary extends Component<
+export class PreviewBoundary extends Component<
   { fallback: ReactNode; children: ReactNode },
   { failed: boolean }
 > {
