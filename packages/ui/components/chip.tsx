@@ -1,14 +1,13 @@
 import { X, type LucideIcon } from "lucide-react-native";
-import { createContext, use } from "react";
-import {
-  type AccessibilityActionEvent,
-  type GestureResponderEvent,
-  type StyleProp,
-  type ViewStyle,
-} from "react-native";
+import { createContext, use, useState } from "react";
+import { View, type GestureResponderEvent, type StyleProp, type ViewStyle } from "react-native";
 
 import { Icon } from "@/registry/components/icon";
-import { Pressable, type PressableProps } from "@/registry/components/primitives/pressable";
+import {
+  Pressable,
+  touchTargetHitSlop,
+  type PressableProps,
+} from "@/registry/components/primitives/pressable";
 import {
   SelectionGroup,
   useSelectionItem,
@@ -40,8 +39,9 @@ export type ChipProps = Omit<
   /** Called with the next selected state when the user toggles it. */
   onSelectedChange?: (selected: boolean) => void;
   /**
-   * Shows a remove (×) button. Screen readers get it as a "Remove" action on the Chip, so the
-   * Chip stays one accessible element. With a `testID`, the button's is `<testID>-remove`.
+   * Shows a remove (×) button inside the pill. It is its own control, a sibling of the Chip's
+   * press (never nested in it), named "Remove <label>", with a 48 tap area. With a `testID`,
+   * the button's is `<testID>-remove`.
    */
   onRemove?: () => void;
   /** Layout only, merged last onto the root. */
@@ -80,6 +80,7 @@ const useStyles = createStyles((t) => {
     },
     rootOn: { backgroundColor: t.colors.primary, borderColor: t.colors.primary },
     label: { fontFamily, fontSize, lineHeight, letterSpacing },
+    press: { flexDirection: "row", alignItems: "center", alignSelf: "stretch", gap: t.spacing[1] },
     remove: { borderRadius: t.radius.full },
     group: { flexDirection: "row", flexWrap: "wrap", gap: t.spacing[2] },
     pressed: slot("chip.pressed", t),
@@ -110,60 +111,92 @@ function ChipView({
   onToggle,
   disabled = false,
   onPress,
-  onAccessibilityAction,
+  onPressIn,
+  onPressOut,
   testID,
   style,
   ...props
 }: ChipViewProps) {
   const styles = useStyles();
-  const { iconSize } = useTheme();
+  const { iconSize, minTouchTarget } = useTheme();
+  const [pressed, setPressed] = useState(false);
   const color = on ? "primaryForeground" : "foreground";
+  const surface = [styles.root, on ? styles.rootOn : null, disabled ? styles.disabled : null];
 
   const handlePress = (event: GestureResponderEvent) => {
     onToggle?.();
     onPress?.(event);
   };
 
-  const handleAction = (event: AccessibilityActionEvent) => {
-    if (event.nativeEvent.actionName === "remove" && !disabled) onRemove?.();
-    onAccessibilityAction?.(event);
-  };
-
-  return (
-    <Pressable
-      role="button"
-      {...selectionProps}
-      disabled={disabled}
-      haptic={on === undefined ? undefined : "selection"}
-      size={{ height: styles.root.height }}
-      pressedStyle={styles.pressed}
-      accessibilityActions={onRemove ? [{ name: "remove", label: "Remove" }] : undefined}
-      onAccessibilityAction={onRemove || onAccessibilityAction ? handleAction : undefined}
-      testID={testID}
-      style={[styles.root, on ? styles.rootOn : null, disabled ? styles.disabled : null, style]}
-      {...props}
-      onPress={handlePress}
-    >
+  const press = {
+    role: "button",
+    ...selectionProps,
+    disabled,
+    haptic: on === undefined ? undefined : "selection",
+    testID,
+    ...props,
+  } satisfies PressableProps;
+  const content = (
+    <>
       {icon ? <Icon icon={icon} size="sm" color={color} /> : null}
       <Text variant="label" color={color} numberOfLines={1} style={styles.label}>
         {label}
       </Text>
-      {onRemove ? (
-        // Touch only: screen readers use the Chip's "Remove" action instead.
-        <Pressable
-          disabled={disabled}
-          size={{ width: iconSize.sm, height: iconSize.sm }}
-          onPress={onRemove}
-          testID={testID ? `${testID}-remove` : undefined}
-          aria-hidden
-          accessible={false}
-          importantForAccessibility="no-hide-descendants"
-          style={styles.remove}
-        >
-          <Icon icon={X} size="sm" color={color} />
-        </Pressable>
-      ) : null}
-    </Pressable>
+    </>
+  );
+
+  if (!onRemove) {
+    return (
+      <Pressable
+        {...press}
+        size={{ height: styles.root.height }}
+        pressedStyle={styles.pressed}
+        style={[...surface, style]}
+        onPressIn={onPressIn}
+        onPressOut={onPressOut}
+        onPress={handlePress}
+      >
+        {content}
+      </Pressable>
+    );
+  }
+
+  // Removable: a plain View draws the pill and holds two sibling controls, the Chip's press
+  // and the × button. Nesting one inside the other would put a button inside a button on
+  // react-native-web (invalid HTML that screen readers can mis-announce).
+  const lead =
+    typeof styles.root.paddingHorizontal === "number" ? styles.root.paddingHorizontal : 0;
+  const slop = touchTargetHitSlop(undefined, styles.root.height, minTouchTarget);
+  return (
+    <View style={[...surface, pressed ? styles.pressed : null, style]}>
+      <Pressable
+        {...press}
+        // Reaches 48 high and covers the pill's leading padding.
+        hitSlop={{ top: slop?.top ?? 0, bottom: slop?.bottom ?? 0, left: lead, right: 0 }}
+        style={styles.press}
+        onPressIn={(event) => {
+          setPressed(true);
+          onPressIn?.(event);
+        }}
+        onPressOut={(event) => {
+          setPressed(false);
+          onPressOut?.(event);
+        }}
+        onPress={handlePress}
+      >
+        {content}
+      </Pressable>
+      <Pressable
+        aria-label={`Remove ${label}`}
+        disabled={disabled}
+        size={{ width: iconSize.sm, height: iconSize.sm }}
+        onPress={onRemove}
+        testID={testID ? `${testID}-remove` : undefined}
+        style={styles.remove}
+      >
+        <Icon icon={X} size="sm" color={color} />
+      </Pressable>
+    </View>
   );
 }
 

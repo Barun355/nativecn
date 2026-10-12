@@ -233,7 +233,7 @@ export const registryIndex: Record<string, RegistryIndexEntry> = {
       "A standalone Chip is a button, or a checkbox with aria-checked when it is a toggle.",
       "In a single ChipGroup the Chips are radios in a radiogroup; in a multiple ChipGroup they are checkboxes in a group.",
       "The label is the accessible name.",
-      "With onRemove, screen readers get a Remove action; the × button is hidden from them.",
+      'With onRemove, the × is a separate button named "Remove <label>", a sibling of the Chip (not nested inside it), with a 48 tap area.',
       "The tap area is extended to 48 high.",
     ],
     uses: ["theme", "pressable", "selection-group", "use-controllable-state", "text", "icon"],
