@@ -84,3 +84,49 @@ export const MCP_TOOLS = [
   "list_preset_options",
   "build_preset_code",
 ] as const;
+
+/**
+ * The Showcase App screens on the landing page (issue #81), in the Play listing's order
+ * (decision #29): Components, Blocks, Theme, Feedback demos, Built for AI. Captured on a physical
+ * Android phone with the example Preset (EXAMPLE_PRESET_CODE). Each one has
+ * public/showcase/<id>-light.webp and <id>-dark.webp (720×1600), which lib/landing.test.ts
+ * checks. The full-size originals and the Play-ready 1080×1920 versions are in
+ * apps/showcase/store/screenshots.
+ */
+export const SHOWCASE_SCREENS = [
+  {
+    id: "01-components",
+    title: "Components",
+    alt: "The Components tab: a search field above the Core group, listing Button, Container, Icon, SchemeSwitcher and Text with a short description each.",
+  },
+  {
+    id: "02-button",
+    title: "Button",
+    alt: "The Button page: violet Primary, Secondary, Outline, Ghost, Delete and link Buttons, small and large Sizes, an icon-only Button, and full-width Continue, Save and Disabled Buttons.",
+  },
+  {
+    id: "03-blocks",
+    title: "Blocks",
+    alt: "The Blocks tab: the sign-in and sign-up Blocks, from sign-in-01 Classic centred to sign-up-02 Step-by-step wizard, each with a description.",
+  },
+  {
+    id: "04-sign-in",
+    title: "Sign-in Block",
+    alt: "The sign-in-01 Block running: a Welcome back heading, email and password fields, a Forgot password link, a violet Sign in Button, and Continue with Apple and Google.",
+  },
+  {
+    id: "05-theme",
+    title: "Theme",
+    alt: "The Theme tab with Preset a1Q17B (Nova, neutral, violet accent, Lora headings): Copy code and Share Buttons, then the Style, Scheme, Base colour and Accent colour pickers.",
+  },
+  {
+    id: "06-feedback",
+    title: "Feedback demos",
+    alt: "The Feedback demos: a Profile updated success Toast at the top, the Toast Buttons, and a form whose empty Name and Email fields show red validation errors.",
+  },
+  {
+    id: "07-built-for-ai",
+    title: "Built for AI",
+    alt: "The Built for AI tab: the Visual QA Loop, then the Rules every agent follows, such as Tokens only through createStyles and Feedback is toast() and Alert.",
+  },
+] as const;

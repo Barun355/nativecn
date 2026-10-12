@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { existsSync } from "node:fs";
 import { test } from "node:test";
 
 import { ACCENT_COLOR_VALUES } from "../../../packages/ui/presets/colors.generated.ts";
@@ -9,6 +10,7 @@ import {
   EXAMPLE_PRESET_CODE,
   FONTS,
   FONT_GROUPS,
+  SHOWCASE_SCREENS,
 } from "./landing.ts";
 
 test("the landing page shows the documented Preset codes", () => {
@@ -32,4 +34,13 @@ test("accent swatches match the Registry's primary colours", () => {
 
 test("every Preset font is listed once", () => {
   assert.equal(FONT_GROUPS.flatMap((g) => g.fonts).length, FONTS.length);
+});
+
+test("every Showcase screen has a light and a dark image", () => {
+  for (const { id } of SHOWCASE_SCREENS) {
+    for (const scheme of ["light", "dark"]) {
+      const image = new URL(`../public/showcase/${id}-${scheme}.webp`, import.meta.url);
+      assert.ok(existsSync(image), `missing public/showcase/${id}-${scheme}.webp`);
+    }
+  }
 });
