@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import type { CSSProperties, ReactNode } from "react";
 
@@ -16,12 +17,13 @@ import {
   FONT_GROUPS,
   GITHUB_URL,
   MCP_TOOLS,
+  SHOWCASE_SCREENS,
   SKILLS,
   STYLE_OPTIONS,
 } from "@/lib/landing";
 
 // The nativecn.dev landing page (issue #61, decision #27), built from free Aceternity UI
-// components in components/ui. The Showcase App screens are a TODO until the app exists.
+// components in components/ui, with real Showcase App screens (#81).
 export default function HomePage() {
   return (
     <ReducedMotion>
@@ -436,29 +438,51 @@ function ExpoFirst() {
 }
 
 function Showcase() {
-  // TODO(#27): replace these placeholders with real Showcase App screenshots (captured on
-  // physical devices, light and dark, with alt text) once apps/showcase has its screens.
+  // Real screens from a physical Android phone (#81); the light or dark set follows the site's
+  // theme. A hidden image is never fetched, because next/image loads lazily.
   return (
     <section aria-labelledby="showcase-title" className="mx-auto max-w-6xl px-4 py-24">
       <SectionHeading id="showcase-title" eyebrow="Showcase App" title="See it on a phone">
-        The Showcase App is a complete app built with nativecn, demonstrating every Component.
+        The Showcase App is a complete app built with nativecn, demonstrating every Component. These
+        screens use Preset{" "}
+        <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-sm">
+          {EXAMPLE_PRESET_CODE}
+        </code>
+        .
       </SectionHeading>
-      <div className="mt-14 rounded-2xl border-2 border-dashed p-6 sm:p-10">
-        <p className="text-center text-sm font-medium text-muted-foreground">
-          <span className="mr-2 rounded bg-foreground px-1.5 py-0.5 text-xs font-semibold text-background">
-            TODO
-          </span>
-          Showcase App screenshots are coming soon.
-        </p>
-        <div aria-hidden="true" className="mt-8 flex justify-center gap-4 sm:gap-8">
-          {["sm:block", "", "sm:block"].map((visibility, i) => (
-            <div
-              key={i}
-              className={`${visibility ? `hidden ${visibility}` : ""} aspect-[9/19] w-36 rounded-[2rem] border-4 bg-muted/60 sm:w-44`}
-            />
-          ))}
-        </div>
-      </div>
+      <ul
+        aria-label="Showcase App screenshots"
+        tabIndex={0}
+        className="-mx-4 mt-14 flex snap-x snap-mandatory gap-6 overflow-x-auto px-4 pb-6"
+      >
+        {SHOWCASE_SCREENS.map((screen) => (
+          <li key={screen.id} className="shrink-0 snap-center">
+            <figure className="w-52 sm:w-56">
+              <div className="overflow-hidden rounded-[2rem] border-4 border-foreground/10 bg-muted shadow-lg">
+                <Image
+                  src={`/showcase/${screen.id}-light.webp`}
+                  alt={screen.alt}
+                  width={720}
+                  height={1600}
+                  sizes="224px"
+                  className="h-auto w-full dark:hidden"
+                />
+                <Image
+                  src={`/showcase/${screen.id}-dark.webp`}
+                  alt={screen.alt}
+                  width={720}
+                  height={1600}
+                  sizes="224px"
+                  className="hidden h-auto w-full dark:block"
+                />
+              </div>
+              <figcaption className="mt-3 text-center text-sm font-medium text-muted-foreground">
+                {screen.title}
+              </figcaption>
+            </figure>
+          </li>
+        ))}
+      </ul>
     </section>
   );
 }
