@@ -1,5 +1,4 @@
 import { fireEvent, render, screen, within } from "@testing-library/react-native";
-import * as SystemUI from "expo-system-ui";
 import type { ReactNode } from "react";
 import { Dimensions, StatusBar, StyleSheet } from "react-native";
 import { SafeAreaInsetsContext } from "react-native-safe-area-context";
@@ -199,13 +198,10 @@ describe("drawer-03: cover header", () => {
     },
   );
 
-  // #159: where the app is not drawn under the status bar (Expo Go on Android), the strip there
-  // is the window background, so the open drawer paints it in the cover's colour.
+  // #159: the cover is dark in both Schemes, so its status-bar icons must be light while it's open.
   test.each(["light", "dark"] as const)(
-    "%s Scheme: while open, light status bar and the cover's colour behind it",
+    "%s Scheme: light status bar while open, the app's again once closed",
     async (scheme) => {
-      const setBackground = jest.mocked(SystemUI.setBackgroundColorAsync);
-      setBackground.mockClear();
       const drawer = (open: boolean) => (
         <SafeAreaInsetsContext.Provider value={insets}>
           <ThemeProvider scheme={scheme}>
@@ -215,22 +211,18 @@ describe("drawer-03: cover header", () => {
       );
       await render(drawer(true));
       expect(statusBarStyle()).toBe("light-content");
-      expect(setBackground).toHaveBeenLastCalledWith(colors.dark.muted);
 
       await screen.rerender(drawer(false));
       expect(statusBarStyle()).toBeUndefined();
-      expect(setBackground).toHaveBeenLastCalledWith(colors[scheme].background);
     },
   );
 
-  test("closed, or without Expo Router's props, it leaves the system bars alone", async () => {
-    const setBackground = jest.mocked(SystemUI.setBackgroundColorAsync);
-    setBackground.mockClear();
+  test("closed, or without Expo Router's props, it leaves the status bar alone", async () => {
     await renderUi(<Drawer03 navigation={navigation} state={drawerState(false)} />);
+    expect(statusBarStyle()).toBeUndefined();
     await screen.unmount();
     await renderUi(<Drawer03 />);
     expect(statusBarStyle()).toBeUndefined();
-    expect(setBackground).not.toHaveBeenCalledWith(colors.dark.muted);
   });
 
   test("header actions are labelled and run their callbacks", async () => {

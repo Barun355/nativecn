@@ -14,7 +14,6 @@
 // ThemeProvider. The name, counts, items and routes are placeholders: rename them to your app's.
 import { router } from "expo-router";
 import { getDrawerStatusFromState } from "expo-router/drawer";
-import * as SystemUI from "expo-system-ui";
 import {
   Bell,
   EllipsisVertical,
@@ -24,7 +23,6 @@ import {
   ShoppingCart,
   Store,
 } from "lucide-react-native";
-import { useEffect } from "react";
 import { StatusBar, View } from "react-native";
 
 import { Avatar } from "@/registry/components/avatar";
@@ -40,7 +38,7 @@ import {
 import { Pressable } from "@/registry/components/primitives/pressable";
 import { Separator } from "@/registry/components/separator";
 import { Text } from "@/registry/components/text";
-import { ThemeProvider, colors, createStyles, useTheme } from "@/registry/theme";
+import { ThemeProvider, colors, createStyles } from "@/registry/theme";
 
 export type Drawer03Props = DrawerContentProps & {
   /** Runs when the bell in the cover is pressed. */
@@ -69,7 +67,8 @@ export function Drawer03({
 
   return (
     <DrawerContent {...props}>
-      {open ? <CoverSystemBars /> : null}
+      {/* The cover is dark in both Schemes, so the status bar over it is light while it's open. */}
+      {open ? <StatusBar barStyle="light-content" /> : null}
       <DrawerHeader style={styles.cover}>
         <ThemeProvider scheme="dark">
           <Cover
@@ -98,29 +97,6 @@ export function Drawer03({
       </DrawerSection>
     </DrawerContent>
   );
-}
-
-/**
- * The cover is dark in both Schemes, so while the drawer is open the status bar is light, and the
- * window behind it is the cover's colour: where the app is not drawn under the status bar (Expo
- * Go on Android), that strip is the window background, which the app's ThemeProvider sets to the
- * Scheme's. Both go back to the app's Scheme when the drawer closes.
- */
-function CoverSystemBars() {
-  const { scheme } = useTheme();
-  useEffect(() => {
-    let shown = true;
-    // A microtask runs after this commit's other effects, including the app ThemeProvider's
-    // (a parent's effects run after its children's), so the cover's colour is set last.
-    queueMicrotask(() => {
-      if (shown) SystemUI.setBackgroundColorAsync(colors.dark.muted).catch(() => {});
-    });
-    return () => {
-      shown = false;
-      SystemUI.setBackgroundColorAsync(colors[scheme].background).catch(() => {});
-    };
-  }, [scheme]);
-  return <StatusBar barStyle="light-content" />;
 }
 
 type CoverProps = {

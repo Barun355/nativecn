@@ -1490,7 +1490,7 @@ export default [
       'The overflow and + buttons are icon-only Buttons named "More" and "Create".',
       "View profile has role link; the initials Avatar is decorative.",
     ],
-    ["expo-router", "expo-system-ui", ...LUCIDE],
+    ["expo-router", ...LUCIDE],
     ["drawer", "avatar", "badge", "button", "pressable", "separator", "text", "theme"],
   ),
 ] satisfies RegistryItem[];
