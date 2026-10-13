@@ -1,0 +1,52 @@
+# EAS Build reads this file from the repo root instead of every .gitignore, so it repeats their
+# rules. Keep it in step with them.
+
+# From .gitignore
+node_modules/
+.pnpm-store/
+dist/
+.DS_Store
+*.log
+.claude/worktrees/
+.turbo/
+coverage/
+.expo/
+.next/
+packages/ui/.registry-build/
+apps/web/public/r/styles/
+apps/web/public/r/presets/
+
+# From apps/showcase/.gitignore
+apps/showcase/expo-env.d.ts
+apps/showcase/android/
+apps/showcase/ios/
+*.apk
+*.ipa
+
+# From apps/web/.gitignore
+apps/web/next-env.d.ts
+*.tsbuildinfo
+apps/web/AGENTS.md
+apps/web/CLAUDE.md
+
+# From packages/cli/starter/.gitignore
+packages/cli/starter/web-build/
+packages/cli/starter/expo-env.d.ts
+packages/cli/starter/android/
+packages/cli/starter/ios/
+.kotlin/
+*.orig.*
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+.metro-health-check*
+npm-debug.*
+yarn-debug.*
+yarn-error.*
+*.pem
+.env*.local
+
+# Screenshots taken on a phone: not needed to build the app
+apps/showcase/assets/app-screenshots/
