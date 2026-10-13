@@ -9,5 +9,3 @@ dist/
 
 **/**/*.apk
 **/**/*.ipa
-# Screenshots taken on a phone, kept locally only (also in the root .easignore)
-/assets/app-screenshots/
