@@ -10,7 +10,7 @@ name: CI
 #              Turborepo cache, once the cache-safety check (scripts/check-turbo-inputs.ts) passes
 #   changeset  a changeset for every changed package Changesets versions (nativecn-cli, ui)
 # Blocking (PRs touching the CLI, packages/ui, the Starter or the Preset code):
-#   starter-smoke  create/add end to end on SDK 57 and the latest SDK
+#   starter-smoke  create/add end to end on SDK 57
 # Not blocking: the nightly Starter smoke test on main (.github/workflows/starter-smoke.yml).
 
 on:

@@ -1,7 +1,6 @@
 name: Starter smoke test
 
-# `create` and `add` end to end against a locally built Registry (decision #31), on SDK 57 and on
-# the latest SDK (ADR 0010). Two ways in:
+# `create` and `add` end to end against a locally built Registry (decision #31), on Expo SDK 57. Two ways in:
 #   - called by ci.yml on PRs touching the CLI, packages/ui, the Starter or the Preset code: blocking
 #     there, through ci.yml's `checks` job;
 #   - nightly on main (and on demand): not blocking; a failure shows as a failed run.
@@ -14,13 +13,9 @@ on:
 
 jobs:
   smoke:
-    name: SDK ${{ matrix.sdk }}
+    name: SDK 57
     runs-on: ubuntu-latest
     timeout-minutes: 60
-    strategy:
-      fail-fast: false
-      matrix:
-        sdk: ["57", "latest"]
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -29,6 +24,5 @@ jobs:
           node-version: 24
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      # The latest leg skips itself (with a message) while the latest SDK is 57, the floor.
       - name: Starter smoke test
-        run: node --no-warnings packages/cli/scripts/starter-smoke.ts --sdk ${{ matrix.sdk }}
+        run: node --no-warnings packages/cli/scripts/starter-smoke.ts --sdk 57
