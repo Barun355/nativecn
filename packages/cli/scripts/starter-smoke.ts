@@ -2,9 +2,9 @@
 //   1. `create` with the defaults (Vega, flat).
 //   2. `create` with Nova + violet + Lora headings in feature mode, then `add` every Registry Item.
 //   3. For each app: install, type-check, then `expo export --platform android` (no device needed).
-// One run covers one Expo SDK; CI runs it for SDK 57 (the floor, ADR 0010) and for the latest SDK.
+// The smoke test targets Expo SDK 57 (the support floor, ADR 0010).
 //
-// Usage: node scripts/starter-smoke.ts --sdk <57|latest> [--work <dir>] [--keep]
+// Usage: node scripts/starter-smoke.ts --sdk 57 [--work <dir>] [--keep]
 //   --work  the temporary folder (default: a new one in the OS temp folder)
 //   --keep  keep the folder afterwards, to inspect the apps
 import { spawnSync, type SpawnSyncOptions } from "node:child_process";
@@ -38,31 +38,6 @@ export function starterSdk(starter = STARTER): number {
     dependencies: Record<string, string>;
   };
   return sdkMajor(pkg.dependencies.expo ?? "");
-}
-
-export type Leg =
-  { run: true; sdk: number; npmTag: string; switchFrom?: number } | { run: false; reason: string };
-
-/**
- * What one leg does. `sdk` is "57" (or any major) or "latest"; `latestVersion` is npm's
- * `expo@latest`. The latest leg is skipped when it is the floor itself, as the floor leg covers it.
- */
-export function planLeg(sdk: string, latestVersion: string, starter: number): Leg {
-  const latest = sdkMajor(latestVersion);
-  const target = sdk === "latest" ? latest : Number(sdk);
-  if (!Number.isInteger(target) || target < SDK_FLOOR)
-    throw new Error(`--sdk must be "latest" or an SDK of at least ${SDK_FLOOR}, not "${sdk}"`);
-  if (sdk === "latest" && latest === SDK_FLOOR)
-    return {
-      run: false,
-      reason: `The latest Expo SDK is ${latest}, the floor itself: the SDK ${SDK_FLOOR} leg covers it.`,
-    };
-  return {
-    run: true,
-    sdk: target,
-    npmTag: sdk === "latest" ? "latest" : `sdk-${target}`,
-    ...(target === starter ? {} : { switchFrom: starter }),
-  };
 }
 
 /** Where each Destination lands in a created app (the Starter has src/). */
@@ -168,27 +143,13 @@ function run(command: string, args: string[], opts: SpawnSyncOptions & { cwd: st
   if (res.status !== 0) throw new Error(`"${command} ${args.join(" ")}" exited ${res.status}`);
 }
 
-function output(command: string, args: string[], cwd: string): string {
-  const res = spawnSync(command, args, { cwd, encoding: "utf8" });
-  if (res.status !== 0) throw new Error(`"${command} ${args.join(" ")}" failed: ${res.stderr}`);
-  return res.stdout.trim();
-}
-
 async function main(): Promise<void> {
   const args = process.argv.slice(2);
   const get = (flag: string) => (args.includes(flag) ? args[args.indexOf(flag) + 1] : undefined);
-  const sdkArg = get("--sdk");
-  if (!sdkArg) throw new Error("Usage: node scripts/starter-smoke.ts --sdk <57|latest>");
-
-  const latestVersion = output("npm", ["view", "expo@latest", "version"], REPO);
-  const leg = planLeg(sdkArg, latestVersion, starterSdk());
-  if (!leg.run) {
-    console.log(`Skipped: ${leg.reason}`);
-    return;
-  }
-  console.log(
-    `Starter smoke test on Expo SDK ${leg.sdk} (expo@${leg.npmTag}; latest is ${latestVersion})`,
-  );
+  if (get("--sdk") !== String(SDK_FLOOR))
+    throw new Error(`Usage: node scripts/starter-smoke.ts --sdk ${SDK_FLOOR}`);
+  const switchToFloor = starterSdk() !== SDK_FLOOR;
+  console.log(`Starter smoke test on Expo SDK ${SDK_FLOOR}`);
 
   const work = path.resolve(
     get("--work") ?? fs.mkdtempSync(path.join(os.tmpdir(), "nativecn-smoke-")),
@@ -215,10 +176,10 @@ async function main(): Promise<void> {
     const cli = (cliArgs: string[]) =>
       run("node", [path.join(CLI, "dist", "index.js"), ...cliArgs], { cwd: work, env });
 
-    /** Move a created app to the leg's SDK, as a user would with `expo install --fix`. */
+    /** Move a created app to the support floor, as a user would with `expo install --fix`. */
     const switchSdk = (app: string) => {
-      if (leg.switchFrom === undefined) return;
-      run("npm", ["install", `expo@${leg.npmTag}`], { cwd: app, env });
+      if (!switchToFloor) return;
+      run("npm", ["install", `expo@sdk-${SDK_FLOOR}`], { cwd: app, env });
       run("npx", ["expo", "install", "--fix"], { cwd: app, env });
     };
 
@@ -266,8 +227,8 @@ async function main(): Promise<void> {
 
     // Every item's dependencies on this SDK's pinned list (ADR 0007, ADR 0010).
     const pinned = loadPinnedModules(customApp);
-    if (sdkMajor(pinned.sdk) !== leg.sdk)
-      throw new Error(`smoke-custom has expo ${pinned.sdk}, expected SDK ${leg.sdk}`);
+    if (sdkMajor(pinned.sdk) !== SDK_FLOOR)
+      throw new Error(`smoke-custom has expo ${pinned.sdk}, expected SDK ${SDK_FLOOR}`);
     const index = JSON.parse(
       fs.readFileSync(path.join(registry, "styles", "nova", "registry.json"), "utf8"),
     ) as { items: { name: string; dependencies?: string[]; devDependencies?: string[] }[] };
@@ -297,7 +258,7 @@ async function main(): Promise<void> {
         { cwd: app, env },
       );
     }
-    console.log(`\nStarter smoke test passed on Expo SDK ${leg.sdk}.`);
+    console.log(`\nStarter smoke test passed on Expo SDK ${SDK_FLOOR}.`);
   } finally {
     if (args.includes("--keep")) console.log(`Kept ${work}`);
     else fs.rmSync(work, { recursive: true, force: true });
